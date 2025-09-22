@@ -183,7 +183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-1/" data-id="cmfuxuwpg0008pcna2nazh233" data-title="docker - 1" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-1/" data-id="cmfuyqhvr0007nsnah8q1d29a" data-title="docker - 1" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -223,76 +223,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="最近在學習Docker。想用-net-8-mssql-kestrel-angular來建立一個容器化的CRUD網站，順便把過程記錄下來。"><a href="#最近在學習Docker。想用-net-8-mssql-kestrel-angular來建立一個容器化的CRUD網站，順便把過程記錄下來。" class="headerlink" title="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。"></a>最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。</h5><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><ul>
-<li><h5 id="以比較常用的開發環境-Net-8-Angular-Windows-Server-當範例，先來看看ChatGPT幫我們整理的沒有容器化前可能會遇到那些困擾："><a href="#以比較常用的開發環境-Net-8-Angular-Windows-Server-當範例，先來看看ChatGPT幫我們整理的沒有容器化前可能會遇到那些困擾：" class="headerlink" title="以比較常用的開發環境(.Net 8 + Angular + Windows Server)當範例，先來看看ChatGPT幫我們整理的沒有容器化前可能會遇到那些困擾："></a>以比較常用的開發環境(.Net 8 + Angular + Windows Server)當範例，先來看看ChatGPT幫我們整理的沒有容器化前可能會遇到那些困擾：</h5><ol>
-<li><h5 id="前端（Angular）："><a href="#前端（Angular）：" class="headerlink" title="前端（Angular）："></a>前端（Angular）：</h5><ol>
-<li><h5 id="Node-js-版本不一致"><a href="#Node-js-版本不一致" class="headerlink" title="Node.js 版本不一致"></a>Node.js 版本不一致</h5><ol>
-<li><h5 id="開發者-A-用-Node-js-18，開發者-B-用-Node-js-20，導致-Angular-build-結果不同。"><a href="#開發者-A-用-Node-js-18，開發者-B-用-Node-js-20，導致-Angular-build-結果不同。" class="headerlink" title="開發者 A 用 Node.js 18，開發者 B 用 Node.js 20，導致 Angular build 結果不同。"></a>開發者 A 用 Node.js 18，開發者 B 用 Node.js 20，導致 Angular build 結果不同。</h5></li>
-<li><h5 id="有人裝了全域-Angular-CLI-v17，有人還在-v15，建置過程出現-bug。"><a href="#有人裝了全域-Angular-CLI-v17，有人還在-v15，建置過程出現-bug。" class="headerlink" title="有人裝了全域 Angular CLI v17，有人還在 v15，建置過程出現 bug。"></a>有人裝了全域 Angular CLI v17，有人還在 v15，建置過程出現 bug。</h5></li>
-</ol>
-</li>
-<li><h5 id="環境重建麻煩："><a href="#環境重建麻煩：" class="headerlink" title="環境重建麻煩："></a>環境重建麻煩：</h5><ol>
-<li><h5 id="新人加入專案時，要先安裝-Node-js、Angular-CLI、各種套件。"><a href="#新人加入專案時，要先安裝-Node-js、Angular-CLI、各種套件。" class="headerlink" title="新人加入專案時，要先安裝 Node.js、Angular CLI、各種套件。"></a>新人加入專案時，要先安裝 Node.js、Angular CLI、各種套件。</h5></li>
-<li><h5 id="npm-install-過程可能因為不同系統（Windows-macOS-Linux）出現不一致錯誤。"><a href="#npm-install-過程可能因為不同系統（Windows-macOS-Linux）出現不一致錯誤。" class="headerlink" title="npm install 過程可能因為不同系統（Windows&#x2F;macOS&#x2F;Linux）出現不一致錯誤。"></a>npm install 過程可能因為不同系統（Windows&#x2F;macOS&#x2F;Linux）出現不一致錯誤。</h5></li>
-</ol>
-</li>
-<li><h5 id="部署複雜："><a href="#部署複雜：" class="headerlink" title="部署複雜："></a>部署複雜：</h5><ol>
-<li><h5 id="上線伺服器需要先裝-Node-js，然後手動跑-npm-run-build，再把-dist-複製到伺服器上。"><a href="#上線伺服器需要先裝-Node-js，然後手動跑-npm-run-build，再把-dist-複製到伺服器上。" class="headerlink" title="上線伺服器需要先裝 Node.js，然後手動跑 npm run build，再把 dist 複製到伺服器上。"></a>上線伺服器需要先裝 Node.js，然後手動跑 npm run build，再把 dist 複製到伺服器上。</h5></li>
-<li><h5 id="不同伺服器上的-Node-js-版本不一致，導致-build-結果不同。"><a href="#不同伺服器上的-Node-js-版本不一致，導致-build-結果不同。" class="headerlink" title="不同伺服器上的 Node.js 版本不一致，導致 build 結果不同。"></a>不同伺服器上的 Node.js 版本不一致，導致 build 結果不同。</h5></li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-<h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><ol start="2">
-<li><h5 id="後端（-NET-8-Web-API）："><a href="#後端（-NET-8-Web-API）：" class="headerlink" title="後端（.NET 8 Web API）："></a>後端（.NET 8 Web API）：</h5><ol>
-<li><h5 id="SDK-Runtime-版本差異"><a href="#SDK-Runtime-版本差異" class="headerlink" title="SDK&#x2F;Runtime 版本差異"></a>SDK&#x2F;Runtime 版本差異</h5><ol>
-<li><h5 id="開發者本機裝的是-NET-8-0-1，但-CI-CD-server-裝的是-NET-8-0-4，編譯或執行出現不一致。"><a href="#開發者本機裝的是-NET-8-0-1，但-CI-CD-server-裝的是-NET-8-0-4，編譯或執行出現不一致。" class="headerlink" title="開發者本機裝的是 .NET 8.0.1，但 CI&#x2F;CD server 裝的是 .NET 8.0.4，編譯或執行出現不一致。"></a>開發者本機裝的是 .NET 8.0.1，但 CI&#x2F;CD server 裝的是 .NET 8.0.4，編譯或執行出現不一致。</h5></li>
-</ol>
-</li>
-<li><h5 id="本機環境污染："><a href="#本機環境污染：" class="headerlink" title="本機環境污染："></a>本機環境污染：</h5><ol>
-<li><h5 id="開發者同時需要維護-NET-6、-NET-7、-NET-8-的專案，在同一台電腦裝多版本-SDK，容易衝突。"><a href="#開發者同時需要維護-NET-6、-NET-7、-NET-8-的專案，在同一台電腦裝多版本-SDK，容易衝突。" class="headerlink" title="開發者同時需要維護 .NET 6、.NET 7、.NET 8 的專案，在同一台電腦裝多版本 SDK，容易衝突。"></a>開發者同時需要維護 .NET 6、.NET 7、.NET 8 的專案，在同一台電腦裝多版本 SDK，容易衝突。</h5></li>
-</ol>
-</li>
-<li><h5 id="部署複雜：-1"><a href="#部署複雜：-1" class="headerlink" title="部署複雜："></a>部署複雜：</h5><ol>
-<li><h5 id="伺服器要先安裝-NET-Runtime，再配置-IIS-或-Kestrel。"><a href="#伺服器要先安裝-NET-Runtime，再配置-IIS-或-Kestrel。" class="headerlink" title="伺服器要先安裝 .NET Runtime，再配置 IIS 或 Kestrel。"></a>伺服器要先安裝 .NET Runtime，再配置 IIS 或 Kestrel。</h5></li>
-<li><h5 id="若要更新，得先停掉服務、手動替換-DLL，風險高且容易出錯。"><a href="#若要更新，得先停掉服務、手動替換-DLL，風險高且容易出錯。" class="headerlink" title="若要更新，得先停掉服務、手動替換 DLL，風險高且容易出錯。"></a>若要更新，得先停掉服務、手動替換 DLL，風險高且容易出錯。</h5></li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-<h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><ol start="3">
-<li><h5 id="伺服器端（整體運行環境）（-NET-8-Web-API）："><a href="#伺服器端（整體運行環境）（-NET-8-Web-API）：" class="headerlink" title="伺服器端（整體運行環境）（.NET 8 Web API）："></a>伺服器端（整體運行環境）（.NET 8 Web API）：</h5><ol>
-<li><h5 id="環境一致性難維護"><a href="#環境一致性難維護" class="headerlink" title="環境一致性難維護"></a>環境一致性難維護</h5><ol>
-<li><h5 id="測試機、UAT、正式機各自安裝不同版本的-Node-js、-NET-Runtime。"><a href="#測試機、UAT、正式機各自安裝不同版本的-Node-js、-NET-Runtime。" class="headerlink" title="測試機、UAT、正式機各自安裝不同版本的 Node.js、.NET Runtime。"></a>測試機、UAT、正式機各自安裝不同版本的 Node.js、.NET Runtime。</h5></li>
-<li><h5 id="部署同一個版本的程式，卻因環境差異導致-bug。"><a href="#部署同一個版本的程式，卻因環境差異導致-bug。" class="headerlink" title="部署同一個版本的程式，卻因環境差異導致 bug。"></a>部署同一個版本的程式，卻因環境差異導致 bug。</h5></li>
-</ol>
-</li>
-<li><h5 id="依賴安裝麻煩："><a href="#依賴安裝麻煩：" class="headerlink" title="依賴安裝麻煩："></a>依賴安裝麻煩：</h5><ol>
-<li><h5 id="除了-NET-和-Node-js，還可能需要-Nginx-Apache、資料庫驅動、系統套件。"><a href="#除了-NET-和-Node-js，還可能需要-Nginx-Apache、資料庫驅動、系統套件。" class="headerlink" title="除了 .NET 和 Node.js，還可能需要 Nginx&#x2F;Apache、資料庫驅動、系統套件。"></a>除了 .NET 和 Node.js，還可能需要 Nginx&#x2F;Apache、資料庫驅動、系統套件。</h5></li>
-<li><h5 id="每次搬遷伺服器，都要重頭安裝一次環境。"><a href="#每次搬遷伺服器，都要重頭安裝一次環境。" class="headerlink" title="每次搬遷伺服器，都要重頭安裝一次環境。"></a>每次搬遷伺服器，都要重頭安裝一次環境。</h5></li>
-</ol>
-</li>
-<li><h5 id="資源浪費-擴展困難："><a href="#資源浪費-擴展困難：" class="headerlink" title="資源浪費 &amp; 擴展困難："></a>資源浪費 &amp; 擴展困難：</h5><ol>
-<li><h5 id="每個應用獨佔一台-VM，導致資源利用率低。"><a href="#每個應用獨佔一台-VM，導致資源利用率低。" class="headerlink" title="每個應用獨佔一台 VM，導致資源利用率低。"></a>每個應用獨佔一台 VM，導致資源利用率低。</h5></li>
-<li><h5 id="要擴展服務時，必須手動新增-VM，耗時且成本高。"><a href="#要擴展服務時，必須手動新增-VM，耗時且成本高。" class="headerlink" title="要擴展服務時，必須手動新增 VM，耗時且成本高。"></a>要擴展服務時，必須手動新增 VM，耗時且成本高。</h5></li>
-</ol>
-</li>
-</ol>
-</li>
-</ol>
-<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1></li>
-<li><h5 id="上面問題，容器化都能解決："><a href="#上面問題，容器化都能解決：" class="headerlink" title="上面問題，容器化都能解決："></a>上面問題，容器化都能解決：</h5><ol>
-<li><h5 id="用-Docker-映像檔-固定版本（Node-js、-NET、依賴）。"><a href="#用-Docker-映像檔-固定版本（Node-js、-NET、依賴）。" class="headerlink" title="用 Docker 映像檔 固定版本（Node.js、.NET、依賴）。"></a>用 Docker 映像檔 固定版本（Node.js、.NET、依賴）。</h5></li>
-<li><h5 id="新人只需-docker-compose-up-就能開發。"><a href="#新人只需-docker-compose-up-就能開發。" class="headerlink" title="新人只需 docker-compose up 就能開發。"></a>新人只需 docker-compose up 就能開發。</h5></li>
-<li><h5 id="部署時只需把容器丟到伺服器，不必手動安裝-SDK-或環境。"><a href="#部署時只需把容器丟到伺服器，不必手動安裝-SDK-或環境。" class="headerlink" title="部署時只需把容器丟到伺服器，不必手動安裝 SDK 或環境。"></a>部署時只需把容器丟到伺服器，不必手動安裝 SDK 或環境。</h5></li>
-</ol>
-</li>
-</ul>
-<h5 id="Prompt"><a href="#Prompt" class="headerlink" title="Prompt"></a>Prompt</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我開發習慣用.NET 8 + Angular Web 應用容器化。請幫我列出前端. 後端. 伺服器端各三個情境（沒容器化的困擾）</span><br></pre></td></tr></table></figure>
-<h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h5 id="假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose-yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。"><a href="#假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose-yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。" class="headerlink" title="假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose.yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。"></a>假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose.yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。</h5><hr>
-<h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><ul>
+        <h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="清空現有的-WSL2-環境："><a href="#清空現有的-WSL2-環境：" class="headerlink" title="清空現有的 WSL2 環境："></a>清空現有的 WSL2 環境：</h5><ol>
 <li><h5 id="關閉所有-WSL2-執行個體。"><a href="#關閉所有-WSL2-執行個體。" class="headerlink" title="關閉所有 WSL2 執行個體。"></a>關閉所有 WSL2 執行個體。</h5></li>
 </ol>
@@ -316,7 +247,7 @@
 </ol>
 </li>
 </ul>
-<h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><h1 id="-30"><a href="#-30" class="headerlink" title=""></a></h1><h1 id="-31"><a href="#-31" class="headerlink" title=""></a></h1><ul>
+<h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="重新安裝-WSL2："><a href="#重新安裝-WSL2：" class="headerlink" title="重新安裝 WSL2："></a>重新安裝 WSL2：</h5><h5 id="安裝WSL2可以參考MSDN的-如何使用-WSL-在-Windows-上安裝-Linux"><a href="#安裝WSL2可以參考MSDN的-如何使用-WSL-在-Windows-上安裝-Linux" class="headerlink" title="安裝WSL2可以參考MSDN的 如何使用 WSL 在 Windows 上安裝 Linux."></a>安裝WSL2可以參考MSDN的 <a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-tw/windows/wsl/install">如何使用 WSL 在 Windows 上安裝 Linux</a>.</h5><ol>
 <li><h5 id="以系統管理員模式開啟-PowerShell，並輸入下面指令"><a href="#以系統管理員模式開啟-PowerShell，並輸入下面指令" class="headerlink" title="以系統管理員模式開啟 PowerShell，並輸入下面指令"></a>以系統管理員模式開啟 PowerShell，並輸入下面指令</h5></li>
 </ol>
@@ -330,7 +261,7 @@
 <img src="/2025/09/22/docker-with-WSL2/wsl2_verbose.jpg" class="" title="wsl2_verbose">
 
 <ol start="2">
-<li><h5 id="安裝-Linux-發行版。如果不特別加上版本號，會自動拉最新的-LTS-Long-Term-Support-版本。"><a href="#安裝-Linux-發行版。如果不特別加上版本號，會自動拉最新的-LTS-Long-Term-Support-版本。" class="headerlink" title="安裝 Linux 發行版。如果不特別加上版本號，會自動拉最新的 LTS (Long Term Support) 版本。"></a>安裝 Linux 發行版。如果不特別加上版本號，會自動拉最新的 LTS (Long Term Support) 版本。</h5></li>
+<li><h5 id="安裝-Linux-發行版。如果不特別加上版本號，會自動拉最新的-LTS-Long-Term-Support-版本。WSL預設安裝的會是Ubuntu-Server。"><a href="#安裝-Linux-發行版。如果不特別加上版本號，會自動拉最新的-LTS-Long-Term-Support-版本。WSL預設安裝的會是Ubuntu-Server。" class="headerlink" title="安裝 Linux 發行版。如果不特別加上版本號，會自動拉最新的 LTS (Long Term Support) 版本。WSL預設安裝的會是Ubuntu Server。"></a>安裝 Linux 發行版。如果不特別加上版本號，會自動拉最新的 LTS (Long Term Support) 版本。WSL預設安裝的會是Ubuntu Server。</h5></li>
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --install -d Ubuntu-24.04</span><br></pre></td></tr></table></figure>
 <img src="/2025/09/22/docker-with-WSL2/wsl2_install_ubuntu_verbose.jpg" class="" title="wsl2_install_ubuntu_verbose">
@@ -339,23 +270,33 @@
 <li><h5 id="安裝完畢後，會要你輸入登入者的帳號-密碼，輸入完成後可以看到初始畫面。"><a href="#安裝完畢後，會要你輸入登入者的帳號-密碼，輸入完成後可以看到初始畫面。" class="headerlink" title="安裝完畢後，會要你輸入登入者的帳號 &amp; 密碼，輸入完成後可以看到初始畫面。"></a>安裝完畢後，會要你輸入登入者的帳號 &amp; 密碼，輸入完成後可以看到初始畫面。</h5></li>
 </ol>
 <img src="/2025/09/22/docker-with-WSL2/wsl2_set_id_pwd.jpg" class="" title="wsl2_set_id_pwd">
-<h1 id="-32"><a href="#-32" class="headerlink" title=""></a></h1><h1 id="-33"><a href="#-33" class="headerlink" title=""></a></h1><h1 id="-34"><a href="#-34" class="headerlink" title=""></a></h1><h1 id="-35"><a href="#-35" class="headerlink" title=""></a></h1><img src="/2025/09/22/docker-with-WSL2/wsl2_ubuntu_init.jpg" class="" title="wsl2_ubuntu_init">
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><img src="/2025/09/22/docker-with-WSL2/wsl2_ubuntu_init.jpg" class="" title="wsl2_ubuntu_init">
 
 <ol start="4">
 <li><h5 id="設定完成。執行下面指令確認WSL狀態-目前Ubuntu發行版本。在-AppData資料夾下也可以看到新建的-vhdx虛擬硬碟檔。"><a href="#設定完成。執行下面指令確認WSL狀態-目前Ubuntu發行版本。在-AppData資料夾下也可以看到新建的-vhdx虛擬硬碟檔。" class="headerlink" title="設定完成。執行下面指令確認WSL狀態 &amp; 目前Ubuntu發行版本。在\AppData資料夾下也可以看到新建的.vhdx虛擬硬碟檔。"></a>設定完成。執行下面指令確認WSL狀態 &amp; 目前Ubuntu發行版本。在\AppData資料夾下也可以看到新建的.vhdx虛擬硬碟檔。</h5></li>
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --status</span><br></pre></td></tr></table></figure>
 <img src="/2025/09/22/docker-with-WSL2/wsl2_status.jpg" class="" title="wsl2_status">
-<h1 id="-36"><a href="#-36" class="headerlink" title=""></a></h1><h1 id="-37"><a href="#-37" class="headerlink" title=""></a></h1><h1 id="-38"><a href="#-38" class="headerlink" title=""></a></h1><h1 id="-39"><a href="#-39" class="headerlink" title=""></a></h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --list --verbose</span><br></pre></td></tr></table></figure>
+<h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --list --verbose</span><br></pre></td></tr></table></figure>
 <img src="/2025/09/22/docker-with-WSL2/wsl2_list_verbose.jpg" class="" title="wsl2_list_verbose">
-<h1 id="-40"><a href="#-40" class="headerlink" title=""></a></h1><h1 id="-41"><a href="#-41" class="headerlink" title=""></a></h1><h1 id="-42"><a href="#-42" class="headerlink" title=""></a></h1><h1 id="-43"><a href="#-43" class="headerlink" title=""></a></h1><img src="/2025/09/22/docker-with-WSL2/wsl2_vhdx.jpg" class="" title="wsl2_vhdx"></li>
+<h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><img src="/2025/09/22/docker-with-WSL2/wsl2_vhdx.jpg" class="" title="wsl2_vhdx">
+<h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><ol start="5">
+<li><h5 id="開啟WSL"><a href="#開啟WSL" class="headerlink" title="開啟WSL"></a>開啟WSL</h5></li>
+</ol>
+<img src="/2025/09/22/docker-with-WSL2/wsl2_open.jpg" class="" title="wsl2_open"></li>
 </ul>
-<h1 id="-44"><a href="#-44" class="headerlink" title=""></a></h1><h1 id="-45"><a href="#-45" class="headerlink" title=""></a></h1><h1 id="-46"><a href="#-46" class="headerlink" title=""></a></h1><h1 id="-47"><a href="#-47" class="headerlink" title=""></a></h1><hr>
-<h3 id="安裝-Net-8"><a href="#安裝-Net-8" class="headerlink" title="安裝.Net 8"></a>安裝.Net 8</h3>
+<h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><h1 id="-30"><a href="#-30" class="headerlink" title=""></a></h1><h1 id="-31"><a href="#-31" class="headerlink" title=""></a></h1><hr>
+<h3 id="Docker"><a href="#Docker" class="headerlink" title="Docker"></a>Docker</h3><ul>
+<li><h5 id="以下是在-WSL2-環境中直接安裝-Docker-Engine-的步驟："><a href="#以下是在-WSL2-環境中直接安裝-Docker-Engine-的步驟：" class="headerlink" title="以下是在 WSL2 環境中直接安裝 Docker Engine 的步驟："></a>以下是在 WSL2 環境中直接安裝 Docker Engine 的步驟：</h5><ol>
+<li><h5 id="更新套件索引："><a href="#更新套件索引：" class="headerlink" title="更新套件索引："></a>更新套件索引：</h5></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt update</span><br></pre></td></tr></table></figure></li>
+</ul>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuxuwpi000dpcnacwoa2gvr" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuyqhvq0006nsnah1z04tsf" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -432,7 +373,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfuxuwpb0002pcna590p8lp1" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfuyqhvi0001nsna45dwdrzd" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

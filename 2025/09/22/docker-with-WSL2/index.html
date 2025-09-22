@@ -6,12 +6,12 @@
   
   <title>docker with WSL2 | HaoAreYou~</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="安裝WSL2(Windows Subsystem for Linux 2)WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。 清空現有的 WS">
+  <meta name="description" content="安裝WSL &amp; Docker">
 <meta property="og:type" content="article">
 <meta property="og:title" content="docker with WSL2">
 <meta property="og:url" content="http://example.com/2025/09/22/docker-with-WSL2/index.html">
 <meta property="og:site_name" content="HaoAreYou~">
-<meta property="og:description" content="安裝WSL2(Windows Subsystem for Linux 2)WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。 清空現有的 WS">
+<meta property="og:description" content="安裝WSL &amp; Docker">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_distro.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_verbose.jpg">
@@ -23,7 +23,7 @@
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_vhdx.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_open.jpg">
 <meta property="article:published_time" content="2025-09-22T02:14:07.000Z">
-<meta property="article:modified_time" content="2025-09-22T10:07:33.443Z">
+<meta property="article:modified_time" content="2025-09-22T10:11:49.697Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -116,7 +116,8 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><ul>
+        <h5 id="安裝WSL-Docker"><a href="#安裝WSL-Docker" class="headerlink" title="安裝WSL &amp; Docker"></a>安裝WSL &amp; Docker</h5><span id="more"></span>
+<h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="清空現有的-WSL2-環境："><a href="#清空現有的-WSL2-環境：" class="headerlink" title="清空現有的 WSL2 環境："></a>清空現有的 WSL2 環境：</h5><ol>
 <li><h5 id="關閉所有-WSL2-執行個體。"><a href="#關閉所有-WSL2-執行個體。" class="headerlink" title="關閉所有 WSL2 執行個體。"></a>關閉所有 WSL2 執行個體。</h5></li>
 </ol>
@@ -189,7 +190,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuyqhvq0006nsnah1z04tsf" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuyvr6o000dqgna4ql4b3la" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

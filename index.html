@@ -117,7 +117,7 @@
 <li><h5 id="可選-刪除-WSL2-虛擬硬碟-VHDX-檔案："><a href="#可選-刪除-WSL2-虛擬硬碟-VHDX-檔案：" class="headerlink" title="(可選)刪除 WSL2 虛擬硬碟 (VHDX) 檔案："></a>(可選)刪除 WSL2 虛擬硬碟 (VHDX) 檔案：</h5><h5 id="解除註冊後，WSL2-使用的虛擬硬碟檔案-VHDX-仍然存在於您的硬碟上。-如果您想要完全清除所有痕跡，可以手動刪除-VHDX-檔案。"><a href="#解除註冊後，WSL2-使用的虛擬硬碟檔案-VHDX-仍然存在於您的硬碟上。-如果您想要完全清除所有痕跡，可以手動刪除-VHDX-檔案。" class="headerlink" title="解除註冊後，WSL2 使用的虛擬硬碟檔案 (VHDX) 仍然存在於您的硬碟上。 如果您想要完全清除所有痕跡，可以手動刪除 VHDX 檔案。"></a>解除註冊後，WSL2 使用的虛擬硬碟檔案 (VHDX) 仍然存在於您的硬碟上。 如果您想要完全清除所有痕跡，可以手動刪除 VHDX 檔案。</h5><ol>
 <li><h5 id="找到-VHDX-檔案的位置。-預設情況下，VHDX-檔案位於以下路徑："><a href="#找到-VHDX-檔案的位置。-預設情況下，VHDX-檔案位於以下路徑：" class="headerlink" title="找到 VHDX 檔案的位置。 預設情況下，VHDX 檔案位於以下路徑："></a>找到 VHDX 檔案的位置。 預設情況下，VHDX 檔案位於以下路徑：</h5></li>
 </ol>
- <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --unregister &lt;DistroName&gt;</span><br></pre></td></tr></table></figure>
+ <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%USERPROFILE%\AppData\Local\Packages\&lt;DistroPackageName&gt;\LocalState\ext4.vhdx</span><br></pre></td></tr></table></figure>
 <h5 id="是發行版的套件名稱。-您可以在-Microsoft-Store-中找到發行版的套件名稱。-例如，Ubuntu-的套件名稱是-CanonicalGroupLimited-UbuntuonWindows-79rhkp1fndgsc。"><a href="#是發行版的套件名稱。-您可以在-Microsoft-Store-中找到發行版的套件名稱。-例如，Ubuntu-的套件名稱是-CanonicalGroupLimited-UbuntuonWindows-79rhkp1fndgsc。" class="headerlink" title=" 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。"></a><DistroPackageName> 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。</h5><ol start="2">
 <li><h5 id="關閉所有-WSL2-執行個體-再次確認-。"><a href="#關閉所有-WSL2-執行個體-再次確認-。" class="headerlink" title="關閉所有 WSL2 執行個體 (再次確認)。"></a>關閉所有 WSL2 執行個體 (再次確認)。</h5></li>
 <li><h5 id="刪除-VHDX-檔案。"><a href="#刪除-VHDX-檔案。" class="headerlink" title="刪除 VHDX 檔案。"></a>刪除 VHDX 檔案。</h5></li>
@@ -125,22 +125,23 @@
 </li>
 </ol>
 </li>
-<li><h5 id="程式碼壓縮和最佳化："><a href="#程式碼壓縮和最佳化：" class="headerlink" title="程式碼壓縮和最佳化："></a>程式碼壓縮和最佳化：</h5><ul>
-<li><h5 id="你需要手動使用其他工具來壓縮和最佳化你的程式碼。"><a href="#你需要手動使用其他工具來壓縮和最佳化你的程式碼。" class="headerlink" title="你需要手動使用其他工具來壓縮和最佳化你的程式碼。"></a>你需要手動使用其他工具來壓縮和最佳化你的程式碼。</h5></li>
-<li><h5 id="Webpack-可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。"><a href="#Webpack-可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。" class="headerlink" title="Webpack 可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。"></a>Webpack 可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。</h5></li>
 </ul>
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="重新安裝-WSL2："><a href="#重新安裝-WSL2：" class="headerlink" title="重新安裝 WSL2："></a>重新安裝 WSL2：</h5><ol>
+<li><h5 id="重新安裝-WSL2-發行版："><a href="#重新安裝-WSL2-發行版：" class="headerlink" title="重新安裝 WSL2 發行版："></a>重新安裝 WSL2 發行版：</h5><h5 id="安裝WSL2可以參考MSDN的-如何使用-WSL-在-Windows-上安裝-Linux"><a href="#安裝WSL2可以參考MSDN的-如何使用-WSL-在-Windows-上安裝-Linux" class="headerlink" title="安裝WSL2可以參考MSDN的 如何使用 WSL 在 Windows 上安裝 Linux."></a>安裝WSL2可以參考MSDN的 <a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-tw/windows/wsl/install">如何使用 WSL 在 Windows 上安裝 Linux</a>.</h5><ol>
+<li><h5 id="以系統管理員模式開啟-PowerShell，並輸入下面指令"><a href="#以系統管理員模式開啟-PowerShell，並輸入下面指令" class="headerlink" title="以系統管理員模式開啟 PowerShell，並輸入下面指令"></a>以系統管理員模式開啟 PowerShell，並輸入下面指令</h5></li>
+</ol>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">wsl --install</span><br><span class="line">```        </span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#  </span></span><br><span class="line"><span class="comment">##### 回應訊息顯示[已安裝 Windows 子系統 Linux 版]，並且下面列出很多Linux的發行版。這個訊息代表 WSL (Windows Subsystem for Linux) 已經安裝完成，但並不代表已經有 Linux 發行版可以直接用。</span></span><br><span class="line">&#123;% asset_image wsl2_distro.jpg wsl2_distro %&#125;</span><br><span class="line"></span><br><span class="line">2. <span class="comment">##### 可以再用下面指令查詢查看已安裝的 Linux 發行版確認。如果沒有任何發行版，會顯示 尚未安裝任何發行版。</span></span><br><span class="line">``` bash</span><br><span class="line">wsl --list --verbose</span><br></pre></td></tr></table></figure>
+ <img src="/2025/09/22/docker-with-WSL2/wsl2_verbose.jpg" class="" title="wsl2_verbose"></li>
+</ol>
 </li>
-<li><h5 id="程式碼分割-Code-Splitting-："><a href="#程式碼分割-Code-Splitting-：" class="headerlink" title="程式碼分割 (Code Splitting)："></a>程式碼分割 (Code Splitting)：</h5><ul>
-<li><h5 id="沒有-Webpack：-所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。"><a href="#沒有-Webpack：-所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。" class="headerlink" title="沒有 Webpack： 所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。"></a>沒有 Webpack： 所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。</h5></li>
-<li><h5 id="使用-Webpack：-可以使用程式碼分割技術將程式碼分割成多個-chunk，只有在需要時才載入，提高初始載入速度。"><a href="#使用-Webpack：-可以使用程式碼分割技術將程式碼分割成多個-chunk，只有在需要時才載入，提高初始載入速度。" class="headerlink" title="使用 Webpack： 可以使用程式碼分割技術將程式碼分割成多個 chunk，只有在需要時才載入，提高初始載入速度。"></a>使用 Webpack： 可以使用程式碼分割技術將程式碼分割成多個 chunk，只有在需要時才載入，提高初始載入速度。</h5></li>
 </ul>
-</li>
-</ul>
+<h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><hr>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfujqgrp0008msna62hb1lpv" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfurg3jm00085gna88sz4rxx" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -217,7 +218,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfujqgr90000msnafyfufor8" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfurg3jf00015gna545o50b4" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

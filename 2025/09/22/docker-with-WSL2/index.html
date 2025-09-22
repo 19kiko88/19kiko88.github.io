@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_list_verbose.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_vhdx.jpg">
 <meta property="article:published_time" content="2025-09-22T02:14:07.000Z">
-<meta property="article:modified_time" content="2025-09-22T09:05:37.155Z">
+<meta property="article:modified_time" content="2025-09-22T09:22:49.421Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -183,7 +183,7 @@
 </li>
 </ul>
 <h5 id="Prompt"><a href="#Prompt" class="headerlink" title="Prompt"></a>Prompt</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我開發習慣用.NET 8 + Angular Web 應用容器化。請幫我列出前端. 後端. 伺服器端各三個情境（沒容器化的困擾）</span><br></pre></td></tr></table></figure>
-<h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h5 id="假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose-yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。"><a href="#假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose-yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。" class="headerlink" title="假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose.yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。"></a>假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose.yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。</h5><hr>
+<h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h5 id="假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose-yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。"><a href="#假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose-yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。" class="headerlink" title="假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose.yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。"></a>假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose.yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。</h5><hr>
 <h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="清空現有的-WSL2-環境："><a href="#清空現有的-WSL2-環境：" class="headerlink" title="清空現有的 WSL2 環境："></a>清空現有的 WSL2 環境：</h5><ol>
 <li><h5 id="關閉所有-WSL2-執行個體。"><a href="#關閉所有-WSL2-執行個體。" class="headerlink" title="關閉所有 WSL2 執行個體。"></a>關閉所有 WSL2 執行個體。</h5></li>
@@ -247,7 +247,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuwiq5b0008akna2pf7gw68" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuxu5fe00075kna4ulc6y9o" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -258,6 +258,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2025/09/22/docker-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          docker - 1
+        
+      </div>
+    </a>
   
   
     <a href="/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" id="article-nav-older" class="article-nav-link-wrap">
@@ -299,7 +308,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Ubuntu/" style="font-size: 10px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 10px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+      <a href="/tags/Docker/" style="font-size: 20px;">Docker</a> <a href="/tags/Ubuntu/" style="font-size: 10px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 10px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
     </div>
   </div>
 
@@ -319,6 +328,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2025/09/22/docker-1/">docker - 1</a>
+          </li>
         
           <li>
             <a href="/2025/09/22/docker-with-WSL2/">docker with WSL2</a>

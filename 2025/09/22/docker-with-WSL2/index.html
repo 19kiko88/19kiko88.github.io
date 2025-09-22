@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>docker with WSL2 | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。 安裝WSL2(Windows Subsystem for Linux 2)WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。但由於我在先前已經有">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker with WSL2">
+<meta property="og:url" content="http://example.com/2025/09/22/docker-with-WSL2/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。 安裝WSL2(Windows Subsystem for Linux 2)WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。但由於我在先前已經有">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-09-22T02:14:07.000Z">
+<meta property="article:modified_time" content="2025-09-22T02:42:53.758Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="WSL2">
+<meta property="article:tag" content="Ubuntu">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-docker-with-WSL2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/09/22/docker-with-WSL2/" class="article-date">
+  <time class="dt-published" datetime="2025-09-22T02:14:07.000Z" itemprop="datePublished">2025-09-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      docker with WSL2
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="最近在學習Docker。想用-net-8-mssql-kestrel-angular來建立一個容器化的CRUD網站，順便把過程記錄下來。"><a href="#最近在學習Docker。想用-net-8-mssql-kestrel-angular來建立一個容器化的CRUD網站，順便把過程記錄下來。" class="headerlink" title="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。"></a>最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。</h5><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><hr>
+<h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="使用-import-和-export-進行模組化開發："><a href="#使用-import-和-export-進行模組化開發：" class="headerlink" title="使用 import 和 export 進行模組化開發："></a>使用 import 和 export 進行模組化開發：</h5></li>
+<li><h5 id="清空現有的-WSL2-環境："><a href="#清空現有的-WSL2-環境：" class="headerlink" title="清空現有的 WSL2 環境："></a>清空現有的 WSL2 環境：</h5><ul>
+<li><h5 id="關閉所有-WSL2-執行個體。"><a href="#關閉所有-WSL2-執行個體。" class="headerlink" title="關閉所有 WSL2 執行個體。"></a>關閉所有 WSL2 執行個體。</h5></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --shutdown</span><br></pre></td></tr></table></figure>
+
+<pre><code>* ##### 使用 Webpack： Webpack 可以讓你使用部分不依賴於特定 Node.js 環境的純 JavaScript 模組。 雖然不能使用所有 Node.js 模組，但仍然可以利用許多有用的工具，例如 axios、lodash、moment 等。(*經實測，要處理圖片的Jimp套件就無法使用. 但原生js辨識圖像的套件Tesseract就可以使用)
+</code></pre>
+<ul>
+<li><h5 id="程式碼壓縮和最佳化："><a href="#程式碼壓縮和最佳化：" class="headerlink" title="程式碼壓縮和最佳化："></a>程式碼壓縮和最佳化：</h5><ul>
+<li><h5 id="你需要手動使用其他工具來壓縮和最佳化你的程式碼。"><a href="#你需要手動使用其他工具來壓縮和最佳化你的程式碼。" class="headerlink" title="你需要手動使用其他工具來壓縮和最佳化你的程式碼。"></a>你需要手動使用其他工具來壓縮和最佳化你的程式碼。</h5></li>
+<li><h5 id="Webpack-可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。"><a href="#Webpack-可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。" class="headerlink" title="Webpack 可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。"></a>Webpack 可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。</h5></li>
+</ul>
+</li>
+<li><h5 id="程式碼分割-Code-Splitting-："><a href="#程式碼分割-Code-Splitting-：" class="headerlink" title="程式碼分割 (Code Splitting)："></a>程式碼分割 (Code Splitting)：</h5><ul>
+<li><h5 id="沒有-Webpack：-所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。"><a href="#沒有-Webpack：-所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。" class="headerlink" title="沒有 Webpack： 所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。"></a>沒有 Webpack： 所有程式碼都會被打包到一個或幾個檔案中，導致初始載入時間較長。</h5></li>
+<li><h5 id="使用-Webpack：-可以使用程式碼分割技術將程式碼分割成多個-chunk，只有在需要時才載入，提高初始載入速度。"><a href="#使用-Webpack：-可以使用程式碼分割技術將程式碼分割成多個-chunk，只有在需要時才載入，提高初始載入速度。" class="headerlink" title="使用 Webpack： 可以使用程式碼分割技術將程式碼分割成多個 chunk，只有在需要時才載入，提高初始載入速度。"></a>使用 Webpack： 可以使用程式碼分割技術將程式碼分割成多個 chunk，只有在需要時才載入，提高初始載入速度。</h5></li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuiuykw0008gknaatfuazrm" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Webpack打包(以Chrome extension為範例)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Ubuntu/" style="font-size: 10px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 10px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/09/22/docker-with-WSL2/">docker with WSL2</a>
+          </li>
+        
+          <li>
+            <a href="/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/">Webpack打包(以Chrome extension為範例)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

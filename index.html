@@ -103,16 +103,12 @@
       
         <h5 id="最近在學習Docker。想用-net-8-mssql-kestrel-angular來建立一個容器化的CRUD網站，順便把過程記錄下來。"><a href="#最近在學習Docker。想用-net-8-mssql-kestrel-angular來建立一個容器化的CRUD網站，順便把過程記錄下來。" class="headerlink" title="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。"></a>最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。</h5><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><hr>
 <h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><ul>
-<li><h5 id="使用-import-和-export-進行模組化開發："><a href="#使用-import-和-export-進行模組化開發：" class="headerlink" title="使用 import 和 export 進行模組化開發："></a>使用 import 和 export 進行模組化開發：</h5></li>
 <li><h5 id="清空現有的-WSL2-環境："><a href="#清空現有的-WSL2-環境：" class="headerlink" title="清空現有的 WSL2 環境："></a>清空現有的 WSL2 環境：</h5><ul>
 <li><h5 id="關閉所有-WSL2-執行個體。"><a href="#關閉所有-WSL2-執行個體。" class="headerlink" title="關閉所有 WSL2 執行個體。"></a>關閉所有 WSL2 執行個體。</h5></li>
 </ul>
-</li>
-</ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --shutdown</span><br></pre></td></tr></table></figure>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --shutdown</span><br></pre></td></tr></table></figure>
 <ul>
-<li><h5 id="-12"><a href="#-12" class="headerlink" title=""></a></h5><ul>
-<li><h5 id="使用-Webpack：-Webpack-可以讓你使用部分不依賴於特定-Node-js-環境的純-JavaScript-模組。-雖然不能使用所有-Node-js-模組，但仍然可以利用許多有用的工具，例如-axios、lodash、moment-等。-經實測，要處理圖片的Jimp套件就無法使用-但原生js辨識圖像的套件Tesseract就可以使用"><a href="#使用-Webpack：-Webpack-可以讓你使用部分不依賴於特定-Node-js-環境的純-JavaScript-模組。-雖然不能使用所有-Node-js-模組，但仍然可以利用許多有用的工具，例如-axios、lodash、moment-等。-經實測，要處理圖片的Jimp套件就無法使用-但原生js辨識圖像的套件Tesseract就可以使用" class="headerlink" title="使用 Webpack： Webpack 可以讓你使用部分不依賴於特定 Node.js 環境的純 JavaScript 模組。 雖然不能使用所有 Node.js 模組，但仍然可以利用許多有用的工具，例如 axios、lodash、moment 等。(*經實測，要處理圖片的Jimp套件就無法使用. 但原生js辨識圖像的套件Tesseract就可以使用)"></a>使用 Webpack： Webpack 可以讓你使用部分不依賴於特定 Node.js 環境的純 JavaScript 模組。 雖然不能使用所有 Node.js 模組，但仍然可以利用許多有用的工具，例如 axios、lodash、moment 等。(*經實測，要處理圖片的Jimp套件就無法使用. 但原生js辨識圖像的套件Tesseract就可以使用)</h5></li>
+<li><h5 id="ggggggggggggggggggggg"><a href="#ggggggggggggggggggggg" class="headerlink" title="ggggggggggggggggggggg"></a>ggggggggggggggggggggg</h5></li>
 </ul>
 </li>
 <li><h5 id="程式碼壓縮和最佳化："><a href="#程式碼壓縮和最佳化：" class="headerlink" title="程式碼壓縮和最佳化："></a>程式碼壓縮和最佳化：</h5><ul>
@@ -130,7 +126,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuixi5x0002ycnabdr76ws4" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuj04jc0008ycna673g9t0t" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -207,7 +203,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfuixi5y0003ycnaaqw84l7l" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfuj04j80003ycna5xtm89ou" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

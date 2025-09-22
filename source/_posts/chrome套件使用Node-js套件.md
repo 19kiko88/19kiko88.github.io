@@ -7,6 +7,7 @@ tags:
  - Webpack
 ---
 ##### 先前開發Angular專案時，使用的是TypeScript。覺得使用 import 和 export 語法來模組化程式碼，讓可讀性變好這種方式很不錯。最近開發Chrome extension時，使用的是Js ES5(Vanilla Js)，就是只使用內建功能的原生Js來開發。
+<!-- more -->
 ##### 後來問了一下ChatGPT後才知道，Js ES6開始，就可以使用import. export語法來把程式模組化，但最後需要使用 Bundler (例如 Webpack、Parcel、Rollup) 將這些模組打包成瀏覽器可以理解的格式，開發完的Chrome套件才能在瀏覽器上面正常執行。
 ##### 除了可以使用import. export之外，把Js打包後還有下列好處：
 * ##### 使用 import 和 export 進行模組化開發：

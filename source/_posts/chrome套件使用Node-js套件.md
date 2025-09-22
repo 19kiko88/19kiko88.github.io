@@ -12,7 +12,7 @@ tags:
 * ##### 使用 import 和 export 進行模組化開發：
 * ##### 使用 Node.js (部分)模組：
     * ##### 沒有 Webpack： 你無法直接在 Chrome 擴充套件中使用 Node.js 模組，因為瀏覽器環境缺少 Node.js 的特定 API (例如 fs、http)。
-    * ##### 使用 Webpack： Webpack 可以讓你使用部分不依賴於特定 Node.js 環境的純 JavaScript 模組。 雖然不能使用所有 Node.js 模組(*經實測，要處理圖片的Jimp套件就無法使用.)，但仍然可以利用許多有用的工具，例如 axios、lodash、moment 等。
+    * ##### 使用 Webpack： Webpack 可以讓你使用部分不依賴於特定 Node.js 環境的純 JavaScript 模組。 雖然不能使用所有 Node.js 模組，但仍然可以利用許多有用的工具，例如 axios、lodash、moment 等。(*經實測，要處理圖片的Jimp套件就無法使用. 但原生js辨識圖像的套件Tesseract就可以使用)
 * ##### 程式碼壓縮和最佳化：
     * ##### 你需要手動使用其他工具來壓縮和最佳化你的程式碼。
     * ##### Webpack 可以在生產模式下自動壓縮和最佳化你的程式碼，減少檔案大小，提高載入速度。

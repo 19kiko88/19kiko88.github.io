@@ -160,7 +160,7 @@
 </ol>
 </li>
 </ol>
-<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><ul>
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1></li>
 <li><h5 id="上面問題，容器化都能解決："><a href="#上面問題，容器化都能解決：" class="headerlink" title="上面問題，容器化都能解決："></a>上面問題，容器化都能解決：</h5><ol>
 <li><h5 id="用-Docker-映像檔-固定版本（Node-js、-NET、依賴）。"><a href="#用-Docker-映像檔-固定版本（Node-js、-NET、依賴）。" class="headerlink" title="用 Docker 映像檔 固定版本（Node.js、.NET、依賴）。"></a>用 Docker 映像檔 固定版本（Node.js、.NET、依賴）。</h5></li>
 <li><h5 id="新人只需-docker-compose-up-就能開發。"><a href="#新人只需-docker-compose-up-就能開發。" class="headerlink" title="新人只需 docker-compose up 就能開發。"></a>新人只需 docker-compose up 就能開發。</h5></li>
@@ -168,8 +168,7 @@
 </ol>
 </li>
 </ul>
-<h5 id="Prompt"><a href="#Prompt" class="headerlink" title="Prompt"></a>Prompt</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我開發習慣用.NET 8 + Angular Web 應用容器化。請幫我列出前端. 後端. 伺服器端各三個情境（沒容器化的困擾）</span><br></pre></td></tr></table></figure></li>
-</ul>
+<h5 id="Prompt"><a href="#Prompt" class="headerlink" title="Prompt"></a>Prompt</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我開發習慣用.NET 8 + Angular Web 應用容器化。請幫我列出前端. 後端. 伺服器端各三個情境（沒容器化的困擾）</span><br></pre></td></tr></table></figure>
 <h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h5 id="假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose-yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。"><a href="#假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose-yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。" class="headerlink" title="假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose.yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。"></a>假設部門總共維護了5個專案，每個專案有各自的vm環境。我們只要把各自VM的專案環境設定，編寫成一份docker-compose.yml檔案後，之後只要啟動這個compose，就會自動啟動容器，讓專案跑起來了。</h5><hr>
 <h3 id="安裝WSL2-Windows-Subsystem-for-Linux-2"><a href="#安裝WSL2-Windows-Subsystem-for-Linux-2" class="headerlink" title="安裝WSL2(Windows Subsystem for Linux 2)"></a>安裝WSL2(Windows Subsystem for Linux 2)</h3><h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><h5 id="WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。"><a href="#WSL2簡單的說明就是可以讓你在-Windows-上直接跑-Linux-環境（像-Ubuntu、Debian-等），不用安裝雙系統，也不用開虛擬機器的架構。" class="headerlink" title="WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。"></a>WSL2簡單的說明就是可以讓你在 Windows 上直接跑 Linux 環境（像 Ubuntu、Debian 等），不用安裝雙系統，也不用開虛擬機器的架構。</h5><h5 id="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。"><a href="#但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100-的重頭開始。" class="headerlink" title="但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。"></a>但由於我在先前已經有安裝過了，裡面已經有安裝過Docker了，這次為了重頭到尾完整記錄，決定把原本的WSL2內容全部刪除並重新安裝，100%的重頭開始。</h5><h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="清空現有的-WSL2-環境："><a href="#清空現有的-WSL2-環境：" class="headerlink" title="清空現有的 WSL2 環境："></a>清空現有的 WSL2 環境：</h5><ol>
@@ -234,7 +233,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuwhlyk0007v4naaavh1jby" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfuwiq5b0008akna2pf7gw68" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -311,7 +310,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfuwhlye0001v4naek0vafwb" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmfuwiq560002akna1bzn6540" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

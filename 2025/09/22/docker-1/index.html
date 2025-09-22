@@ -14,7 +14,7 @@
 <meta property="og:description" content="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。 以比較常用的開發環境(.Net 8 + Angular + Windows Server)當範例，先來看看ChatGPT幫我們整理的沒有容器化前可能會遇到那些困擾： 前端（Angular）： Node.js 版本不一致 開發者 A 用 Node.js">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-22T09:32:56.000Z">
-<meta property="article:modified_time" content="2025-09-22T09:36:58.222Z">
+<meta property="article:modified_time" content="2025-09-22T09:43:09.810Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta name="twitter:card" content="summary">
@@ -84,6 +84,10 @@
   <time class="dt-published" datetime="2025-09-22T09:32:56.000Z" itemprop="datePublished">2025-09-22</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
@@ -169,7 +173,8 @@
 </ul>
 <h5 id="Prompt"><a href="#Prompt" class="headerlink" title="Prompt"></a>Prompt</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">我開發習慣用.NET 8 + Angular Web 應用容器化。請幫我列出前端. 後端. 伺服器端各三個情境（沒容器化的困擾）</span><br></pre></td></tr></table></figure>
 <h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h5 id="假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose-yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。-目前只要先知道compose是一個定義並協調多個容器的工具與設定檔即可，這個設定檔描述了多個容器要如何一起運行，是一個啟動器"><a href="#假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose-yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。-目前只要先知道compose是一個定義並協調多個容器的工具與設定檔即可，這個設定檔描述了多個容器要如何一起運行，是一個啟動器" class="headerlink" title="假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose.yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。(* 目前只要先知道compose是一個定義並協調多個容器的工具與設定檔即可，這個設定檔描述了多個容器要如何一起運行，是一個啟動器)"></a>假設部門總共維護了5個專案，每個專案有各自的開發框架。我們只要把各自的專案編寫成一份docker-compose.yml檔案後，之後只要分別在開發筆電或是遠端伺服器啟動這個compose，就會自動啟動容器，自動建立好環境，讓專案跑起來了。(* 目前只要先知道compose是一個定義並協調多個容器的工具與設定檔即可，這個設定檔描述了多個容器要如何一起運行，是一個啟動器)</h5><hr>
-<h3 id="Image-Cainter-Compose三者之間的關係"><a href="#Image-Cainter-Compose三者之間的關係" class="headerlink" title="Image &amp; Cainter &amp; Compose三者之間的關係"></a>Image &amp; Cainter &amp; Compose三者之間的關係</h3><ul>
+<h3 id="Image-Cainter-Compose三者之間的關係"><a href="#Image-Cainter-Compose三者之間的關係" class="headerlink" title="Image &amp; Cainter &amp; Compose三者之間的關係"></a>Image &amp; Cainter &amp; Compose三者之間的關係</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">+---------------------+</span><br><span class="line">|      Dockerfile     |</span><br><span class="line">|  (程式碼 + 設定檔)  |</span><br><span class="line">+---------------------+</span><br><span class="line">          │ build</span><br><span class="line">          ▼</span><br><span class="line">+---------------------+</span><br><span class="line">|       Image         |   ← 不可變的藍圖 / 模板</span><br><span class="line">| (包含程式與依賴環境) |</span><br><span class="line">+---------------------+</span><br><span class="line">          │ run</span><br><span class="line">          ▼</span><br><span class="line">+---------------------+</span><br><span class="line">|     Container       |   ← 運行中的實體（可有多個）</span><br><span class="line">| (基於 Image 啟動)   |</span><br><span class="line">+---------------------+</span><br><span class="line">          │ managed by</span><br><span class="line">          ▼</span><br><span class="line">+---------------------+</span><br><span class="line">|   Docker Compose    |   ← 定義 &amp; 協調多個 Container</span><br><span class="line">| (services / network |</span><br><span class="line">|   / volume 等設定)  |</span><br><span class="line">+---------------------+</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
 <li><h5 id="口語版解釋："><a href="#口語版解釋：" class="headerlink" title="口語版解釋："></a>口語版解釋：</h5><ol>
 <li><h5 id="像「程式安裝檔」，定義了程式與環境。"><a href="#像「程式安裝檔」，定義了程式與環境。" class="headerlink" title="像「程式安裝檔」，定義了程式與環境。"></a>像「程式安裝檔」，定義了程式與環境。</h5></li>
 <li><h5 id="像「安裝後正在跑的程式」，是-Image-的運行實例。"><a href="#像「安裝後正在跑的程式」，是-Image-的運行實例。" class="headerlink" title="像「安裝後正在跑的程式」，是 Image 的運行實例。"></a>像「安裝後正在跑的程式」，是 Image 的運行實例。</h5></li>
@@ -181,7 +186,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-1/" data-id="cmfuxu5f900035kna6aut88qw" data-title="docker - 1" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-1/" data-id="cmfuxuwpg0008pcna2nazh233" data-title="docker - 1" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

@@ -25,7 +25,7 @@
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_start_docker_error.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_set.systemd.jpg">
 <meta property="article:published_time" content="2025-09-22T10:00:00.000Z">
-<meta property="article:modified_time" content="2025-09-24T06:06:02.931Z">
+<meta property="article:modified_time" content="2025-09-24T06:07:47.457Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -228,24 +228,19 @@
 </ol>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> systemctl <span class="built_in">enable</span> docker</span><br></pre></td></tr></table></figure>
 <ol start="9">
-<li><h5 id="設定-Docker-開機自動啟動444："><a href="#設定-Docker-開機自動啟動444：" class="headerlink" title="設定 Docker 開機自動啟動444："></a>設定 Docker 開機自動啟動444：</h5></li>
+<li><h5 id="設定-Docker-開機自動啟動444："><a href="#設定-Docker-開機自動啟動444：" class="headerlink" title="設定 Docker 開機自動啟動444："></a>設定 Docker 開機自動啟動444：</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> usermod -aG docker <span class="variable">$USER</span></span><br><span class="line">newgrp docker</span><br></pre></td></tr></table></figure>
+<h1 id="-44"><a href="#-44" class="headerlink" title=""></a></h1><h1 id="-45"><a href="#-45" class="headerlink" title=""></a></h1><h1 id="-46"><a href="#-46" class="headerlink" title=""></a></h1><h1 id="-47"><a href="#-47" class="headerlink" title=""></a></h1><ol>
+<li><h5 id="可以執行下面指令，確認是否加入成功"><a href="#可以執行下面指令，確認是否加入成功" class="headerlink" title="可以執行下面指令，確認是否加入成功"></a>可以執行下面指令，確認是否加入成功</h5></li>
 </ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> usermod -aG docker <span class="variable">$USER</span></span><br><span class="line">newgrp docker</span><br></pre></td></tr></table></figure>
-
-<pre><code>#
-#
-#
-#          
-1. ##### 可以執行下面指令，確認是否加入成功
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">getent group docker</span><br></pre></td></tr></table></figure>
-</code></pre>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">getent group docker</span><br></pre></td></tr></table></figure></li>
+</ol>
 </li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfxkzi6h0000b0na0u43cp79" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfxl1nst0007xonaejzma6sr" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

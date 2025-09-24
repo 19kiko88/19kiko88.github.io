@@ -22,11 +22,8 @@
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_list_verbose.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_vhdx.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_open.jpg">
-<meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_start_docker_error.jpg">
-<meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_set.systemd.jpg">
-<meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_set.systemd.jpg">
 <meta property="article:published_time" content="2025-09-22T10:00:00.000Z">
-<meta property="article:modified_time" content="2025-09-24T03:11:07.615Z">
+<meta property="article:modified_time" content="2025-09-24T03:12:06.409Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -210,29 +207,37 @@
 </ol>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt install docker-ce docker-ce-cli containerd.io</span><br></pre></td></tr></table></figure>
 <ol start="7">
-<li><h5 id="啟動-Docker-服務："><a href="#啟動-Docker-服務：" class="headerlink" title="啟動 Docker 服務："></a>啟動 Docker 服務：</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> systemctl start docker</span><br></pre></td></tr></table></figure>
-<h1 id="-36"><a href="#-36" class="headerlink" title=""></a></h1><h1 id="-37"><a href="#-37" class="headerlink" title=""></a></h1><h1 id="-38"><a href="#-38" class="headerlink" title=""></a></h1><h1 id="-39"><a href="#-39" class="headerlink" title=""></a></h1><ol>
-<li><h5 id="這裡我遇到個了問題。上網查了一下是systemd未啟用的問題，可以參考使用-systemd-以-WSL-管理-Linux-服務來啟用systemd。"><a href="#這裡我遇到個了問題。上網查了一下是systemd未啟用的問題，可以參考使用-systemd-以-WSL-管理-Linux-服務來啟用systemd。" class="headerlink" title="這裡我遇到個了問題。上網查了一下是systemd未啟用的問題，可以參考使用 systemd 以 WSL 管理 Linux 服務來啟用systemd。"></a>這裡我遇到個了問題。上網查了一下是systemd未啟用的問題，可以參考<a href="" title="https:&#x2F;&#x2F;learn.microsoft.com&#x2F;zh-tw&#x2F;windows&#x2F;wsl&#x2F;   systemd#how-to-enable-systemd">使用 systemd 以 WSL 管理 Linux 服務</a>來啟用systemd。</h5></li>
+<li><h5 id="啟動-Docker-服務ggg："><a href="#啟動-Docker-服務ggg：" class="headerlink" title="啟動 Docker 服務ggg："></a>啟動 Docker 服務ggg：</h5></li>
 </ol>
- <img src="/2025/09/22/docker-with-WSL2/wsl2_start_docker_error.jpg" class="" title="wsl2_start_docker_error">
-<h1 id="-40"><a href="#-40" class="headerlink" title=""></a></h1><h1 id="-41"><a href="#-41" class="headerlink" title=""></a></h1><h1 id="-42"><a href="#-42" class="headerlink" title=""></a></h1><h1 id="-43"><a href="#-43" class="headerlink" title=""></a></h1><ol start="2">
-<li><h5 id="啟用後，用下面指令來測試驗證，看到runnging表示成功了"><a href="#啟用後，用下面指令來測試驗證，看到runnging表示成功了" class="headerlink" title="啟用後，用下面指令來測試驗證，看到runnging表示成功了!"></a>啟用後，用下面指令來測試驗證，看到runnging表示成功了!</h5></li>
-</ol>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status</span><br></pre></td></tr></table></figure>
- <img src="/2025/09/22/docker-with-WSL2/wsl2_set.systemd.jpg" class="" title="wsl2_set.systemd">
-<h1 id="-44"><a href="#-44" class="headerlink" title=""></a></h1><h1 id="-45"><a href="#-45" class="headerlink" title=""></a></h1><h1 id="-46"><a href="#-46" class="headerlink" title=""></a></h1><h1 id="-47"><a href="#-47" class="headerlink" title=""></a></h1><ol start="3">
-<li><h5 id="接著重新執行"><a href="#接著重新執行" class="headerlink" title="接著重新執行"></a>接著重新執行</h5></li>
-</ol>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status</span><br></pre></td></tr></table></figure>
- <img src="/2025/09/22/docker-with-WSL2/wsl2_set.systemd.jpg" class="" title="wsl2_set.systemd"></li>
-</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> systemctl start docker</span><br></pre></td></tr></table></figure>
+<pre><code>#
+#
+#
+#         
+1. ##### 這裡我遇到個了問題。上網查了一下是systemd未啟用的問題，可以參考[使用 systemd 以 WSL 管理 Linux 服務](&quot;https://learn.microsoft.com/zh-tw/windows/wsl/   systemd#how-to-enable-systemd&quot;)來啟用systemd。
+&#123;% asset_image wsl2_start_docker_error.jpg wsl2_start_docker_error %&#125;
+  #
+  #
+  #
+  #          
+  2. ##### 啟用後，用下面指令來測試驗證，看到runnging表示成功了!
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status</span><br></pre></td></tr></table></figure>
+  &#123;% asset_image wsl2_set.systemd.jpg wsl2_set.systemd %&#125;
+  #
+  #
+  #
+  #          
+  3. ##### 接著重新執行
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl status</span><br></pre></td></tr></table></figure>
+  &#123;% asset_image wsl2_set.systemd.jpg wsl2_set.systemd %&#125;
+</code></pre>
 </li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfxeqhpx0006igna3wdw662m" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfxerxpu000924na3p3nawc9" data-title="docker with WSL2" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Docker with WSL2(2) | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作[容器化]">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker with WSL2(2)">
+<meta property="og:url" content="http://example.com/2025/09/25/Docker-with-WSL2-2/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作[容器化]">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg">
+<meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
+<meta property="article:modified_time" content="2025-09-25T09:34:52.147Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Docker">
+<meta property="article:tag" content="WSL2">
+<meta property="article:tag" content="Ubuntu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Docker-with-WSL2-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/09/25/Docker-with-WSL2-2/" class="article-date">
+  <time class="dt-published" datetime="2025-09-25T08:26:33.000Z" itemprop="datePublished">2025-09-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Docker with WSL2(2)
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="上篇文章我們在WSL裡安裝了Ubuntu-Docker-Engin。現在就要來實作-容器化"><a href="#上篇文章我們在WSL裡安裝了Ubuntu-Docker-Engin。現在就要來實作-容器化" class="headerlink" title="上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作[容器化]"></a>上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作<code>[容器化]</code></h5><span id="more"></span>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><hr>
+<ol>
+<li><h3 id="把原始檔案傳到Ubuntu-Server"><a href="#把原始檔案傳到Ubuntu-Server" class="headerlink" title="把原始檔案傳到Ubuntu Server"></a>把原始檔案傳到Ubuntu Server</h3><ul>
+<li><h5 id="把原始檔案傳到Ubuntu-Server有多種作法"><a href="#把原始檔案傳到Ubuntu-Server有多種作法" class="headerlink" title="把原始檔案傳到Ubuntu Server有多種作法"></a>把原始檔案傳到Ubuntu Server有多種作法</h5><ol>
+<li><h5 id="直接掛載-Windows-資料夾，WSL2-可以直接存取-Windows-資料夾："><a href="#直接掛載-Windows-資料夾，WSL2-可以直接存取-Windows-資料夾：" class="headerlink" title="直接掛載 Windows 資料夾，WSL2 可以直接存取 Windows 資料夾："></a>直接掛載 Windows 資料夾，WSL2 可以直接存取 Windows 資料夾：</h5></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/mnt/&lt;drive_letter&gt;/path/to/project</span><br></pre></td></tr></table></figure>
+<h5 id="Windows-本機專案路徑："><a href="#Windows-本機專案路徑：" class="headerlink" title="Windows 本機專案路徑："></a>Windows 本機專案路徑：</h5>  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">D:\Homer\Project_MyGit\my-form-app\</span><br></pre></td></tr></table></figure>
+<h5 id="WSL2-對應路徑："><a href="#WSL2-對應路徑：" class="headerlink" title="WSL2 對應路徑："></a>WSL2 對應路徑：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 切換到專案目錄</span></span><br><span class="line"><span class="built_in">cd</span> /mnt/d/Homer/Project_MyGit/my-form-app</span><br></pre></td></tr></table></figure>
+<h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看專案檔案</span></span><br><span class="line"><span class="built_in">ls</span></span><br></pre></td></tr></table></figure>
+<h5 id="這邊可以看到wsl成功取得my-form-app資料夾底下的檔案了"><a href="#這邊可以看到wsl成功取得my-form-app資料夾底下的檔案了" class="headerlink" title="這邊可以看到wsl成功取得my-form-app資料夾底下的檔案了!"></a>這邊可以看到wsl成功取得my-form-app資料夾底下的檔案了!</h5>  <img src="/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg" class="" title="wsl2_mnt"></li>
+</ul>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmfz7w2ej0000vsn1bkns88v2" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/09/22/docker-with-WSL2-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Docker/" style="font-size: 20px;">Docker</a> <a href="/tags/Ubuntu/" style="font-size: 15px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 15px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/09/25/Docker-with-WSL2-2/">Docker with WSL2(2)</a>
+          </li>
+        
+          <li>
+            <a href="/2025/09/22/docker-with-WSL2-1/">Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!</a>
+          </li>
+        
+          <li>
+            <a href="/2025/09/22/Docker%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">Docker 基本概念</a>
+          </li>
+        
+          <li>
+            <a href="/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/">Webpack打包(以Chrome extension為範例)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

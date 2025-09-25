@@ -1,5 +1,5 @@
 ---
-title: docker with WSL2
+title: Docker with WSL2(1)
 date: 2025-09-22 18:00:00
 categories:
   - Docker
@@ -40,14 +40,14 @@ tags:
 
     3. ##### (可選)刪除 WSL2 虛擬硬碟 (VHDX) 檔案：
         ##### 解除註冊後，WSL2 使用的虛擬硬碟檔案 (VHDX) 仍然存在於您的硬碟上。 如果您想要完全清除所有痕跡，可以手動刪除 VHDX 檔案。
-        1. ##### 找到 VHDX 檔案的位置。 預設情況下，VHDX 檔案位於以下路徑： 
+        * ##### 找到 VHDX 檔案的位置。 預設情況下，VHDX 檔案位於以下路徑： 
         ``` text
         %USERPROFILE%\AppData\Local\Packages\<DistroPackageName>\LocalState\ext4.vhdx
         ```
-        ##### <DistroPackageName> 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。
+        ##### `<DistroPackageName>` 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。
 
-        2. ##### 關閉所有 WSL2 執行個體 (再次確認)。
-        3. ##### 刪除 VHDX 檔案。
+        * ##### 關閉所有 WSL2 執行個體 (再次確認)。
+        * ##### 刪除 VHDX 檔案。
 #
 #
 #
@@ -69,13 +69,13 @@ tags:
   ```
   {% asset_image wsl2_verbose.jpg wsl2_verbose %}
 
-  2. ##### 安裝 Linux 發行版。如果不特別加上版本號，會自動拉最新的 LTS (Long Term Support) 版本。WSL預設安裝的會是Ubuntu Server。
+  3. ##### 安裝 Linux 發行版。如果不特別加上版本號，會自動拉最新的 LTS (Long Term Support) 版本。WSL預設安裝的會是Ubuntu Server。
   ``` bash
   wsl --install -d Ubuntu-24.04
   ```
   {% asset_image wsl2_install_ubuntu_verbose.jpg wsl2_install_ubuntu_verbose %}
 
-  3. ##### 安裝完畢後，會要你輸入登入者的帳號 & 密碼，輸入完成後可以看到初始畫面。
+  4. ##### 安裝完畢後，會要你輸入登入者的帳號 & 密碼，輸入完成後可以看到初始畫面。
   {% asset_image wsl2_set_id_pwd.jpg wsl2_set_id_pwd %}
   #
   #
@@ -83,7 +83,7 @@ tags:
   #
   {% asset_image wsl2_ubuntu_init.jpg wsl2_ubuntu_init %}
 
-  4. ##### 設定完成。執行下面指令確認WSL狀態 & 目前Ubuntu發行版本。在\\AppData資料夾下也可以看到新建的.vhdx虛擬硬碟檔。
+  5. ##### 設定完成。執行下面指令確認WSL狀態 & 目前Ubuntu發行版本。在\\AppData資料夾下也可以看到新建的.vhdx虛擬硬碟檔。
   ``` bash
   wsl --status
   ```
@@ -105,14 +105,14 @@ tags:
   #
   #
   #
-  5. ##### 開啟WSL
+  6. ##### 開啟WSL
   {% asset_image wsl2_open.jpg wsl2_open %}  
 #
 #
 #
 #
 ---  
-### Docker
+### Docker Engine安裝
 * ##### 以下是在 WSL2 環境中直接安裝 Docker Engine 的步驟：
     1. ##### 更新套件索引(APT(Advanced Package Tool)為Ubuntu的套件管理系統)：
     ``` bash
@@ -122,6 +122,126 @@ tags:
     ``` bash
     sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release
     ```
+    3. ##### 新增 Docker 的 GPG 金鑰：
+    ``` bash
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    ```
+    4. ##### 設定 Docker 的儲存庫：
+    ``` bash
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    ```
+    5. ##### 再次更新套件索引：
+    ``` bash
+    sudo apt update
+    ```
+    6. ##### 安裝 Docker Engine：
+    ``` bash
+    sudo apt install docker-ce docker-ce-cli containerd.io
+    ```
+    7. ##### 啟動 Docker 服務：
+        ``` bash
+        sudo systemctl start docker
+        ```
+
+        * ##### 這裡我遇到個了問題。上網查了一下是systemd未啟用的問題，可以參考[使用 systemd 以 WSL 管理 Linux 服務]("https://learn.microsoft.com/zh-tw/windows/wsl/     systemd#how-to-enable-systemd")來啟用systemd。
+        {% asset_image wsl2_start_docker_error.jpg wsl2_start_docker_error %}
+        #
+        #
+        #
+        #          
+        * ##### 啟用後，用下面指令來測試驗證，看到runnging表示成功了!
+        ``` bash
+        systemctl status
+        ```
+        {% asset_image wsl2_set.systemd.jpg wsl2_set.systemd %}
+        #
+        #
+        #
+        #          
+        * ##### 接著重新啟動docker服務，執行後已經沒有之前systemd的錯誤訊息了。
+        ``` bash
+        sudo systemctl start docker
+        ```
+    8. ##### 設定 Docker 開機自動啟動：
+    ``` bash
+    sudo systemctl enable docker
+    ```
+    9. ##### 設定 Docker 開機自動啟動：
+        ``` bash
+        sudo usermod -aG docker $USER
+        newgrp docker
+        ```
+        #
+        #
+        #
+        #          
+        * ##### 可以執行下面指令，確認是否加入成功。
+        ``` bash
+        getent group docker
+
+        ```
+        {% asset_image docker_installed.jpg docker_installed %}
+    10. ##### 驗證 Docker 是否已正確安裝：
+    ``` bash
+    docker --version
+    ```        
+    {% asset_image docker_version.jpg docker_version %} 
+    11. ##### 測試 Docker：
+    ``` bash
+    docker run hello-world
+    ```  
+    {% asset_image docker_run.jpg docker_run %} 
+---  
+### 建立快照備份
+* ##### 到這邊已經成功在WSL裡面安裝好Ubuntu & Docker Engine了。來做個快照備份，以防未來發生無法預測的意外!
+    1. ##### 關閉所有 WSL2 執行個體：
+    ``` bash
+    wsl --shutdown
+    ```
+
+    2. ##### 找到 VHDX 檔案的位置： VHDX 檔案位於以下路徑：
+    ``` text
+    %USERPROFILE%\AppData\Local\Packages\<DistroPackageName>\LocalState\ext4.vhdx
+    ```
+      ##### `<DistroPackageName>` 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。
+      {% asset_image DistroPackageName.jpg DistroPackageName %} 
+
+
+    3. ##### 建立 VHDX 檔案的快照：
+        * ##### `SnapshotPath`.vhdx：要儲存快照檔案的路徑和檔案名稱。
+        {% asset_image snapshot_path.jpg snapshot_path %} 
+        #
+        #
+        #
+        # 
+        * ##### `VHDXPath`：VHDX 檔案的路徑。
+        {% asset_image vhdx_path.jpg vhdx_path %} 
+
+    ``` bash
+    New-VHD -Path "<SnapshotPath>.vhdx" -ParentPath "<VHDXPath>" -Differencing
+    ```
+    #
+    #
+    #
+    # 
+    ##### 以下我我自己本機的範例路徑：
+    ``` bash
+    New-VHD -Path "D:\MyVM\VirtualBox\Backup\Ubuntu-24.04\Ubuntu_Snapshot.vhdx" -ParentPath "C:\Users\homer_chen\AppData\Local\Packages\CanonicalGroupLimited.Ubuntu24.04LTS_79rhkp1fndgsc\LocalState\ext4.vhdx" -Differencing
+    ```
+    #
+    #
+    #
+    # 
+    ##### 快照檔案備份成功了，之後如果要復原就直接覆蓋此虛擬硬碟檔就可以了。
+    {% asset_image snapshot_done1.jpg snapshot_done1.jpg %} 
+    {% asset_image snapshot_done2.jpg snapshot_done2.jpg %} 
+---  
+##### 到這裡為止，我們已經在WSL上安裝了Ubuntu + Docker Engin，並且建立好快照備份了!
+---  
+
+* ##### Ref：
+    1. #####  [如何使用 WSL 在 Windows 上安裝 Linux](https://learn.microsoft.com/zh-tw/windows/wsl/install)
+    
 
 
 

@@ -26,7 +26,7 @@
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_set.systemd.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/docker_installed.jpg">
 <meta property="article:published_time" content="2025-09-22T10:00:00.000Z">
-<meta property="article:modified_time" content="2025-09-25T06:30:16.449Z">
+<meta property="article:modified_time" content="2025-09-25T06:33:54.866Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -237,13 +237,18 @@
  <img src="/2025/09/22/docker-with-WSL2/docker_installed.jpg" class="" title="docker_installed"></li>
 <li><h5 id="驗證-Docker-是否已正確安裝："><a href="#驗證-Docker-是否已正確安裝：" class="headerlink" title="驗證 Docker 是否已正確安裝："></a>驗證 Docker 是否已正確安裝：</h5></li>
 </ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    docker --version</span><br><span class="line">    ```        </span><br><span class="line">    &#123;% asset_image docker_version.jpg docker_version %&#125; </span><br><span class="line">    11. <span class="comment">##### 測試 Docker：</span></span><br><span class="line">    ``` bash</span><br><span class="line">    docker run hello-world</span><br><span class="line">    ```  </span><br><span class="line">    &#123;% asset_image docker_run.jpg docker_run %&#125; </span><br><span class="line">---  </span><br><span class="line"><span class="comment">### 建立快照備份</span></span><br><span class="line">* <span class="comment">##### 到這邊已經成功在WSL裡面安裝好Ubuntu &amp; Docker Engine了。來做個快照備份，以防未來發生無法預測的意外!</span></span><br><span class="line">    1. <span class="comment">##### 關閉所有 WSL2 執行個體：</span></span><br><span class="line">    ``` bash</span><br><span class="line">    wsl --shutdown</span><br></pre></td></tr></table></figure></li>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    docker --version</span><br><span class="line">    ```        </span><br><span class="line">    &#123;% asset_image docker_version.jpg docker_version %&#125; </span><br><span class="line">    11. <span class="comment">##### 測試 Docker：</span></span><br><span class="line">    ``` bash</span><br><span class="line">    docker run hello-world</span><br><span class="line">    ```  </span><br><span class="line">    &#123;% asset_image docker_run.jpg docker_run %&#125; </span><br><span class="line">---  </span><br><span class="line"><span class="comment">### 建立快照備份</span></span><br><span class="line">* <span class="comment">##### 到這邊已經成功在WSL裡面安裝好Ubuntu &amp; Docker Engine了。來做個快照備份，以防未來發生無法預測的意外!</span></span><br><span class="line">    1. <span class="comment">##### 關閉所有 WSL2 執行個體：</span></span><br><span class="line">    ``` bash</span><br><span class="line">    wsl --shutdown</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><h5 id="找到-VHDX-檔案的位置：-VHDX-檔案位於以下路徑："><a href="#找到-VHDX-檔案的位置：-VHDX-檔案位於以下路徑：" class="headerlink" title="找到 VHDX 檔案的位置： VHDX 檔案位於以下路徑："></a>找到 VHDX 檔案的位置： VHDX 檔案位於以下路徑：</h5></li>
+</ol>
+  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%USERPROFILE%\AppData\Local\Packages\&lt;DistroPackageName&gt;\LocalState\ext4.vhdx</span><br></pre></td></tr></table></figure></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfz19ydy0008d0n165325aq9" data-title="Docker with WSL2(1)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfz1dici0008ucn1ho1t85d4" data-title="Docker with WSL2(1)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

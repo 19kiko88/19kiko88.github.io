@@ -25,8 +25,10 @@
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_start_docker_error.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/wsl2_set.systemd.jpg">
 <meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/docker_installed.jpg">
+<meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/snapshot_path.jpg">
+<meta property="og:image" content="http://example.com/2025/09/22/docker-with-WSL2/vhdx_path.jpg">
 <meta property="article:published_time" content="2025-09-22T10:00:00.000Z">
-<meta property="article:modified_time" content="2025-09-25T06:33:54.866Z">
+<meta property="article:modified_time" content="2025-09-25T06:36:50.635Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -137,7 +139,7 @@
 <li><h5 id="找到-VHDX-檔案的位置。-預設情況下，VHDX-檔案位於以下路徑："><a href="#找到-VHDX-檔案的位置。-預設情況下，VHDX-檔案位於以下路徑：" class="headerlink" title="找到 VHDX 檔案的位置。 預設情況下，VHDX 檔案位於以下路徑："></a>找到 VHDX 檔案的位置。 預設情況下，VHDX 檔案位於以下路徑：</h5></li>
 </ul>
  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%USERPROFILE%\AppData\Local\Packages\&lt;DistroPackageName&gt;\LocalState\ext4.vhdx</span><br></pre></td></tr></table></figure>
-<h5 id="是發行版的套件名稱。-您可以在-Microsoft-Store-中找到發行版的套件名稱。-例如，Ubuntu-的套件名稱是-CanonicalGroupLimited-UbuntuonWindows-79rhkp1fndgsc。"><a href="#是發行版的套件名稱。-您可以在-Microsoft-Store-中找到發行版的套件名稱。-例如，Ubuntu-的套件名稱是-CanonicalGroupLimited-UbuntuonWindows-79rhkp1fndgsc。" class="headerlink" title=" 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。"></a><DistroPackageName> 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。</h5><ul>
+<h5 id="是發行版的套件名稱。-您可以在-Microsoft-Store-中找到發行版的套件名稱。-例如，Ubuntu-的套件名稱是-CanonicalGroupLimited-UbuntuonWindows-79rhkp1fndgsc。"><a href="#是發行版的套件名稱。-您可以在-Microsoft-Store-中找到發行版的套件名稱。-例如，Ubuntu-的套件名稱是-CanonicalGroupLimited-UbuntuonWindows-79rhkp1fndgsc。" class="headerlink" title="&lt;DistroPackageName&gt; 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。"></a><code>&lt;DistroPackageName&gt;</code> 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。</h5><ul>
 <li><h5 id="關閉所有-WSL2-執行個體-再次確認-。"><a href="#關閉所有-WSL2-執行個體-再次確認-。" class="headerlink" title="關閉所有 WSL2 執行個體 (再次確認)。"></a>關閉所有 WSL2 執行個體 (再次確認)。</h5></li>
 <li><h5 id="刪除-VHDX-檔案。"><a href="#刪除-VHDX-檔案。" class="headerlink" title="刪除 VHDX 檔案。"></a>刪除 VHDX 檔案。</h5></li>
 </ul>
@@ -242,13 +244,30 @@
 <ol start="2">
 <li><h5 id="找到-VHDX-檔案的位置：-VHDX-檔案位於以下路徑："><a href="#找到-VHDX-檔案的位置：-VHDX-檔案位於以下路徑：" class="headerlink" title="找到 VHDX 檔案的位置： VHDX 檔案位於以下路徑："></a>找到 VHDX 檔案的位置： VHDX 檔案位於以下路徑：</h5></li>
 </ol>
-  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%USERPROFILE%\AppData\Local\Packages\&lt;DistroPackageName&gt;\LocalState\ext4.vhdx</span><br></pre></td></tr></table></figure></li>
+  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%USERPROFILE%\AppData\Local\Packages\&lt;DistroPackageName&gt;\LocalState\ext4.vhdx</span><br></pre></td></tr></table></figure>
+<pre><code>##### `&lt;DistroPackageName&gt;` 是發行版的套件名稱。 您可以在 Microsoft Store 中找到發行版的套件名稱。 例如，Ubuntu 的套件名稱是 CanonicalGroupLimited.UbuntuonWindows_79rhkp1fndgsc。
+&#123;% asset_image DistroPackageName.jpg DistroPackageName %&#125; 
+</code></pre>
+<ol start="3">
+<li><h5 id="建立-VHDX-檔案的快照："><a href="#建立-VHDX-檔案的快照：" class="headerlink" title="建立 VHDX 檔案的快照："></a>建立 VHDX 檔案的快照：</h5><ul>
+<li><h5 id="SnapshotPath-vhdx：要儲存快照檔案的路徑和檔案名稱。"><a href="#SnapshotPath-vhdx：要儲存快照檔案的路徑和檔案名稱。" class="headerlink" title="SnapshotPath.vhdx：要儲存快照檔案的路徑和檔案名稱。"></a><code>SnapshotPath</code>.vhdx：要儲存快照檔案的路徑和檔案名稱。</h5></li>
+</ul>
+ <img src="/2025/09/22/docker-with-WSL2/snapshot_path.jpg" class="" title="snapshot_path"> 
+
+<ul>
+<li><h5 id="VHDXPath：VHDX-檔案的路徑。"><a href="#VHDXPath：VHDX-檔案的路徑。" class="headerlink" title="VHDXPath：VHDX 檔案的路徑。"></a><code>VHDXPath</code>：VHDX 檔案的路徑。</h5></li>
+</ul>
+ <img src="/2025/09/22/docker-with-WSL2/vhdx_path.jpg" class="" title="vhdx_path"></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">New-VHD -Path \&quot;&lt;SnapshotPath&gt;.vhdx\&quot; -ParentPath \&quot;&lt;VHDXPath&gt;\&quot; -Differencing</span><br></pre></td></tr></table></figure>
+
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">New-VHD -Path \&quot;D:\\MyVM\\VirtualBox\\Backup\\Ubuntu-24.04\\Ubuntu_Snapshot.vhdx\&quot; -ParentPath \&quot;C:\\Users\\homer_chen\\AppData\\Local\\Packages\\CanonicalGroupLimited.Ubuntu24.04LTS_79rhkp1fndgsc\\LocalState\\ext4.vhdx\&quot; -Differencing</span><br></pre></td></tr></table></figure></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfz1dici0008ucn1ho1t85d4" data-title="Docker with WSL2(1)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2/" data-id="cmfz1itf90001pwn13n6g2u4x" data-title="Docker with WSL2(1)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

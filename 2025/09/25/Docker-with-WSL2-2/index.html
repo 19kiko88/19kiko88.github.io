@@ -20,7 +20,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/docker_build_error_1.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/outputpath.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T10:42:12.564Z">
+<meta property="article:modified_time" content="2025-09-26T10:48:22.193Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -267,7 +267,7 @@
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Successfully tagged my-contact-form:latest</span><br></pre></td></tr></table></figure>
 
 <ul>
-<li><h5 id="但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。"><a href="#但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。" class="headerlink" title="但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。"></a>但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。</h5></li>
+<li><h5 id="11但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。"><a href="#11但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。" class="headerlink" title="11但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。"></a>11但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。</h5></li>
 </ul>
 <img src="/2025/09/25/Docker-with-WSL2-2/docker_build_error_1.jpg" class="" title="docker_build_error_1">
 <ul>
@@ -279,8 +279,8 @@
 <li><h5 id="這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。"><a href="#這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。" class="headerlink" title="這導致Dockerfile的這一行COPY --from=build /app/dist/my-contact-form .因為找不到要COPY的來源路徑而出錯。"></a>這導致Dockerfile的這一行<code>COPY --from=build /app/dist/my-contact-form .</code>因為找不到要COPY的來源路徑而出錯。</h5></li>
 </ul>
   <h5 style="color:red; ">所以我們要把Angular.json的輸出路徑改成跟Dockerfile的一樣</h5>
-    ##### 修改前：`"outputPath": "dist/my-form-app"`
-    ##### 修改後：`"outputPath": "dist/my-contact-form"`
+  <h5 style="color:red; ">"outputPath": "dist/my-form-app"</h5>
+  <h5 style="color:red; ">"outputPath": "dist/my-contact-form"</h5>
 
 <ul>
 <li><h5 id="修改好後，再重新執行docker-build，"><a href="#修改好後，再重新執行docker-build，" class="headerlink" title="修改好後，再重新執行docker build，"></a>修改好後，再重新執行docker build，</h5>  <h5 style="color: red;">記得要cd到Dockerfile的目錄下，然後用下面指令重新docker build，避免快取影響</h5>
@@ -292,7 +292,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0prz1q0005lgn1hq866o8n" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0py9yr000ergn11ey71wws" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

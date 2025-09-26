@@ -121,7 +121,7 @@ tags:
   2. ##### 新增（或編輯）Dockerfile：
   ``` bash
   nano Dockerfile
-  ```  
+  ```
     ##### Dockerfile內容如下：
     ``` text
     # 1. Build 階段
@@ -201,6 +201,9 @@ tags:
 #     
 ---
 ### 建置 (Build) 映像檔
+
+<h5 style="color: red;">如果有修改Angular的程式，記得一定要重新複製新程式到WSL!! 不然怎麼build都會是舊的!!</h5>
+
 * ##### 編輯好Dockerfile後，接著要建置映像檔(image)
     * ##### 在專案目錄執行：
     ``` bash
@@ -213,26 +216,29 @@ tags:
     * <h5>這時候遇到了一個以後要記得避免的雷，要記得把node_module加到.dockerignore裡面，不然就會跟我一樣，在RUN npm install這裡花很久的等待時間!!(來總共花了472秒才跑完)</h5>
     {% asset_image npm_install.jpg npm_install %}
 
-    * ##### 成功的話會看到每一層的執行紀錄，最後出現：
-    ``` text
-    Successfully tagged my-contact-form:latest
-    ```
-
-    * ##### 但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息11113。
+    * ##### 出現了錯誤訊息。
       {% asset_image docker_build_error_1.jpg docker_build_error_1 %}
         * ##### 原來是我們的angular.json裡面的輸出路徑為`"outputPath": "dist/my-form-app",`。
         {% asset_image outputpath.jpg outputpath %}
         
         * ##### 這導致Dockerfile的這一行`COPY --from=build /app/dist/my-contact-form .`因為找不到要COPY的來源路徑而出錯。
-        ##### 所以我們要把Angular.json的輸出路徑改成跟Dockerfile的一樣
-        ##### 修改前：`"outputPath": "dist/my-form-app"`
-        ##### 修改後：`"outputPath": "dist/my-contact-form"`
+          ##### 所以我們要把Angular.json的輸出路徑改成跟Dockerfile的一樣
+          ##### 修改前：`"outputPath": "dist/my-form-app"`
+          ##### 修改後：`"outputPath": "dist/my-contact-form"`
 
-        * ##### 修改好後，再重新執行docker build
-        <h5 style="color: red;">記得要cd到Dockerfile的目錄下，然後用下面指令重新docker build，避免快取影響</h5>
+        * ##### 修改好後，再重新執行docker build，終於成功了!!
         ``` bash
-        docker build --no-cache -t my-contact-form .
+        cd ~/my-contact-form
+        docker build -t my-contact-form .
         ```
+        {% asset_image docker_build_success.jpg docker_build_success %}
+
+        * ##### docker build完成後，可以用下面指令，確認image。
+        ``` bash        
+        docker images
+        ```  
+        {% asset_image docker_image.jpg docker_image %}
+
 
       
 

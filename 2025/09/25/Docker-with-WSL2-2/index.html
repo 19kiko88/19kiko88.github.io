@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/rsync_copy.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T08:37:56.770Z">
+<meta property="article:modified_time" content="2025-09-26T09:14:47.608Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -175,7 +175,8 @@
 </li>
 <li><h5 id="COPY-package-json"><a href="#COPY-package-json" class="headerlink" title="COPY package*.json .&#x2F;"></a>COPY package*.json .&#x2F;</h5><ul>
 <li><h5 id="功能：把主機的-package-json-與（若存在）package-lock-json-複製到容器的當前目錄（即-app）。"><a href="#功能：把主機的-package-json-與（若存在）package-lock-json-複製到容器的當前目錄（即-app）。" class="headerlink" title="功能：把主機的 package.json 與（若存在）package-lock.json 複製到容器的當前目錄（即 &#x2F;app）。"></a>功能：把主機的 package.json 與（若存在）package-lock.json 複製到容器的當前目錄（即 &#x2F;app）。</h5></li>
-<li><h5 id="為什麼先複製這兩個檔案：利用-Docker-build-cache。只有這兩個檔案變動時才會重新執行-npm-install，能大幅加速重複-build。"><a href="#為什麼先複製這兩個檔案：利用-Docker-build-cache。只有這兩個檔案變動時才會重新執行-npm-install，能大幅加速重複-build。" class="headerlink" title="為什麼先複製這兩個檔案：利用 Docker build cache。只有這兩個檔案變動時才會重新執行 npm install，能大幅加速重複 build。"></a>為什麼先複製這兩個檔案：利用 Docker build cache。只有這兩個檔案變動時才會重新執行 npm install，能大幅加速重複 build。</h5></li>
+<li><h5 id="為什麼先複製這兩個檔案：利用-Docker-build-cache。只有這兩個檔案變動時才會重新執行-npm-install，能大幅加速重複-build。"><a href="#為什麼先複製這兩個檔案：利用-Docker-build-cache。只有這兩個檔案變動時才會重新執行-npm-install，能大幅加速重複-build。" class="headerlink" title="為什麼先複製這兩個檔案：利用 Docker build cache。只有這兩個檔案變動時才會重新執行 npm install，能大幅加速重複 build。"></a>為什麼先複製這兩個檔案：利用 Docker build cache。只有這兩個檔案變動時才會重新執行 npm install，能大幅加速重複 build。</h5><p><span style="color:red;font-weight:bold;">上面這段話聽起來很饒舌，我用我自己的方式來解釋一次：Dockerfile的每一行都會記錄成一個快取，只要文件或資料夾沒有異動。下次docker build時就會直接調用快取。所以先把package*.json複製到&#x2F;app，只要package*.json沒有異動，就不會執行下一行的RUN npm install了，畢竟npm install會花很久的時間，這樣子能省下很多docker build的時間</span></p>
+</li>
 <li><h5 id="注意：package-json-會同時匹配-package-json-與-package-lock-json（或-npm-shrinkwrap-json）。"><a href="#注意：package-json-會同時匹配-package-json-與-package-lock-json（或-npm-shrinkwrap-json）。" class="headerlink" title="注意：package*.json 會同時匹配 package.json 與 package-lock.json（或 npm-shrinkwrap.json）。"></a>注意：package*.json 會同時匹配 package.json 與 package-lock.json（或 npm-shrinkwrap.json）。</h5></li>
 </ul>
 </li>
@@ -216,7 +217,7 @@
 <li><h5 id="功能：設定-nginx-中靜態檔根目錄為工作目錄（nginx-的預設靜態路徑就是-usr-share-nginx-html）。"><a href="#功能：設定-nginx-中靜態檔根目錄為工作目錄（nginx-的預設靜態路徑就是-usr-share-nginx-html）。" class="headerlink" title="功能：設定 nginx 中靜態檔根目錄為工作目錄（nginx 的預設靜態路徑就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。"></a>功能：設定 nginx 中靜態檔根目錄為工作目錄（nginx 的預設靜態路徑就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。</h5></li>
 <li><h5 id="因為我們下一行-COPY-…-的目的地是當前目錄（-），所以要先設-WORKDIR-方便相對複製。"><a href="#因為我們下一行-COPY-…-的目的地是當前目錄（-），所以要先設-WORKDIR-方便相對複製。" class="headerlink" title="因為我們下一行 COPY … . 的目的地是當前目錄（.），所以要先設 WORKDIR 方便相對複製。"></a>因為我們下一行 COPY … . 的目的地是當前目錄（.），所以要先設 WORKDIR 方便相對複製。</h5></li>
 </ul>
-</li>
+  <h5 style="color:red;">*WORKDIR /usr/share/nginx/html 這個資料夾是等docker build時，執行過FROM nginx:alpine才會有</h5></li>
 <li><h5 id="COPY-–from-build-app-dist-my-contact-form"><a href="#COPY-–from-build-app-dist-my-contact-form" class="headerlink" title="COPY –from&#x3D;build &#x2F;app&#x2F;dist&#x2F;my-contact-form ."></a>COPY –from&#x3D;build &#x2F;app&#x2F;dist&#x2F;my-contact-form .</h5><ul>
 <li><h5 id="功能：從-build-stage（之前命名的-stage）拷貝-app-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。"><a href="#功能：從-build-stage（之前命名的-stage）拷貝-app-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。" class="headerlink" title="功能：從 build stage（之前命名的 stage）拷貝 &#x2F;app&#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。"></a>功能：從 build stage（之前命名的 stage）拷貝 &#x2F;app&#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。</h5></li>
 <li><h5 id="注意：-2"><a href="#注意：-2" class="headerlink" title="注意："></a>注意：</h5><ul>
@@ -250,7 +251,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0m77qt0001q0n17fx4hd4p" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0mlucr0005lcn19ve5cb6s" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/rsync_copy.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T07:48:32.562Z">
+<meta property="article:modified_time" content="2025-09-26T07:55:23.063Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -173,19 +173,7 @@ WORKDIR /usr/share/nginx/html
 COPY --from=build /app/dist/my-contact-form .
 EXPOSE 80
 CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]    
-```  
-
-* ##### Dockerfile Buid階段的逐行解說：
-  * ##### FROM node:18 AS build：
-      * ##### 功能：指定此 stage 的基礎映像為 node:18，並把這個 stage 命名為 build（後面 --from=build 會用到）。
-      * ##### 為什麼：需要 Node 環境來安裝 npm 套件並執行 ng build（編譯 Angular）。
-      * ##### 建議：若想更小的映像可改用 node:18-alpine，但注意某些 native module 在 alpine 需額外步驟。
-  * ##### WORKDIR /app：
-      * ##### 功能：設定容器內的工作目錄為 /app。
-      * ##### 行為：之後的相對路徑（如 COPY . .、RUN npm install）都在 /app 下執行；若該目錄不存在會自動建立。
-      * ##### 小提醒：&lt;h5 style=&quot;color:red&quot;&gt;WORKDIR 是容器內路徑，與你 WSL/Windows 的 ~/my-contact-form 無直接關係。&lt;/h5&gt;
-
-* ##### Dockerfile Runtime階段的逐行解說：
+```
 </code></pre>
 </li>
 </ul>
@@ -193,7 +181,7 @@ CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0jix8h0003jwn1e7c72b3t" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0jrp5o00079sn1gzqte83r" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

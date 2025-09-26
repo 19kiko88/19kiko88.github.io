@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/rsync_copy.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T08:01:01.693Z">
+<meta property="article:modified_time" content="2025-09-26T08:03:50.364Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -157,9 +157,7 @@
 </ol>
 <pre><code class="language-bash">nano Dockerfile
 </code></pre>
-<pre><code>##### Dockerfile內容如下：
-``` text
-# 1. Build 階段
+<h5 id="Dockerfile內容如下111："><a href="#Dockerfile內容如下111：" class="headerlink" title="Dockerfile內容如下111："></a>Dockerfile內容如下111：</h5><pre><code class="language-text"># 1. Build 階段
 FROM node:18 AS build
 WORKDIR /app
 COPY package*.json ./
@@ -173,9 +171,8 @@ WORKDIR /usr/share/nginx/html
 COPY --from=build /app/dist/my-contact-form .
 EXPOSE 80
 CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]    
-```  
-
-* ##### Dockerfile Buid階段的逐行解說：
+</code></pre>
+<pre><code>* ##### Dockerfile Buid階段的逐行解說：
 </code></pre>
 </li>
 </ul>
@@ -183,7 +180,7 @@ CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0jyyeh00013cn16cmu0sfd" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0k2p9u00002cn1112bbp5u" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

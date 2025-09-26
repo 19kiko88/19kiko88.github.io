@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   
   
-  <title>Docker with WSL2(2) | HaoAreYou~</title>
+  <title>Docker with WSL2(2) - Dockerfile | HaoAreYou~</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作[容器化]">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Docker with WSL2(2)">
+<meta property="og:title" content="Docker with WSL2(2) - Dockerfile">
 <meta property="og:url" content="http://example.com/2025/09/25/Docker-with-WSL2-2/index.html">
 <meta property="og:site_name" content="HaoAreYou~">
 <meta property="og:description" content="上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作[容器化]">
@@ -20,7 +20,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/docker_build_error_1.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/outputpath.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T11:34:20.115Z">
+<meta property="article:modified_time" content="2025-09-26T12:27:21.373Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -105,7 +105,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      Docker with WSL2(2)
+      Docker with WSL2(2) - Dockerfile
     </h1>
   
 
@@ -158,7 +158,8 @@
 <ol start="2">
 <li><h5 id="新增（或編輯）Dockerfile："><a href="#新增（或編輯）Dockerfile：" class="headerlink" title="新增（或編輯）Dockerfile："></a>新增（或編輯）Dockerfile：</h5></li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">nano Dockerfile</span><br><span class="line">```  </span><br><span class="line">  <span class="comment">##### Dockerfile內容如下：</span></span><br><span class="line">  ``` text</span><br><span class="line">  <span class="comment"># 1. Build 階段</span></span><br><span class="line">  FROM node:18 AS build</span><br><span class="line">  WORKDIR /app</span><br><span class="line">  COPY package*.json ./</span><br><span class="line">  RUN npm install</span><br><span class="line">  COPY . .</span><br><span class="line">  RUN npm run build --prod</span><br><span class="line"></span><br><span class="line">  <span class="comment"># 2. Runtime 階段</span></span><br><span class="line">  FROM nginx:alpine</span><br><span class="line">  WORKDIR /usr/share/nginx/html</span><br><span class="line">  COPY --from=build /dist/my-contact-form .</span><br><span class="line">  EXPOSE 80</span><br><span class="line">  CMD [<span class="string">&quot;nginx&quot;</span>, <span class="string">&quot;-g&quot;</span>, <span class="string">&quot;daemon off;&quot;</span>]    </span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nano Dockerfile</span><br></pre></td></tr></table></figure>
+<h5 id="Dockerfile內容如下："><a href="#Dockerfile內容如下：" class="headerlink" title="Dockerfile內容如下："></a>Dockerfile內容如下：</h5>  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># 1. Build 階段</span><br><span class="line">FROM node:18 AS build</span><br><span class="line">WORKDIR /app</span><br><span class="line">COPY package*.json ./</span><br><span class="line">RUN npm install</span><br><span class="line">COPY . .</span><br><span class="line">RUN npm run build --prod</span><br><span class="line"></span><br><span class="line"># 2. Runtime 階段</span><br><span class="line">FROM nginx:alpine</span><br><span class="line">WORKDIR /usr/share/nginx/html</span><br><span class="line">COPY --from=build /app/dist/my-contact-form .</span><br><span class="line">EXPOSE 80</span><br><span class="line">CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]    </span><br></pre></td></tr></table></figure>
 
   <h5 style="color: red;">這裡先解釋一下WORKDIR /app這個東西。WORKDIR 指的是容器裡的工作目錄，和 WSL 上的 ~/my-contact-form 沒有直接關聯，這裡的 /app 是容器裡的資料夾，跟 WSL 的 /home/weihao/my-contact-form 沒有關係!!</h5>
 
@@ -221,8 +222,8 @@
 <li><h5 id="因為我們下一行-COPY-…-的目的地是當前目錄（-），所以要先設-WORKDIR-方便相對複製。"><a href="#因為我們下一行-COPY-…-的目的地是當前目錄（-），所以要先設-WORKDIR-方便相對複製。" class="headerlink" title="因為我們下一行 COPY … . 的目的地是當前目錄（.），所以要先設 WORKDIR 方便相對複製。"></a>因為我們下一行 COPY … . 的目的地是當前目錄（.），所以要先設 WORKDIR 方便相對複製。</h5></li>
 </ul>
   <h5 style="color:red;">*WORKDIR /usr/share/nginx/html 這個資料夾是等docker build時，執行過FROM nginx:alpine才會有</h5></li>
-<li><h5 id="COPY-–from-build-dist-my-contact-form"><a href="#COPY-–from-build-dist-my-contact-form" class="headerlink" title="COPY –from&#x3D;build &#x2F;dist&#x2F;my-contact-form ."></a>COPY –from&#x3D;build &#x2F;dist&#x2F;my-contact-form .</h5><ul>
-<li><h5 id="功能：從-build-stage（之前命名的-stage）拷貝-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。"><a href="#功能：從-build-stage（之前命名的-stage）拷貝-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。" class="headerlink" title="功能：從 build stage（之前命名的 stage）拷貝 &#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。"></a>功能：從 build stage（之前命名的 stage）拷貝 &#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。</h5></li>
+<li><h5 id="COPY-–from-build-app-dist-my-contact-form"><a href="#COPY-–from-build-app-dist-my-contact-form" class="headerlink" title="COPY –from&#x3D;build &#x2F;app&#x2F;dist&#x2F;my-contact-form ."></a>COPY –from&#x3D;build &#x2F;app&#x2F;dist&#x2F;my-contact-form .</h5><ul>
+<li><h5 id="功能：從-build-stage（之前命名的-stage）拷貝-app-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。"><a href="#功能：從-build-stage（之前命名的-stage）拷貝-app-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。" class="headerlink" title="功能：從 build stage（之前命名的 stage）拷貝 &#x2F;app&#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。"></a>功能：從 build stage（之前命名的 stage）拷貝 &#x2F;app&#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。</h5></li>
 <li><h5 id="注意：-2"><a href="#注意：-2" class="headerlink" title="注意："></a>注意：</h5><ul>
 <li><h5 id="my-contact-form-必須和你在-angular-json-設定的-outputPath-相同；否則-COPY-路徑會找不到檔案而失敗。-–configuration-production（取決於-package-json-script-定義）。"><a href="#my-contact-form-必須和你在-angular-json-設定的-outputPath-相同；否則-COPY-路徑會找不到檔案而失敗。-–configuration-production（取決於-package-json-script-定義）。" class="headerlink" title="my-contact-form 必須和你在 angular.json 設定的 outputPath 相同；否則 COPY 路徑會找不到檔案而失敗。 –configuration&#x3D;production（取決於 package.json script 定義）。"></a>my-contact-form 必須和你在 angular.json 設定的 outputPath 相同；否則 COPY 路徑會找不到檔案而失敗。 –configuration&#x3D;production（取決於 package.json script 定義）。</h5></li>
 <li><h5 id="代表目前-WORKDIR（-usr-share-nginx-html），所以複製完你-nginx-根目錄會直接有-index-html、main-js-等檔案。"><a href="#代表目前-WORKDIR（-usr-share-nginx-html），所以複製完你-nginx-根目錄會直接有-index-html、main-js-等檔案。" class="headerlink" title=". 代表目前 WORKDIR（&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html），所以複製完你 nginx 根目錄會直接有 index.html、main.js 等檔案。"></a>. 代表目前 WORKDIR（&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html），所以複製完你 nginx 根目錄會直接有 index.html、main.js 等檔案。</h5></li>
@@ -251,7 +252,9 @@
 </li>
 </ul>
 <h1 id="-40"><a href="#-40" class="headerlink" title=""></a></h1><h1 id="-41"><a href="#-41" class="headerlink" title=""></a></h1><h1 id="-42"><a href="#-42" class="headerlink" title=""></a></h1><h1 id="-43"><a href="#-43" class="headerlink" title=""></a></h1><hr>
-<h3 id="建置-Build-映像檔"><a href="#建置-Build-映像檔" class="headerlink" title="建置 (Build) 映像檔"></a>建置 (Build) 映像檔</h3><ul>
+<h3 id="建置-Build-映像檔"><a href="#建置-Build-映像檔" class="headerlink" title="建置 (Build) 映像檔"></a>建置 (Build) 映像檔</h3><h5 style="color: red;">如果有修改Angular的程式，記得一定要重新複製新程式到WSL!! 不然怎麼build都會是舊的!!</h5>
+
+<ul>
 <li><h5 id="編輯好Dockerfile後，接著要建置映像檔-image"><a href="#編輯好Dockerfile後，接著要建置映像檔-image" class="headerlink" title="編輯好Dockerfile後，接著要建置映像檔(image)"></a>編輯好Dockerfile後，接著要建置映像檔(image)</h5><ul>
 <li><h5 id="在專案目錄執行："><a href="#在專案目錄執行：" class="headerlink" title="在專案目錄執行："></a>在專案目錄執行：</h5></li>
 </ul>
@@ -267,13 +270,13 @@
   <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Successfully tagged my-contact-form:latest</span><br></pre></td></tr></table></figure>
 
 <ul>
-<li><h5 id="但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息11115。"><a href="#但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息11115。" class="headerlink" title="但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息11115。"></a>但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息11115。</h5><img src="/2025/09/25/Docker-with-WSL2-2/docker_build_error_1.jpg" class="" title="docker_build_error_1">
+<li><h5 id="但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。"><a href="#但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。" class="headerlink" title="但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。"></a>但很可惜的是我沒看到上面的Successfully訊息，反而出現了錯誤訊息。</h5><img src="/2025/09/25/Docker-with-WSL2-2/docker_build_error_1.jpg" class="" title="docker_build_error_1">
 <ul>
 <li><h5 id="原來是我們的angular-json裡面的輸出路徑為-outputPath-dist-my-form-app-。"><a href="#原來是我們的angular-json裡面的輸出路徑為-outputPath-dist-my-form-app-。" class="headerlink" title="原來是我們的angular.json裡面的輸出路徑為&quot;outputPath&quot;: &quot;dist/my-form-app&quot;,。"></a>原來是我們的angular.json裡面的輸出路徑為<code>&quot;outputPath&quot;: &quot;dist/my-form-app&quot;,</code>。</h5></li>
 </ul>
   <img src="/2025/09/25/Docker-with-WSL2-2/outputpath.jpg" class="" title="outputpath">
 <ul>
-<li><h5 id="這導致Dockerfile的這一行COPY-from-build-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。"><a href="#這導致Dockerfile的這一行COPY-from-build-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。" class="headerlink" title="這導致Dockerfile的這一行COPY --from=build /dist/my-contact-form .因為找不到要COPY的來源路徑而出錯。"></a>這導致Dockerfile的這一行<code>COPY --from=build /dist/my-contact-form .</code>因為找不到要COPY的來源路徑而出錯。</h5></li>
+<li><h5 id="這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。"><a href="#這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。" class="headerlink" title="這導致Dockerfile的這一行COPY --from=build /app/dist/my-contact-form .因為找不到要COPY的來源路徑而出錯。"></a>這導致Dockerfile的這一行<code>COPY --from=build /app/dist/my-contact-form .</code>因為找不到要COPY的來源路徑而出錯。</h5></li>
 </ul>
 <h5 id="所以我們要把Angular-json的輸出路徑改成跟Dockerfile的一樣"><a href="#所以我們要把Angular-json的輸出路徑改成跟Dockerfile的一樣" class="headerlink" title="所以我們要把Angular.json的輸出路徑改成跟Dockerfile的一樣"></a>所以我們要把Angular.json的輸出路徑改成跟Dockerfile的一樣</h5><h5 id="修改前：-outputPath-dist-my-form-app"><a href="#修改前：-outputPath-dist-my-form-app" class="headerlink" title="修改前：&quot;outputPath&quot;: &quot;dist/my-form-app&quot;"></a>修改前：<code>&quot;outputPath&quot;: &quot;dist/my-form-app&quot;</code></h5><h5 id="修改後：-outputPath-dist-my-contact-form"><a href="#修改後：-outputPath-dist-my-contact-form" class="headerlink" title="修改後：&quot;outputPath&quot;: &quot;dist/my-contact-form&quot;"></a>修改後：<code>&quot;outputPath&quot;: &quot;dist/my-contact-form&quot;</code></h5><ul>
 <li><h5 id="修改好後，再重新執行docker-build"><a href="#修改好後，再重新執行docker-build" class="headerlink" title="修改好後，再重新執行docker build"></a>修改好後，再重新執行docker build</h5></li>
@@ -287,7 +290,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0rl69q0005uwn13sel47z9" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0thvl70004tgn10o86fmit" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -361,7 +364,7 @@
       <ul>
         
           <li>
-            <a href="/2025/09/25/Docker-with-WSL2-2/">Docker with WSL2(2)</a>
+            <a href="/2025/09/25/Docker-with-WSL2-2/">Docker with WSL2(2) - Dockerfile</a>
           </li>
         
           <li>

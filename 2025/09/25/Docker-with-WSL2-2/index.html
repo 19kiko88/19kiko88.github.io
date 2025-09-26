@@ -20,7 +20,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/docker_build_error_1.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/outputpath.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T10:48:22.193Z">
+<meta property="article:modified_time" content="2025-09-26T10:50:49.064Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -257,7 +257,7 @@
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/my-contact-form</span><br><span class="line">docker build -t my-contact-form .</span><br></pre></td></tr></table></figure>
 <h5 id="t-my-contact-form-→-幫映像檔取名字-my-contact-form。"><a href="#t-my-contact-form-→-幫映像檔取名字-my-contact-form。" class="headerlink" title="-t my-contact-form → 幫映像檔取名字 my-contact-form。"></a>-t my-contact-form → 幫映像檔取名字 my-contact-form。</h5><h5 id="→-代表使用當前資料夾的-Dockerfile-與檔案。"><a href="#→-代表使用當前資料夾的-Dockerfile-與檔案。" class="headerlink" title=". → 代表使用當前資料夾的 Dockerfile 與檔案。"></a>. → 代表使用當前資料夾的 Dockerfile 與檔案。</h5><ul>
-<li><h5>這時候遇到了一個以後要記得避免的雷，要記得把node_module加到.dockerignore裡面，不然就會跟我一樣，在RUN npm install這裡花很久的等待時間!!(來總共花了472秒才跑完)</h5></li>
+<li><h5>這時候遇到了一個以後要記得避免的雷，要記得把node_module加到.dockerignore裡面，不然就會跟我一樣，在RUN npm  install這裡花很久的等待時間!!(來總共花了472秒才跑完)</h5></li>
 </ul>
 <img src="/2025/09/25/Docker-with-WSL2-2/npm_install.jpg" class="" title="npm_install">
 
@@ -276,7 +276,7 @@
   <img src="/2025/09/25/Docker-with-WSL2-2/outputpath.jpg" class="" title="outputpath">
 
 <ul>
-<li><h5 id="這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。"><a href="#這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出錯。" class="headerlink" title="這導致Dockerfile的這一行COPY --from=build /app/dist/my-contact-form .因為找不到要COPY的來源路徑而出錯。"></a>這導致Dockerfile的這一行<code>COPY --from=build /app/dist/my-contact-form .</code>因為找不到要COPY的來源路徑而出錯。</h5></li>
+<li><h5 id="這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出-錯。"><a href="#這導致Dockerfile的這一行COPY-from-build-app-dist-my-contact-form-因為找不到要COPY的來源路徑而出-錯。" class="headerlink" title="這導致Dockerfile的這一行COPY --from=build /app/dist/my-contact-form .因為找不到要COPY的來源路徑而出  錯。"></a>這導致Dockerfile的這一行<code>COPY --from=build /app/dist/my-contact-form .</code>因為找不到要COPY的來源路徑而出  錯。</h5></li>
 </ul>
   <h5 style="color:red; ">所以我們要把Angular.json的輸出路徑改成跟Dockerfile的一樣</h5>
   <h5 style="color:red; ">"outputPath": "dist/my-form-app"</h5>
@@ -292,7 +292,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0py9yr000ergn11ey71wws" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0q1dhj000ezsn1d4h06p15" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

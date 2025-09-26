@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/rsync_copy.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T08:06:24.597Z">
+<meta property="article:modified_time" content="2025-09-26T08:23:54.447Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -155,31 +155,100 @@
 <ol start="2">
 <li><h5 id="新增（或編輯）Dockerfile："><a href="#新增（或編輯）Dockerfile：" class="headerlink" title="新增（或編輯）Dockerfile："></a>新增（或編輯）Dockerfile：</h5></li>
 </ol>
-<pre><code class="language-bash">nano Dockerfile
-</code></pre>
-<h5 id="Dockerfile內容如下112："><a href="#Dockerfile內容如下112：" class="headerlink" title="Dockerfile內容如下112："></a>Dockerfile內容如下112：</h5><pre><code class="language-text"># 1. Build 階段
-FROM node:18 AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build --prod
-# 2. Runtime 階段
-FROM nginx:alpine
-WORKDIR /usr/share/nginx/html
-COPY --from=build /app/dist/my-contact-form .
-EXPOSE 80
-CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]    
-</code></pre>
-<pre><code>* ##### Dockerfile Buid階段的逐行解說：
-</code></pre>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">nano Dockerfile</span><br><span class="line">```  </span><br><span class="line">  <span class="comment">##### Dockerfile內容如下：</span></span><br><span class="line">  ``` text</span><br><span class="line">  <span class="comment"># 1. Build 階段</span></span><br><span class="line">  FROM node:18 AS build</span><br><span class="line">  WORKDIR /app</span><br><span class="line">  COPY package*.json ./</span><br><span class="line">  RUN npm install</span><br><span class="line">  COPY . .</span><br><span class="line">  RUN npm run build --prod</span><br><span class="line"></span><br><span class="line">  <span class="comment"># 2. Runtime 階段</span></span><br><span class="line">  FROM nginx:alpine</span><br><span class="line">  WORKDIR /usr/share/nginx/html</span><br><span class="line">  COPY --from=build /app/dist/my-contact-form .</span><br><span class="line">  EXPOSE 80</span><br><span class="line">  CMD [<span class="string">&quot;nginx&quot;</span>, <span class="string">&quot;-g&quot;</span>, <span class="string">&quot;daemon off;&quot;</span>]    </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><h5 id="Dockerfile-Buid階段的逐行解說："><a href="#Dockerfile-Buid階段的逐行解說：" class="headerlink" title="Dockerfile Buid階段的逐行解說："></a>Dockerfile Buid階段的逐行解說：</h5><ul>
+<li><h5 id="FROM-node-18-AS-build"><a href="#FROM-node-18-AS-build" class="headerlink" title="FROM node:18 AS build"></a>FROM node:18 AS build</h5><ul>
+<li><h5 id="功能：指定此-stage-的基礎映像為-node-18，並把這個-stage-命名為-build（後面-–from-build-會用到）。"><a href="#功能：指定此-stage-的基礎映像為-node-18，並把這個-stage-命名為-build（後面-–from-build-會用到）。" class="headerlink" title="功能：指定此 stage 的基礎映像為 node:18，並把這個 stage 命名為 build（後面 –from&#x3D;build 會用到）。"></a>功能：指定此 stage 的基礎映像為 node:18，並把這個 stage 命名為 build（後面 –from&#x3D;build 會用到）。</h5></li>
+<li><h5 id="為什麼：需要-Node-環境來安裝-npm-套件並執行-ng-build（編譯-Angular）。"><a href="#為什麼：需要-Node-環境來安裝-npm-套件並執行-ng-build（編譯-Angular）。" class="headerlink" title="為什麼：需要 Node 環境來安裝 npm 套件並執行 ng build（編譯 Angular）。"></a>為什麼：需要 Node 環境來安裝 npm 套件並執行 ng build（編譯 Angular）。</h5></li>
+<li><h5 id="建議：若想更小的映像可改用-node-18-alpine，但注意某些-native-module-在-alpine-需額外步驟。"><a href="#建議：若想更小的映像可改用-node-18-alpine，但注意某些-native-module-在-alpine-需額外步驟。" class="headerlink" title="建議：若想更小的映像可改用 node:18-alpine，但注意某些 native module 在 alpine 需額外步驟。"></a>建議：若想更小的映像可改用 node:18-alpine，但注意某些 native module 在 alpine 需額外步驟。</h5></li>
+</ul>
+</li>
+<li><h5 id="WORKDIR-app"><a href="#WORKDIR-app" class="headerlink" title="WORKDIR &#x2F;app"></a>WORKDIR &#x2F;app</h5><ul>
+<li><h5 id="功能：設定容器內的工作目錄為-app。"><a href="#功能：設定容器內的工作目錄為-app。" class="headerlink" title="功能：設定容器內的工作目錄為 &#x2F;app。"></a>功能：設定容器內的工作目錄為 &#x2F;app。</h5></li>
+<li><h5 id="行為：之後的相對路徑（如-COPY-、RUN-npm-install）都在-app-下執行；若該目錄不存在會自動建立。"><a href="#行為：之後的相對路徑（如-COPY-、RUN-npm-install）都在-app-下執行；若該目錄不存在會自動建立。" class="headerlink" title="行為：之後的相對路徑（如 COPY . .、RUN npm install）都在 &#x2F;app 下執行；若該目錄不存在會自動建立。"></a>行為：之後的相對路徑（如 COPY . .、RUN npm install）都在 &#x2F;app 下執行；若該目錄不存在會自動建立。</h5></li>
+<li><h5 id="小提醒：WORKDIR-是容器內路徑，與你-WSL-Windows-的-my-contact-form-無直接關係。"><a href="#小提醒：WORKDIR-是容器內路徑，與你-WSL-Windows-的-my-contact-form-無直接關係。" class="headerlink" title="小提醒：WORKDIR 是容器內路徑，與你 WSL&#x2F;Windows 的 ~&#x2F;my-contact-form 無直接關係。"></a>小提醒：<h5 style="color:red">WORKDIR 是容器內路徑，與你 WSL&#x2F;Windows 的 ~&#x2F;my-contact-form 無直接關係。</h5></h5></li>
+</ul>
+</li>
+<li><h5 id="COPY-package-json"><a href="#COPY-package-json" class="headerlink" title="COPY package*.json .&#x2F;"></a>COPY package*.json .&#x2F;</h5><ul>
+<li><h5 id="功能：把主機的-package-json-與（若存在）package-lock-json-複製到容器的當前目錄（即-app）。"><a href="#功能：把主機的-package-json-與（若存在）package-lock-json-複製到容器的當前目錄（即-app）。" class="headerlink" title="功能：把主機的 package.json 與（若存在）package-lock.json 複製到容器的當前目錄（即 &#x2F;app）。"></a>功能：把主機的 package.json 與（若存在）package-lock.json 複製到容器的當前目錄（即 &#x2F;app）。</h5></li>
+<li><h5 id="為什麼先複製這兩個檔案：利用-Docker-build-cache。只有這兩個檔案變動時才會重新執行-npm-install，能大幅加速重複-build。"><a href="#為什麼先複製這兩個檔案：利用-Docker-build-cache。只有這兩個檔案變動時才會重新執行-npm-install，能大幅加速重複-build。" class="headerlink" title="為什麼先複製這兩個檔案：利用 Docker build cache。只有這兩個檔案變動時才會重新執行 npm install，能大幅加速重複 build。"></a>為什麼先複製這兩個檔案：利用 Docker build cache。只有這兩個檔案變動時才會重新執行 npm install，能大幅加速重複 build。</h5></li>
+<li><h5 id="注意：package-json-會同時匹配-package-json-與-package-lock-json（或-npm-shrinkwrap-json）。"><a href="#注意：package-json-會同時匹配-package-json-與-package-lock-json（或-npm-shrinkwrap-json）。" class="headerlink" title="注意：package*.json 會同時匹配 package.json 與 package-lock.json（或 npm-shrinkwrap.json）。"></a>注意：package*.json 會同時匹配 package.json 與 package-lock.json（或 npm-shrinkwrap.json）。</h5></li>
+</ul>
+</li>
+<li><h5 id="RUN-npm-install"><a href="#RUN-npm-install" class="headerlink" title="RUN npm install"></a>RUN npm install</h5><ul>
+<li><h5 id="功能：在容器中執行依賴安裝，產生-node-modules-供後續-build-使用。"><a href="#功能：在容器中執行依賴安裝，產生-node-modules-供後續-build-使用。" class="headerlink" title="功能：在容器中執行依賴安裝，產生 node_modules 供後續 build 使用。"></a>功能：在容器中執行依賴安裝，產生 node_modules 供後續 build 使用。</h5></li>
+<li><h5 id="建議："><a href="#建議：" class="headerlink" title="建議："></a>建議：</h5><ul>
+<li><h5 id="若你有-package-lock-json，用-npm-ci-更能確保可重現的安裝並且通常更快：RUN-npm-ci-–only-production（但-npm-ci-需要-lock-檔存在）。"><a href="#若你有-package-lock-json，用-npm-ci-更能確保可重現的安裝並且通常更快：RUN-npm-ci-–only-production（但-npm-ci-需要-lock-檔存在）。" class="headerlink" title="若你有 package-lock.json，用 npm ci 更能確保可重現的安裝並且通常更快：RUN npm ci –only&#x3D;production（但 npm ci 需要 lock 檔存在）。"></a>若你有 package-lock.json，用 npm ci 更能確保可重現的安裝並且通常更快：RUN npm ci –only&#x3D;production（但 npm ci 需要 lock 檔存在）。</h5></li>
+<li><h5 id="把-node-modules-加入-dockerignore，避免不必要的複製。"><a href="#把-node-modules-加入-dockerignore，避免不必要的複製。" class="headerlink" title="把 node_modules 加入 .dockerignore，避免不必要的複製。"></a>把 node_modules 加入 .dockerignore，避免不必要的複製。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="COPY"><a href="#COPY" class="headerlink" title="COPY . ."></a>COPY . .</h5><ul>
+<li><h5 id="功能：把整個專案（目前上下文目錄下的檔案）複製到容器-app。"><a href="#功能：把整個專案（目前上下文目錄下的檔案）複製到容器-app。" class="headerlink" title="功能：把整個專案（目前上下文目錄下的檔案）複製到容器 &#x2F;app。"></a>功能：把整個專案（目前上下文目錄下的檔案）複製到容器 &#x2F;app。</h5></li>
+<li><h5 id="注意："><a href="#注意：" class="headerlink" title="注意："></a>注意：</h5><ul>
+<li><h5 id="會複製-src-angular-json-等等；若有-dockerignore（建議有），會排除-node-modules、dist、-git-等不需要的項目。"><a href="#會複製-src-angular-json-等等；若有-dockerignore（建議有），會排除-node-modules、dist、-git-等不需要的項目。" class="headerlink" title="會複製 src&#x2F;, angular.json, 等等；若有 .dockerignore（建議有），會排除 node_modules、dist、.git 等不需要的項目。"></a>會複製 src&#x2F;, angular.json, 等等；若有 .dockerignore（建議有），會排除 node_modules、dist、.git 等不需要的項目。</h5></li>
+<li><h5 id="這行放在-npm-install-之後能利用快取；若你把它放在前面，任何檔案變動都會重新跑-npm-install，非常慢。"><a href="#這行放在-npm-install-之後能利用快取；若你把它放在前面，任何檔案變動都會重新跑-npm-install，非常慢。" class="headerlink" title="這行放在 npm install 之後能利用快取；若你把它放在前面，任何檔案變動都會重新跑 npm install，非常慢。"></a>這行放在 npm install 之後能利用快取；若你把它放在前面，任何檔案變動都會重新跑 npm install，非常慢。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="RUN-npm-run-build-–prod"><a href="#RUN-npm-run-build-–prod" class="headerlink" title="RUN npm run build –prod"></a>RUN npm run build –prod</h5><ul>
+<li><h5 id="功能：在容器內執行專案的生產編譯（Angular-CLI），生成靜態檔到-dist-（你例子是-dist-my-contact-form）。"><a href="#功能：在容器內執行專案的生產編譯（Angular-CLI），生成靜態檔到-dist-（你例子是-dist-my-contact-form）。" class="headerlink" title="功能：在容器內執行專案的生產編譯（Angular CLI），生成靜態檔到 dist&#x2F;（你例子是 dist&#x2F;my-contact-form）。"></a>功能：在容器內執行專案的生產編譯（Angular CLI），生成靜態檔到 dist&#x2F;<project-name>（你例子是 dist&#x2F;my-contact-form）。</h5></li>
+<li><h5 id="注意：-1"><a href="#注意：-1" class="headerlink" title="注意："></a>注意：</h5><ul>
+<li><h5 id="–prod-是構建-production-的捷徑（等同-–configuration-production），不同-Angular-CLI-版本行為等同，但若要保險可以寫-npm-run-build-–-–configuration-production（取決於-package-json-script-定義）。"><a href="#–prod-是構建-production-的捷徑（等同-–configuration-production），不同-Angular-CLI-版本行為等同，但若要保險可以寫-npm-run-build-–-–configuration-production（取決於-package-json-script-定義）。" class="headerlink" title="–prod 是構建 production 的捷徑（等同 –configuration production），不同 Angular CLI 版本行為等同，但若要保險可以寫 npm run build – –configuration&#x3D;production（取決於 package.json script 定義）。"></a>–prod 是構建 production 的捷徑（等同 –configuration production），不同 Angular CLI 版本行為等同，但若要保險可以寫 npm run build – –configuration&#x3D;production（取決於 package.json script 定義）。</h5></li>
+<li><h5 id="編譯會產生-app-dist-，後面-runtime-stage-會用到。"><a href="#編譯會產生-app-dist-，後面-runtime-stage-會用到。" class="headerlink" title="編譯會產生 &#x2F;app&#x2F;dist&#x2F;，後面 runtime stage 會用到。"></a>編譯會產生 &#x2F;app&#x2F;dist&#x2F;<outputPath>，後面 runtime stage 會用到。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="Dockerfile-Runtime階段的逐行解說："><a href="#Dockerfile-Runtime階段的逐行解說：" class="headerlink" title="Dockerfile Runtime階段的逐行解說："></a>Dockerfile Runtime階段的逐行解說：</h5><ul>
+<li><h5 id="FROM-nginx-alpine"><a href="#FROM-nginx-alpine" class="headerlink" title="FROM nginx:alpine"></a>FROM nginx:alpine</h5><ul>
+<li><h5 id="功能：新的-stage，基礎映像為-nginx-alpine，只含-nginx，用來當靜態檔伺服器。"><a href="#功能：新的-stage，基礎映像為-nginx-alpine，只含-nginx，用來當靜態檔伺服器。" class="headerlink" title="功能：新的 stage，基礎映像為 nginx:alpine，只含 nginx，用來當靜態檔伺服器。"></a>功能：新的 stage，基礎映像為 nginx:alpine，只含 nginx，用來當靜態檔伺服器。</h5></li>
+<li><h5 id="為什麼：multi-stage-的目的就是把-heavy-build-環境（Node-node-modules）只保留在-build-stage，最終-image-僅含靜態伺服器（小、快速、安全）。"><a href="#為什麼：multi-stage-的目的就是把-heavy-build-環境（Node-node-modules）只保留在-build-stage，最終-image-僅含靜態伺服器（小、快速、安全）。" class="headerlink" title="為什麼：multi-stage 的目的就是把 heavy build 環境（Node + node_modules）只保留在 build stage，最終 image 僅含靜態伺服器（小、快速、安全）。"></a>為什麼：multi-stage 的目的就是把 heavy build 環境（Node + node_modules）只保留在 build stage，最終 image 僅含靜態伺服器（小、快速、安全）。</h5></li>
+</ul>
+</li>
+<li><h5 id="WORKDIR-usr-share-nginx-html"><a href="#WORKDIR-usr-share-nginx-html" class="headerlink" title="WORKDIR &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html"></a>WORKDIR &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html</h5><ul>
+<li><h5 id="功能：設定-nginx-中靜態檔根目錄為工作目錄（nginx-的預設靜態路徑就是-usr-share-nginx-html）。"><a href="#功能：設定-nginx-中靜態檔根目錄為工作目錄（nginx-的預設靜態路徑就是-usr-share-nginx-html）。" class="headerlink" title="功能：設定 nginx 中靜態檔根目錄為工作目錄（nginx 的預設靜態路徑就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。"></a>功能：設定 nginx 中靜態檔根目錄為工作目錄（nginx 的預設靜態路徑就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。</h5></li>
+<li><h5 id="因為我們下一行-COPY-…-的目的地是當前目錄（-），所以要先設-WORKDIR-方便相對複製。"><a href="#因為我們下一行-COPY-…-的目的地是當前目錄（-），所以要先設-WORKDIR-方便相對複製。" class="headerlink" title="因為我們下一行 COPY … . 的目的地是當前目錄（.），所以要先設 WORKDIR 方便相對複製。"></a>因為我們下一行 COPY … . 的目的地是當前目錄（.），所以要先設 WORKDIR 方便相對複製。</h5></li>
+</ul>
+</li>
+<li><h5 id="COPY-–from-build-app-dist-my-contact-form"><a href="#COPY-–from-build-app-dist-my-contact-form" class="headerlink" title="COPY –from&#x3D;build &#x2F;app&#x2F;dist&#x2F;my-contact-form ."></a>COPY –from&#x3D;build &#x2F;app&#x2F;dist&#x2F;my-contact-form .</h5><ul>
+<li><h5 id="功能：從-build-stage（之前命名的-stage）拷貝-app-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。"><a href="#功能：從-build-stage（之前命名的-stage）拷貝-app-dist-my-contact-form-的內容到目前的工作目錄（也就是-usr-share-nginx-html）。" class="headerlink" title="功能：從 build stage（之前命名的 stage）拷貝 &#x2F;app&#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。"></a>功能：從 build stage（之前命名的 stage）拷貝 &#x2F;app&#x2F;dist&#x2F;my-contact-form 的內容到目前的工作目錄（也就是 &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html）。</h5></li>
+<li><h5 id="注意：-2"><a href="#注意：-2" class="headerlink" title="注意："></a>注意：</h5><ul>
+<li><h5 id="my-contact-form-必須和你在-angular-json-設定的-outputPath-相同；否則-COPY-路徑會找不到檔案而失敗。-–configuration-production（取決於-package-json-script-定義）。"><a href="#my-contact-form-必須和你在-angular-json-設定的-outputPath-相同；否則-COPY-路徑會找不到檔案而失敗。-–configuration-production（取決於-package-json-script-定義）。" class="headerlink" title="my-contact-form 必須和你在 angular.json 設定的 outputPath 相同；否則 COPY 路徑會找不到檔案而失敗。 –configuration&#x3D;production（取決於 package.json script 定義）。"></a>my-contact-form 必須和你在 angular.json 設定的 outputPath 相同；否則 COPY 路徑會找不到檔案而失敗。 –configuration&#x3D;production（取決於 package.json script 定義）。</h5></li>
+<li><h5 id="代表目前-WORKDIR（-usr-share-nginx-html），所以複製完你-nginx-根目錄會直接有-index-html、main-js-等檔案。"><a href="#代表目前-WORKDIR（-usr-share-nginx-html），所以複製完你-nginx-根目錄會直接有-index-html、main-js-等檔案。" class="headerlink" title=". 代表目前 WORKDIR（&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html），所以複製完你 nginx 根目錄會直接有 index.html、main.js 等檔案。"></a>. 代表目前 WORKDIR（&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html），所以複製完你 nginx 根目錄會直接有 index.html、main.js 等檔案。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="EXPOSE-80"><a href="#EXPOSE-80" class="headerlink" title="EXPOSE 80"></a>EXPOSE 80</h5><ul>
+<li><h5 id="標示此容器會使用的網路埠（文件性質）。"><a href="#標示此容器會使用的網路埠（文件性質）。" class="headerlink" title="標示此容器會使用的網路埠（文件性質）。"></a>標示此容器會使用的網路埠（文件性質）。</h5></li>
+<li><h5 id="注意：-3"><a href="#注意：-3" class="headerlink" title="注意："></a>注意：</h5><ul>
+<li><h5 id="EXPOSE-不會真正開放埠，只是做為鏡像的-metadata；實際要能外部連線要在-docker-run-p-主機埠-容器埠-時對映。"><a href="#EXPOSE-不會真正開放埠，只是做為鏡像的-metadata；實際要能外部連線要在-docker-run-p-主機埠-容器埠-時對映。" class="headerlink" title="EXPOSE 不會真正開放埠，只是做為鏡像的 metadata；實際要能外部連線要在 docker run -p 主機埠:容器埠 時對映。"></a>EXPOSE 不會真正開放埠，只是做為鏡像的 metadata；實際要能外部連線要在 docker run -p 主機埠:容器埠 時對映。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="CMD-“nginx”-“-g”-“daemon-off-”"><a href="#CMD-“nginx”-“-g”-“daemon-off-”" class="headerlink" title="CMD [“nginx”, “-g”, “daemon off;”]"></a>CMD [“nginx”, “-g”, “daemon off;”]</h5><ul>
+<li><h5 id="功能：容器啟動時執行的預設命令，這裡啟動-nginx-並以-foreground-模式運行（daemon-off-）使-container-保持運行。"><a href="#功能：容器啟動時執行的預設命令，這裡啟動-nginx-並以-foreground-模式運行（daemon-off-）使-container-保持運行。" class="headerlink" title="功能：容器啟動時執行的預設命令，這裡啟動 nginx 並以 foreground 模式運行（daemon off;）使 container 保持運行。"></a>功能：容器啟動時執行的預設命令，這裡啟動 nginx 並以 foreground 模式運行（daemon off;）使 container 保持運行。</h5></li>
+<li><h5 id="小提醒：用-JSON-array-形式可避免-shell-解析問題。"><a href="#小提醒：用-JSON-array-形式可避免-shell-解析問題。" class="headerlink" title="小提醒：用 JSON array 形式可避免 shell 解析問題。"></a>小提醒：用 JSON array 形式可避免 shell 解析問題。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 </li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0k5z430007v8n1b3h18n7e" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0kseic0004qsn1blixalno" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

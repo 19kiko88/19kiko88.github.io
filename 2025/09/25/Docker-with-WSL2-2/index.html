@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/wsl2_mnt.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/rsync_copy.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-09-26T07:33:37.464Z">
+<meta property="article:modified_time" content="2025-09-26T07:37:58.096Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -157,7 +157,10 @@
 </ol>
 <pre><code class="language-bash">nano Dockerfile
 </code></pre>
-<h5 id="Dockerfile內容如下："><a href="#Dockerfile內容如下：" class="headerlink" title="Dockerfile內容如下："></a>Dockerfile內容如下：</h5><pre><code class="language-dockerfile"># 1. Build 階段
+<ul>
+<li><h5 id="Dockerfile內容如下："><a href="#Dockerfile內容如下：" class="headerlink" title="Dockerfile內容如下："></a>Dockerfile內容如下：</h5></li>
+</ul>
+<pre><code class="language-dockerfile"># 1. Build 階段
 FROM node:18 AS build
 WORKDIR /app
 COPY package*.json ./
@@ -178,7 +181,7 @@ CMD [&quot;nginx&quot;, &quot;-g&quot;, &quot;daemon off;&quot;]
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0izyqh000fs4n1h5a9abww" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg0j5dfa00059sn10z8gezyp" data-title="Docker with WSL2(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

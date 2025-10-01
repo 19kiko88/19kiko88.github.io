@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/angular_modify.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-01T10:14:28.422Z">
+<meta property="article:modified_time" content="2025-10-01T10:16:34.119Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -125,14 +125,20 @@
 <h3 id="DockerCompose測試"><a href="#DockerCompose測試" class="headerlink" title="DockerCompose測試"></a>DockerCompose測試</h3><ol>
 <li><h5 id="DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容"><a href="#DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容" class="headerlink" title="DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容"></a>DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容</h5> <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/angular_modify.jpg" class="" title="angular_modify">
 </li>
-<li><h5 id="接著把更新過後的程式複製到WSL裡的專案資料夾"><a href="#接著把更新過後的程式複製到WSL裡的專案資料夾" class="headerlink" title="接著把更新過後的程式複製到WSL裡的專案資料夾"></a>接著把更新過後的程式複製到WSL裡的專案資料夾</h5></li>
+<li><h5 id="接著把更新過後的程式從本機複製到WSL裡的專案資料夾"><a href="#接著把更新過後的程式從本機複製到WSL裡的專案資料夾" class="headerlink" title="接著把更新過後的程式從本機複製到WSL裡的專案資料夾"></a>接著把更新過後的程式從本機複製到WSL裡的專案資料夾</h5></li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">    <span class="comment"># 排除不需要的目錄</span></span><br><span class="line">    rsync -av --progress \</span><br><span class="line">    --exclude node_modules \</span><br><span class="line">    --exclude .git \</span><br><span class="line">    --exclude .vs \</span><br><span class="line">    --exclude dist \</span><br><span class="line">    /mnt/d/Homer/Project_MyGit/my-form-app/ ~/my-contact-form/</span><br><span class="line">```    </span><br><span class="line"></span><br><span class="line">2. <span class="comment">##### 重新執行compose up</span></span><br><span class="line">``` bash</span><br><span class="line"><span class="comment"># 啟動（開發 + 部署）</span></span><br><span class="line">docker compose up</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 排除不需要的目錄</span></span><br><span class="line">rsync -av --progress \</span><br><span class="line">--exclude node_modules \</span><br><span class="line">--exclude .git \</span><br><span class="line">--exclude .vs \</span><br><span class="line">--exclude dist \</span><br><span class="line">/mnt/d/Homer/Project_MyGit/my-form-app/ ~/my-contact-form/</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><h5 id="重新執行compose-up"><a href="#重新執行compose-up" class="headerlink" title="重新執行compose up"></a>重新執行compose up</h5></li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 啟動（開發 + 部署）</span></span><br><span class="line">docker compose up</span><br></pre></td></tr></table></figure>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><hr>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg7ty4m60005own15ra22mwr" data-title="Docker with WSL2(3) - DockerCompose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg7u0k930004bwn124c5d4ns" data-title="Docker with WSL2(3) - DockerCompose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

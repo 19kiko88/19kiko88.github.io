@@ -14,7 +14,7 @@
 <meta property="og:description" content="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。因為重新 docker build 產生的新 image，和 正在跑的 con">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-01T08:31:29.505Z">
+<meta property="article:modified_time" content="2025-10-01T08:32:25.222Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -107,11 +107,11 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h5 id="dddddd"><a href="#dddddd" class="headerlink" title="dddddd"></a>dddddd</h5><span id="more"></span>
+        <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h1 id=""><a href="#" class="headerlink" title=""></a></h1><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h5 id="dddddd"><a href="#dddddd" class="headerlink" title="dddddd"></a>dddddd</h5><span id="more"></span>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg7q9eq7000aisn189g54xag" data-title="Docker with WSL2(3) - DockerCompose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg7qam4g0001ncn1g19h9nav" data-title="Docker with WSL2(3) - DockerCompose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

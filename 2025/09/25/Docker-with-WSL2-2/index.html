@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/docker_build_success.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/docker_image.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-01T03:07:56.466Z">
+<meta property="article:modified_time" content="2025-10-01T03:09:06.083Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -296,7 +296,7 @@
 <li><h5 id="運行結束即清理：-無論容器是正常結束（例如，執行完一個腳本）還是因為錯誤停止，Docker-都會立即將其刪除。"><a href="#運行結束即清理：-無論容器是正常結束（例如，執行完一個腳本）還是因為錯誤停止，Docker-都會立即將其刪除。" class="headerlink" title="運行結束即清理： 無論容器是正常結束（例如，執行完一個腳本）還是因為錯誤停止，Docker 都會立即將其刪除。"></a>運行結束即清理： 無論容器是正常結束（例如，執行完一個腳本）還是因為錯誤停止，Docker 都會立即將其刪除。</h5></li>
 <li><h5 id="避免累積垃圾：-這對臨時性的任務、一次性腳本或開發測試非常有用。它能防止你的系統累積大量已停止但未刪除的「殭屍」容器，從而保持系統整潔並釋放磁碟空間。"><a href="#避免累積垃圾：-這對臨時性的任務、一次性腳本或開發測試非常有用。它能防止你的系統累積大量已停止但未刪除的「殭屍」容器，從而保持系統整潔並釋放磁碟空間。" class="headerlink" title="避免累積垃圾： 這對臨時性的任務、一次性腳本或開發測試非常有用。它能防止你的系統累積大量已停止但未刪除的「殭屍」容器，從而保持系統整潔並釋放磁碟空間。"></a>避免累積垃圾： 這對臨時性的任務、一次性腳本或開發測試非常有用。它能防止你的系統累積大量已停止但未刪除的「殭屍」容器，從而保持系統整潔並釋放磁碟空間。</h5></li>
 </ol>
-<h5 id="你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了"><a href="#你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了" class="headerlink" title="你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了??"></a>你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了??</h5><h1 id="-48"><a href="#-48" class="headerlink" title=""></a></h1><h1 id="-49"><a href="#-49" class="headerlink" title=""></a></h1><h1 id="-50"><a href="#-50" class="headerlink" title=""></a></h1><h1 id="-51"><a href="#-51" class="headerlink" title=""></a></h1><h5 id="答案是不會的，因為容器會持續運行，直到它的主程序（Main-Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web-Server），例如-Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx-或其他）在容器內持續運行，容器就不會停止。"><a href="#答案是不會的，因為容器會持續運行，直到它的主程序（Main-Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web-Server），例如-Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx-或其他）在容器內持續運行，容器就不會停止。" class="headerlink" title="答案是不會的，因為容器會持續運行，直到它的主程序（Main Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web Server），例如 Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx 或其他）在容器內持續運行，容器就不會停止。"></a>答案是不會的，因為容器會持續運行，直到它的主程序（Main Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web Server），例如 Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx 或其他）在容器內持續運行，容器就不會停止。</h5></li>
+<h5 id="你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了"><a href="#你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了" class="headerlink" title="你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了??"></a>你可能會有疑問，我們的container最後是啟動一個angular的靜態網頁，那這樣子會不會container執行完成後，網站就無法連線了??</h5><h1 id="-48"><a href="#-48" class="headerlink" title=""></a></h1><h1 id="-49"><a href="#-49" class="headerlink" title=""></a></h1><h5 id="答案是不會的，因為容器會持續運行，直到它的主程序（Main-Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web-Server），例如-Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx-或其他）在容器內持續運行，容器就不會停止。"><a href="#答案是不會的，因為容器會持續運行，直到它的主程序（Main-Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web-Server），例如-Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx-或其他）在容器內持續運行，容器就不會停止。" class="headerlink" title="答案是不會的，因為容器會持續運行，直到它的主程序（Main Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web Server），例如 Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx 或其他）在容器內持續運行，容器就不會停止。"></a>答案是不會的，因為容器會持續運行，直到它的主程序（Main Process）停止執行為止，而對於一個前端網頁容器來說，它的主程序是網頁伺服器（Web Server），例如 Nginx。網頁伺服器（Nginx）的職責是持續監聽特定的連接埠，並不斷地對連線請求（例如你的瀏覽器）提供服務。所以只要你的網頁伺服器（Nginx 或其他）在容器內持續運行，容器就不會停止。</h5></li>
 <li><h5 id="aaaaaaaa"><a href="#aaaaaaaa" class="headerlink" title="aaaaaaaa"></a>aaaaaaaa</h5></li>
 </ul>
 </li>
@@ -305,7 +305,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg7epeyz000d4sn1hpx61n4q" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmg7eqsqn0004lwn1e8rbcm9i" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

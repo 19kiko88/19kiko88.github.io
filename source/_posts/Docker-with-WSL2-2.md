@@ -234,10 +234,51 @@ tags:
         {% asset_image docker_build_success.jpg docker_build_success %}
 
         * ##### docker build完成後，可以用下面指令，確認image。
-        ``` bash        
+        ``` bash
         docker images
-        ```  
+        ```
         {% asset_image docker_image.jpg docker_image %}
+#
+#
+#
+#     
+---
+### 啟動 (Run) 容器
+* ##### 在專案目錄執行：
+  ``` bash
+  docker run -d -p 8080:80 --name my-contact-form my-contact-form
+  ```
+    * ##### 參數用途：
+      * ##### -d → 背景執行（detached mode）。
+      * ##### -p 8080:80 → 把主機的 8080 port 對映到容器內的 80 port（nginx 預設 port）。
+      * ##### --name my-contact-form → 幫容器取名字，方便管理。
+      * ##### my-contact-form → 使用剛剛 build 出來的 image。
+  #
+  #
+  #
+  #
+* ##### 連線測試：
+  ##### 連線成功!
+  {% asset_image docker_run.jpg docker_run %}
+  #
+  #
+  #
+  #
+  ##### 來觀察一下container的狀態，狀態為UP。
+  ``` base
+  docer ps -a
+  ```
+  {% asset_image docker_ps.jpg docker_ps%}
+#
+#
+#
+#     
+---
+* ##### 這個系列到目前為止，已經完成了  
+  1. ##### [在WSL上安裝了Ubuntu + Docker Engin，並且建立好快照備份了](https://19kiko88.github.io/2025/09/22/docker-with-WSL2-1/)  
+  2. ##### 建立Dockerfile，以及Docker的建置以及啟動執行
+
+
 
 
       

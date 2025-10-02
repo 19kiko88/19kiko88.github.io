@@ -4,7 +4,6 @@ date: 2025-10-01 16:26:33
 categories:
   - Docker
 tags:
-  - Docker
   - WSL2
   - Ubuntu
   - Docker Compose
@@ -20,6 +19,35 @@ tags:
 #
 #
 #
+---
+### 什麼是Docker Compose?
+##### Docker Compose是個定義如何啟動 container 的設定檔
+``` yaml
+services:
+  angular-dev:
+    build: .
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/app
+    command: npm start
+```
+* ##### 執行 docker compose up → Docker Compose 幫你檢查：
+  1. ##### 如果有 build:，會先去執行 Dockerfile → 產生 image
+  2. ##### 然後用這個 image 去啟動 container
+  3. ##### 再依照 ports、volumes、command 等設定去運行
+---
+### Dockerfile 跟 Docker Compose的執行順序：
+  1. ##### 執行docker compose up
+  2. ##### Docker Compose 讀取 docker-compose.yml
+  3. ##### 如果有 build: → 進入 Dockerfile → 建立/更新 image
+  4. ##### 從這個 image 建立 container
+  5. ##### 套用 docker-compose 裡的 ports、volumes、command 等設定
+  6. ##### Container 啟動並執行（可能是 CMD 也可能被 docker-compose 的 command 覆蓋）
+
+* ##### 簡單來說：
+  1. ##### Dockerfile → 做出 image
+  2. ##### docker-compose.yml → 啟動容器
 ---
 ### 建立Docker Compose檔案
 1. ##### 執行下面指令，建立docker-compose.yaml
@@ -139,7 +167,33 @@ docker compose up angular-prod
 7. ##### Docker Compose改採背景模式啟動後，我們在按下F5重整網頁看看。可以看到UI已經更新了，原本的字串Version DockerCompose後面被加上了現在時間了。
     {% asset_image hot_reload_test_3.jpg hot_reload_test_3 %}
 8. ##### 接著我們在變更UI，新增一個表單欄位，然後執行rsync更新程式。結果是左邊的UI頁面也熱重載及時更新了!!
-    {% video 'hot_reload_test_4.mp4' %}
+    {% dplayer "url=/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_4.mp4" %}
+
+##### 這邊另外附上 前端執行Docker Compose跟背景執行Docker Compose的差異
+``` lua
+            docker compose up                     docker compose up -d
+┌────────────────────────────┐          ┌────────────────────────────┐
+│  容器啟動 + log 跑在前景    │          │   容器啟動 (背景執行)      │
+└─────────────┬──────────────┘          └─────────────┬──────────────┘
+              │                                         │
+              ▼                                         ▼
+    你在終端機看到 ng serve 日誌                容器在背景獨立運行
+              │                                         │
+              ▼                                         ▼
+     (Ctrl + C 或 terminal 關掉) → 容器退出       即使關掉 terminal 容器仍在跑
+              │                                         │
+              ▼                                         ▼
+  rsync 更新檔案 → ❌ 沒有效果                rsync 更新檔案 → ✅ ng serve 偵測變化
+              │                                         │
+              ▼                                         ▼
+        container = exited                         container = running
+
+```
+---
+* ##### 這個系列到目前為止，已經完成了  
+  1. ##### [在WSL上安裝了Ubuntu + Docker Engin，並且建立好快照備份了](https://19kiko88.github.io/2025/09/22/docker-with-WSL2-1/)  
+  2. ##### [建立Dockerfile，以及Docker Image的建置以及啟動執行](https://19kiko88.github.io/2025/09/25/Docker-with-WSL2-2/)
+  3. ##### 利用Docker Compose來同時啟用不同的元件
 
 
 

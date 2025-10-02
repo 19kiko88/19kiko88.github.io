@@ -4,17 +4,31 @@ date: 2025-09-25 16:26:33
 categories:
   - Docker
 tags:
-  - Docker
   - WSL2
   - Ubuntu
   - DockerFile
 ---
-##### 上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作`[容器化]`
+##### 上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要透過Dockerfile來實作`[容器化]`
 <!-- more -->
 #
 #
 #
 #
+---
+### 什麼是Dockerfile?
+##### Dockerfile定義了如何建構 image 的步驟
+``` dockerfile
+FROM node:18
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+CMD ["npm", "start"]
+```
+#
+#
+##### 執行 docker build（或由 docker-compose 幫你 build 時）才會逐步執行這些指令 → 產生一個 image。
+
 ---
 ### 把原始檔案傳到WSL(Ubuntu Server)
 ##### 要進行容器化之前，必須要把在本機的專案資料夾內容裡的檔案，放到Ubuntu Server上

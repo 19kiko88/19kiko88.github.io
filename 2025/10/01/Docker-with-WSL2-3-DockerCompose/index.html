@@ -25,7 +25,7 @@
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_3.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-02T07:18:00.689Z">
+<meta property="article:modified_time" content="2025-10-02T07:33:22.120Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -153,7 +153,7 @@
 <li><h5 id="完成上面Docker-Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。"><a href="#完成上面Docker-Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。" class="headerlink" title="完成上面Docker Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。"></a>完成上面Docker Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。</h5> <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_1.jpg" class="" title="hot_reload_test_1">
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_2.jpg" class="" title="hot_reload_test_2">
 </li>
-<li><h5 id="接著rsync把本機的程式複製到wsl的專案資料夾裡面"><a href="#接著rsync把本機的程式複製到wsl的專案資料夾裡面" class="headerlink" title="接著rsync把本機的程式複製到wsl的專案資料夾裡面"></a>接著rsync把本機的程式複製到wsl的專案資料夾裡面</h5></li>
+<li><h5 id="接著執行rsync把本機的程式複製到wsl的專案資料夾裡面"><a href="#接著執行rsync把本機的程式複製到wsl的專案資料夾裡面" class="headerlink" title="接著執行rsync把本機的程式複製到wsl的專案資料夾裡面"></a>接著執行rsync把本機的程式複製到wsl的專案資料夾裡面</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 排除不需要的目錄</span></span><br><span class="line">rsync -av --progress \</span><br><span class="line">--exclude node_modules \</span><br><span class="line">--exclude .git \</span><br><span class="line">--exclude .vs \</span><br><span class="line">--exclude dist \</span><br><span class="line">/mnt/d/Homer/Project_MyGit/my-form-app/ ~/my-contact-form/</span><br></pre></td></tr></table></figure></li>
 <li><h5 id="接著F5重整畫面，看看在有沒有被加上時間。結果卻是嗯…無法連線到此頁面。"><a href="#接著F5重整畫面，看看在有沒有被加上時間。結果卻是嗯…無法連線到此頁面。" class="headerlink" title="接著F5重整畫面，看看在有沒有被加上時間。結果卻是嗯…無法連線到此頁面。"></a>接著F5重整畫面，看看在有沒有被加上時間。結果卻是嗯…無法連線到此頁面。</h5> <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/not_found.jpg" class="" title="not_found"></li>
 <li><h5 id="透過下面指令，透過bash連線進去container-angular-dev-看看，結果卻是顯示-container-is-not-running"><a href="#透過下面指令，透過bash連線進去container-angular-dev-看看，結果卻是顯示-container-is-not-running" class="headerlink" title="透過下面指令，透過bash連線進去container(angular-dev)看看，結果卻是顯示[container is not running]"></a>透過下面指令，透過bash連線進去container(angular-dev)看看，結果卻是顯示<code>[container is not running]</code></h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it angular-dev bash</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_exec_it.jpg" class="" title="docker_exec_it"></li>
@@ -165,12 +165,13 @@
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_3.jpg" class="" title="docker_ps_3"></li>
 <li><h5 id="為了避免上述情況，我們必須改用-背景模式-啟動Docker-Compose。在docker-compose-up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。"><a href="#為了避免上述情況，我們必須改用-背景模式-啟動Docker-Compose。在docker-compose-up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。" class="headerlink" title="為了避免上述情況，我們必須改用(背景模式)啟動Docker Compose。在docker compose up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。"></a>為了避免上述情況，我們必須改用(背景模式)啟動Docker Compose。在docker compose up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose up -d angular-dev</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg" class="" title="docker_compose_success_with_parameter_d"></li>
+<li><h5 id="Docker-Compose改採背景模式啟動後，我們在按下F5重整網頁看看。"><a href="#Docker-Compose改採背景模式啟動後，我們在按下F5重整網頁看看。" class="headerlink" title="Docker Compose改採背景模式啟動後，我們在按下F5重整網頁看看。"></a>Docker Compose改採背景模式啟動後，我們在按下F5重整網頁看看。</h5></li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg932rt00008lwn1fyw3ajwv" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg93mixq0004q4n1e83r4zrd" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

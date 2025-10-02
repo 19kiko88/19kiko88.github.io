@@ -26,7 +26,7 @@
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_3.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-02T09:16:35.809Z">
+<meta property="article:modified_time" content="2025-10-02T10:04:01.334Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="WSL2">
 <meta property="article:tag" content="Ubuntu">
@@ -121,6 +121,13 @@
       
         <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h5 id="在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神"><a href="#在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神" class="headerlink" title="在一般的開發流程中，[熱重載]是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!"></a>在一般的開發流程中，<code>[熱重載]</code>是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!</h5><h5 id="為了達到熱重載，這篇就來說說Docker-Compose。"><a href="#為了達到熱重載，這篇就來說說Docker-Compose。" class="headerlink" title="為了達到熱重載，這篇就來說說Docker Compose。"></a>為了達到熱重載，這篇就來說說Docker Compose。</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5><span id="more"></span>
 <h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><hr>
+<h3 id="什麼是Docker-Compose"><a href="#什麼是Docker-Compose" class="headerlink" title="什麼是Docker Compose?"></a>什麼是Docker Compose?</h3><h5 id="Docker-Compose是個定義如何啟動-container-的設定檔"><a href="#Docker-Compose是個定義如何啟動-container-的設定檔" class="headerlink" title="Docker Compose是個定義如何啟動 container 的設定檔"></a>Docker Compose是個定義如何啟動 container 的設定檔</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">angular-dev:</span></span><br><span class="line">    <span class="attr">build:</span> <span class="string">.</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;4200:4200&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">.:/app</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">npm</span> <span class="string">start</span></span><br></pre></td></tr></table></figure>
+<h1 id="執行-docker-compose-up-→-Docker-Compose-幫你檢查："><a href="#執行-docker-compose-up-→-Docker-Compose-幫你檢查：" class="headerlink" title="#####執行 docker compose up → Docker Compose 幫你檢查："></a>#####執行 docker compose up → Docker Compose 幫你檢查：</h1><ol>
+<li><h5 id="如果有-build-，會先去執行-Dockerfile-→-產生-image"><a href="#如果有-build-，會先去執行-Dockerfile-→-產生-image" class="headerlink" title="如果有 build:，會先去執行 Dockerfile → 產生 image"></a>如果有 build:，會先去執行 Dockerfile → 產生 image</h5></li>
+<li><h5 id="然後用這個-image-去啟動-container"><a href="#然後用這個-image-去啟動-container" class="headerlink" title="然後用這個 image 去啟動 container"></a>然後用這個 image 去啟動 container</h5></li>
+<li><h5 id="再依照-ports、volumes、command-等設定去運行"><a href="#再依照-ports、volumes、command-等設定去運行" class="headerlink" title="再依照 ports、volumes、command 等設定去運行"></a>再依照 ports、volumes、command 等設定去運行</h5></li>
+</ol>
+<hr>
 <h3 id="建立Docker-Compose檔案"><a href="#建立Docker-Compose檔案" class="headerlink" title="建立Docker Compose檔案"></a>建立Docker Compose檔案</h3><ol>
 <li><h5 id="執行下面指令，建立docker-compose-yaml"><a href="#執行下面指令，建立docker-compose-yaml" class="headerlink" title="執行下面指令，建立docker-compose.yaml"></a>執行下面指令，建立docker-compose.yaml</h5></li>
 </ol>
@@ -182,7 +189,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg97beqr000ergn11x9lat25" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg990dhl00041on165kghnuj" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -234,7 +241,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+      <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
     </div>
   </div>
 

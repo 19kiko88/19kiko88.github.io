@@ -26,7 +26,7 @@
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_3.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-02T09:05:48.445Z">
+<meta property="article:modified_time" content="2025-10-02T09:10:46.504Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -171,11 +171,11 @@
 </ol>
 <h5 id="這邊另外附上-前端執行Docker-Compose跟背景執行Docker-Compose的差異"><a href="#這邊另外附上-前端執行Docker-Compose跟背景執行Docker-Compose的差異" class="headerlink" title="這邊另外附上 前端執行Docker Compose跟背景執行Docker Compose的差異"></a>這邊另外附上 前端執行Docker Compose跟背景執行Docker Compose的差異</h5><figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">            docker compose up                     docker compose up -d</span><br><span class="line">┌────────────────────────────┐          ┌────────────────────────────┐</span><br><span class="line">│  容器啟動 + <span class="built_in">log</span> 跑在前景    │          │   容器啟動 (背景執行)      │</span><br><span class="line">└─────────────┬──────────────┘          └─────────────┬──────────────┘</span><br><span class="line">              │                                         │</span><br><span class="line">              ▼                                         ▼</span><br><span class="line">    你在終端機看到 ng serve 日誌                容器在背景獨立運行</span><br><span class="line">              │                                         │</span><br><span class="line">              ▼                                         ▼</span><br><span class="line">     (Ctrl + C 或 terminal 關掉) → 容器退出       即使關掉 terminal 容器仍在跑</span><br><span class="line">              │                                         │</span><br><span class="line">              ▼                                         ▼</span><br><span class="line">  rsync 更新檔案 → ❌ 沒有效果                rsync 更新檔案 → ✅ ng serve 偵測變化</span><br><span class="line">              │                                         │</span><br><span class="line">              ▼                                         ▼</span><br><span class="line">        container = exited                         container = <span class="built_in">running</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <hr>
-<h3 id="熱重載-1"><a href="#熱重載-1" class="headerlink" title="熱重載"></a>熱重載</h3>
+<h3 id="-10"><a href="#-10" class="headerlink" title=""></a></h3>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg970t8r0004xon1cp6a05eq" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg9742rv0009r4n11sk56ewb" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

@@ -6,7 +6,8 @@ categories:
 tags:
   - Docker
   - WSL2
-  - Ubuntu  
+  - Ubuntu
+  - DockerFile
 ---
 ##### 上篇文章我們在WSL裡安裝了Ubuntu. Docker Engin。現在就要來實作`[容器化]`
 <!-- more -->

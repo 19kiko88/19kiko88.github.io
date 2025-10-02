@@ -23,8 +23,9 @@
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_2.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/trouble_shooting.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_3.jpg">
+<meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-02T06:56:10.613Z">
+<meta property="article:modified_time" content="2025-10-02T07:18:00.689Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
@@ -158,16 +159,18 @@
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_exec_it.jpg" class="" title="docker_exec_it"></li>
 <li><h5 id="觀察一下啟動中的container清單。container的狀態為Exited"><a href="#觀察一下啟動中的container清單。container的狀態為Exited" class="headerlink" title="觀察一下啟動中的container清單。container的狀態為Exited !!"></a>觀察一下啟動中的container清單。container的狀態為Exited !!</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_2.jpg" class="" title="docker_ps_2">   </li>
-<li><h5 id="後來問了ChatGPT才知道，-如果你是用下面的指令啟動Docker-Compose-前景模式-。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。"><a href="#後來問了ChatGPT才知道，-如果你是用下面的指令啟動Docker-Compose-前景模式-。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。" class="headerlink" title="後來問了ChatGPT才知道， 如果你是用下面的指令啟動Docker Compose(前景模式)。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。"></a>後來問了ChatGPT才知道， 如果你是用下面的指令啟動Docker Compose(前景模式)。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose up</span><br></pre></td></tr></table></figure>
+<li><h5 id="後來問了ChatGPT才知道，-如果你是用下面的指令-前景模式-啟動Docker-Compose。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。"><a href="#後來問了ChatGPT才知道，-如果你是用下面的指令-前景模式-啟動Docker-Compose。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。" class="headerlink" title="後來問了ChatGPT才知道， 如果你是用下面的指令(前景模式)啟動Docker Compose。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。"></a>後來問了ChatGPT才知道， 如果你是用下面的指令(前景模式)啟動Docker Compose。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose up</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/trouble_shooting.jpg" class="" title="trouble_shooting">
-<h5 id="在執行一次docker-ps-a查看Container的狀態。狀態確實是變成Exited了"><a href="#在執行一次docker-ps-a查看Container的狀態。狀態確實是變成Exited了" class="headerlink" title="在執行一次docker ps -a查看Container的狀態。狀態確實是變成Exited了"></a>在執行一次docker ps -a查看Container的狀態。狀態確實是變成Exited了</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
+<h5 id="再執行一次docker-ps-a查看Container的狀態。狀態確實是變成Exited了"><a href="#再執行一次docker-ps-a查看Container的狀態。狀態確實是變成Exited了" class="headerlink" title="再執行一次docker ps -a查看Container的狀態。狀態確實是變成Exited了"></a>再執行一次docker ps -a查看Container的狀態。狀態確實是變成Exited了</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_3.jpg" class="" title="docker_ps_3"></li>
+<li><h5 id="為了避免上述情況，我們必須改用-背景模式-啟動Docker-Compose。在docker-compose-up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。"><a href="#為了避免上述情況，我們必須改用-背景模式-啟動Docker-Compose。在docker-compose-up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。" class="headerlink" title="為了避免上述情況，我們必須改用(背景模式)啟動Docker Compose。在docker compose up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。"></a>為了避免上述情況，我們必須改用(背景模式)啟動Docker Compose。在docker compose up後面加上-d。這樣Container就會在背景一直跑了。詳細測試流程可以看下面的流程圖。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose up -d angular-dev</span><br></pre></td></tr></table></figure>
+ <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg" class="" title="docker_compose_success_with_parameter_d"></li>
 </ol>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg92aqhz0000lon1eaq0fam2" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg932rt00008lwn1fyw3ajwv" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

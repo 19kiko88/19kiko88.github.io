@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   
   
-  <title>Docker with WSL2(3) - DockerCompose | HaoAreYou~</title>
+  <title>Docker with WSL2(3) - Docker Compose | HaoAreYou~</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。因為重新 docker build 產生的新 image，和 正在跑的 con">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Docker with WSL2(3) - DockerCompose">
+<meta property="og:title" content="Docker with WSL2(3) - Docker Compose">
 <meta property="og:url" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/index.html">
 <meta property="og:site_name" content="HaoAreYou~">
 <meta property="og:description" content="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。因為重新 docker build 產生的新 image，和 正在跑的 con">
@@ -24,12 +24,12 @@
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/trouble_shooting.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_3.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-02T06:54:50.605Z">
+<meta property="article:modified_time" content="2025-10-02T06:56:10.613Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="WSL2">
 <meta property="article:tag" content="Ubuntu">
-<meta property="article:tag" content="DockerCompose">
+<meta property="article:tag" content="Docker Compose">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/angular_modify.jpg">
   
@@ -110,7 +110,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      Docker with WSL2(3) - DockerCompose
+      Docker with WSL2(3) - Docker Compose
     </h1>
   
 
@@ -118,21 +118,21 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h5 id="在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神"><a href="#在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神" class="headerlink" title="在一般的開發流程中，[熱重載]是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!"></a>在一般的開發流程中，<code>[熱重載]</code>是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!</h5><h5 id="為了達到熱重載，這篇就來說說DockerCompose。"><a href="#為了達到熱重載，這篇就來說說DockerCompose。" class="headerlink" title="為了達到熱重載，這篇就來說說DockerCompose。"></a>為了達到熱重載，這篇就來說說DockerCompose。</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5><span id="more"></span>
+        <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h5 id="在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神"><a href="#在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神" class="headerlink" title="在一般的開發流程中，[熱重載]是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!"></a>在一般的開發流程中，<code>[熱重載]</code>是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!</h5><h5 id="為了達到熱重載，這篇就來說說Docker-Compose。"><a href="#為了達到熱重載，這篇就來說說Docker-Compose。" class="headerlink" title="為了達到熱重載，這篇就來說說Docker Compose。"></a>為了達到熱重載，這篇就來說說Docker Compose。</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5><span id="more"></span>
 <h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><hr>
-<h3 id="建立DockerCompose檔案"><a href="#建立DockerCompose檔案" class="headerlink" title="建立DockerCompose檔案"></a>建立DockerCompose檔案</h3><ol>
+<h3 id="建立Docker-Compose檔案"><a href="#建立Docker-Compose檔案" class="headerlink" title="建立Docker Compose檔案"></a>建立Docker Compose檔案</h3><ol>
 <li><h5 id="執行下面指令，建立docker-compose-yaml"><a href="#執行下面指令，建立docker-compose-yaml" class="headerlink" title="執行下面指令，建立docker-compose.yaml"></a>執行下面指令，建立docker-compose.yaml</h5></li>
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nano docker-compose.yaml</span><br></pre></td></tr></table></figure>
 <h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h5 id="volumes屬性我們就設成-，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄-app-dockercompose下。這邊要特別注意-angular-dev的command，我們也要跟之前一樣做port的mapping-0-0-0-0-mapping到port4200-，並且因為我們沒有再容器裡面安裝Angular-CLI，所以不能直接用ng-serve，改使用npx-ng-npx-會自動執行-node-modules-裡的-ng，避免全域安裝版本問題-。"><a href="#volumes屬性我們就設成-，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄-app-dockercompose下。這邊要特別注意-angular-dev的command，我們也要跟之前一樣做port的mapping-0-0-0-0-mapping到port4200-，並且因為我們沒有再容器裡面安裝Angular-CLI，所以不能直接用ng-serve，改使用npx-ng-npx-會自動執行-node-modules-裡的-ng，避免全域安裝版本問題-。" class="headerlink" title="volumes屬性我們就設成.&#x2F;，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄&#x2F;app_dockercompose下。這邊要特別注意 angular-dev的command，我們也要跟之前一樣做port的mapping(0.0.0.0 mapping到port4200)，並且因為我們沒有再容器裡面安裝Angular CLI，所以不能直接用ng serve，改使用npx ng(npx 會自動執行 node_modules 裡的 ng，避免全域安裝版本問題)。"></a>volumes屬性我們就設成.&#x2F;，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄&#x2F;app_dockercompose下。這邊要特別注意 angular-dev的command，我們也要跟之前一樣做port的mapping(0.0.0.0 mapping到port4200)，並且因為我們沒有再容器裡面安裝Angular CLI，所以不能直接用ng serve，改使用npx ng(npx 會自動執行 node_modules 裡的 ng，避免全域安裝版本問題)。</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">angular-dev:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">node:18</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">angular-dev</span></span><br><span class="line">    <span class="attr">working_dir:</span> <span class="string">/app_dockercompose</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./:/app_dockercompose</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;4200:4200&quot;</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">sh</span> <span class="string">-c</span> <span class="string">&quot;npm install &amp;&amp; npx ng serve --host 0.0.0.0 --port 4200&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">angular-prod:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx:alpine</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">angular-prod</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./my-contact-form/dist/my-contact-form:/usr/share/nginx/html</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;8080:80&quot;</span>    </span><br></pre></td></tr></table></figure>
 
 <ol start="2">
-<li><h5 id="執行下面指令，啟動DockerCompose。"><a href="#執行下面指令，啟動DockerCompose。" class="headerlink" title="執行下面指令，啟動DockerCompose。"></a>執行下面指令，啟動DockerCompose。</h5></li>
+<li><h5 id="執行下面指令，啟動Docker-Compose。"><a href="#執行下面指令，啟動Docker-Compose。" class="headerlink" title="執行下面指令，啟動Docker Compose。"></a>執行下面指令，啟動Docker Compose。</h5></li>
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 啟動（開發 + 部署）</span></span><br><span class="line">docker compose up</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只跑開發環境</span></span><br><span class="line">docker compose up angular-dev</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只跑生產測試環境</span></span><br><span class="line">docker compose up angular-prod</span><br></pre></td></tr></table></figure>
 <hr>
-<h3 id="DockerCompose測試"><a href="#DockerCompose測試" class="headerlink" title="DockerCompose測試"></a>DockerCompose測試</h3><ol>
-<li><h5 id="DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容"><a href="#DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容" class="headerlink" title="DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容"></a>DockerCompose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容</h5> <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/angular_modify.jpg" class="" title="angular_modify">
+<h3 id="Docker-Compose測試"><a href="#Docker-Compose測試" class="headerlink" title="Docker Compose測試"></a>Docker Compose測試</h3><ol>
+<li><h5 id="Docker-Compose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容"><a href="#Docker-Compose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容" class="headerlink" title="Docker Compose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容"></a>Docker Compose啟動後，我們來做個測試看看。先隨邊變更一下Angular的UI內容</h5> <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/angular_modify.jpg" class="" title="angular_modify">
 </li>
 <li><h5 id="接著把更新過後的程式從本機複製到WSL裡的專案資料夾"><a href="#接著把更新過後的程式從本機複製到WSL裡的專案資料夾" class="headerlink" title="接著把更新過後的程式從本機複製到WSL裡的專案資料夾"></a>接著把更新過後的程式從本機複製到WSL裡的專案資料夾</h5></li>
 </ol>
@@ -149,7 +149,7 @@
 </ol>
 <h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><hr>
 <h3 id="熱重載"><a href="#熱重載" class="headerlink" title="熱重載"></a>熱重載</h3><ol>
-<li><h5 id="完成上面DockerCompose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。"><a href="#完成上面DockerCompose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。" class="headerlink" title="完成上面DockerCompose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。"></a>完成上面DockerCompose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。</h5> <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_1.jpg" class="" title="hot_reload_test_1">
+<li><h5 id="完成上面Docker-Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。"><a href="#完成上面Docker-Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。" class="headerlink" title="完成上面Docker Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。"></a>完成上面Docker Compose啟動的步驟後，接著來試試看能不能達成所謂的熱重載。我們先在Angular的原始碼做點小變更。</h5> <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_1.jpg" class="" title="hot_reload_test_1">
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_2.jpg" class="" title="hot_reload_test_2">
 </li>
 <li><h5 id="接著rsync把本機的程式複製到wsl的專案資料夾裡面"><a href="#接著rsync把本機的程式複製到wsl的專案資料夾裡面" class="headerlink" title="接著rsync把本機的程式複製到wsl的專案資料夾裡面"></a>接著rsync把本機的程式複製到wsl的專案資料夾裡面</h5></li>
@@ -158,7 +158,7 @@
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_exec_it.jpg" class="" title="docker_exec_it"></li>
 <li><h5 id="觀察一下啟動中的container清單。container的狀態為Exited"><a href="#觀察一下啟動中的container清單。container的狀態為Exited" class="headerlink" title="觀察一下啟動中的container清單。container的狀態為Exited !!"></a>觀察一下啟動中的container清單。container的狀態為Exited !!</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_2.jpg" class="" title="docker_ps_2">   </li>
-<li><h5 id="後來問了ChatGPT才知道，-如果你是用下面的指令啟動DockerCompose-前景模式-。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。"><a href="#後來問了ChatGPT才知道，-如果你是用下面的指令啟動DockerCompose-前景模式-。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。" class="headerlink" title="後來問了ChatGPT才知道， 如果你是用下面的指令啟動DockerCompose(前景模式)。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。"></a>後來問了ChatGPT才知道， 如果你是用下面的指令啟動DockerCompose(前景模式)。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose up</span><br></pre></td></tr></table></figure>
+<li><h5 id="後來問了ChatGPT才知道，-如果你是用下面的指令啟動Docker-Compose-前景模式-。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。"><a href="#後來問了ChatGPT才知道，-如果你是用下面的指令啟動Docker-Compose-前景模式-。那麼你在關掉terminal視窗或是按ctrl-c-時，container就會停止，狀態變為Exited。" class="headerlink" title="後來問了ChatGPT才知道， 如果你是用下面的指令啟動Docker Compose(前景模式)。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。"></a>後來問了ChatGPT才知道， 如果你是用下面的指令啟動Docker Compose(前景模式)。那麼你在關掉terminal視窗或是按ctrl + c 時，container就會停止，狀態變為Exited。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose up</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/trouble_shooting.jpg" class="" title="trouble_shooting">
 <h5 id="在執行一次docker-ps-a查看Container的狀態。狀態確實是變成Exited了"><a href="#在執行一次docker-ps-a查看Container的狀態。狀態確實是變成Exited了" class="headerlink" title="在執行一次docker ps -a查看Container的狀態。狀態確實是變成Exited了"></a>在執行一次docker ps -a查看Container的狀態。狀態確實是變成Exited了</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
  <img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps_3.jpg" class="" title="docker_ps_3"></li>
@@ -167,11 +167,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg9291v6000554n1cosk252a" data-title="Docker with WSL2(3) - DockerCompose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg92aqhz0000lon1eaq0fam2" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/DockerCompose/" rel="tag">DockerCompose</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li></ul>
 
     </footer>
   </div>
@@ -209,7 +209,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerCompose/" rel="tag">DockerCompose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
     </div>
   </div>
 
@@ -219,7 +219,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Docker/" style="font-size: 20px;">Docker</a> <a href="/tags/DockerCompose/" style="font-size: 10px;">DockerCompose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Ubuntu/" style="font-size: 15px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 15px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+      <a href="/tags/Docker/" style="font-size: 20px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Ubuntu/" style="font-size: 15px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 15px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
     </div>
   </div>
 
@@ -241,7 +241,7 @@
       <ul>
         
           <li>
-            <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - DockerCompose</a>
+            <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - Docker Compose</a>
           </li>
         
           <li>

@@ -13,6 +13,7 @@
 <meta property="og:site_name" content="HaoAreYou~">
 <meta property="og:description" content="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。因為重新 docker build 產生的新 image，和 正在跑的 con">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_up.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/angular_modify.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_ps.jpg">
@@ -26,13 +27,13 @@
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_3.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-02T10:13:57.626Z">
+<meta property="article:modified_time" content="2025-10-03T02:35:58.011Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="WSL2">
 <meta property="article:tag" content="Ubuntu">
 <meta property="article:tag" content="Docker Compose">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/angular_modify.jpg">
+<meta name="twitter:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_up.jpg">
   
     <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
   
@@ -137,11 +138,12 @@
 <li><h5 id="如果有-build-→-進入-Dockerfile-→-建立-更新-image"><a href="#如果有-build-→-進入-Dockerfile-→-建立-更新-image" class="headerlink" title="如果有 build: → 進入 Dockerfile → 建立&#x2F;更新 image"></a>如果有 build: → 進入 Dockerfile → 建立&#x2F;更新 image</h5></li>
 <li><h5 id="從這個-image-建立-container"><a href="#從這個-image-建立-container" class="headerlink" title="從這個 image 建立 container"></a>從這個 image 建立 container</h5></li>
 <li><h5 id="套用-docker-compose-裡的-ports、volumes、command-等設定"><a href="#套用-docker-compose-裡的-ports、volumes、command-等設定" class="headerlink" title="套用 docker-compose 裡的 ports、volumes、command 等設定"></a>套用 docker-compose 裡的 ports、volumes、command 等設定</h5></li>
-<li><h5 id="Container-啟動並執行（可能是-CMD-也可能被-docker-compose-的-command-覆蓋）"><a href="#Container-啟動並執行（可能是-CMD-也可能被-docker-compose-的-command-覆蓋）" class="headerlink" title="Container 啟動並執行（可能是 CMD 也可能被 docker-compose 的 command 覆蓋）"></a>Container 啟動並執行（可能是 CMD 也可能被 docker-compose 的 command 覆蓋）</h5></li>
+<li><h5 id="Container-啟動並執行（可能是-Dockerfile的CMD-也可能被-docker-compose-的-command-覆蓋）"><a href="#Container-啟動並執行（可能是-Dockerfile的CMD-也可能被-docker-compose-的-command-覆蓋）" class="headerlink" title="Container 啟動並執行（可能是 Dockerfile的CMD 也可能被 docker-compose 的 command 覆蓋）"></a>Container 啟動並執行（可能是 Dockerfile的CMD 也可能被 docker-compose 的 command 覆蓋）</h5></li>
 </ol>
 <ul>
 <li><h5 id="簡單來說："><a href="#簡單來說：" class="headerlink" title="簡單來說："></a>簡單來說：</h5><ol>
 <li><h5 id="Dockerfile-→-做出-image"><a href="#Dockerfile-→-做出-image" class="headerlink" title="Dockerfile → 做出 image"></a>Dockerfile → 做出 image</h5></li>
+<li><h5 style="color: red;">Dockerfile → 做出 image</h5></li>
 <li><h5 id="docker-compose-yml-→-啟動容器"><a href="#docker-compose-yml-→-啟動容器" class="headerlink" title="docker-compose.yml → 啟動容器"></a>docker-compose.yml → 啟動容器</h5></li>
 </ol>
 </li>
@@ -154,8 +156,9 @@
 <h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h5 id="volumes屬性我們就設成-，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄-app-dockercompose下。這邊要特別注意-angular-dev的command，我們也要跟之前一樣做port的mapping-0-0-0-0-mapping到port4200-，並且因為我們沒有再容器裡面安裝Angular-CLI，所以不能直接用ng-serve，改使用npx-ng-npx-會自動執行-node-modules-裡的-ng，避免全域安裝版本問題-。"><a href="#volumes屬性我們就設成-，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄-app-dockercompose下。這邊要特別注意-angular-dev的command，我們也要跟之前一樣做port的mapping-0-0-0-0-mapping到port4200-，並且因為我們沒有再容器裡面安裝Angular-CLI，所以不能直接用ng-serve，改使用npx-ng-npx-會自動執行-node-modules-裡的-ng，避免全域安裝版本問題-。" class="headerlink" title="volumes屬性我們就設成.&#x2F;，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄&#x2F;app_dockercompose下。這邊要特別注意 angular-dev的command，我們也要跟之前一樣做port的mapping(0.0.0.0 mapping到port4200)，並且因為我們沒有再容器裡面安裝Angular CLI，所以不能直接用ng serve，改使用npx ng(npx 會自動執行 node_modules 裡的 ng，避免全域安裝版本問題)。"></a>volumes屬性我們就設成.&#x2F;，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄&#x2F;app_dockercompose下。這邊要特別注意 angular-dev的command，我們也要跟之前一樣做port的mapping(0.0.0.0 mapping到port4200)，並且因為我們沒有再容器裡面安裝Angular CLI，所以不能直接用ng serve，改使用npx ng(npx 會自動執行 node_modules 裡的 ng，避免全域安裝版本問題)。</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">angular-dev:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">node:18</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">angular-dev</span></span><br><span class="line">    <span class="attr">working_dir:</span> <span class="string">/app_dockercompose</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./:/app_dockercompose</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;4200:4200&quot;</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">sh</span> <span class="string">-c</span> <span class="string">&quot;npm install &amp;&amp; npx ng serve --host 0.0.0.0 --port 4200&quot;</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">angular-prod:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">nginx:alpine</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">angular-prod</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">./my-contact-form/dist/my-contact-form:/usr/share/nginx/html</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;8080:80&quot;</span>    </span><br></pre></td></tr></table></figure>
 
 <ol start="2">
-<li><h5 id="執行下面指令，啟動Docker-Compose。"><a href="#執行下面指令，啟動Docker-Compose。" class="headerlink" title="執行下面指令，啟動Docker Compose。"></a>執行下面指令，啟動Docker Compose。</h5></li>
+<li><h5 id="執行下面指令，啟動Docker-Compose。記得指令要在下在docker-compose-yaml所屬的目錄。"><a href="#執行下面指令，啟動Docker-Compose。記得指令要在下在docker-compose-yaml所屬的目錄。" class="headerlink" title="執行下面指令，啟動Docker Compose。記得指令要在下在docker_compose.yaml所屬的目錄。"></a>執行下面指令，啟動Docker Compose。記得指令要在下在docker_compose.yaml所屬的目錄。</h5></li>
 </ol>
+<img src="/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_up.jpg" class="" title="docker_compose_up">
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 啟動（開發 + 部署）</span></span><br><span class="line">docker compose up</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只跑開發環境</span></span><br><span class="line">docker compose up angular-dev</span><br><span class="line"></span><br><span class="line"><span class="comment"># 只跑生產測試環境</span></span><br><span class="line">docker compose up angular-prod</span><br></pre></td></tr></table></figure>
 <hr>
 <h3 id="Docker-Compose測試"><a href="#Docker-Compose測試" class="headerlink" title="Docker Compose測試"></a>Docker Compose測試</h3><ol>
@@ -208,7 +211,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmg99dpn00001s0n1hviubijo" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmga8ddl6000alcn1hehu1odb" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

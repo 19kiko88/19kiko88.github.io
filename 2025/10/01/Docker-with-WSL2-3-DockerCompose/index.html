@@ -27,7 +27,7 @@
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/docker_compose_success_with_parameter_d.jpg">
 <meta property="og:image" content="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/hot_reload_test_3.jpg">
 <meta property="article:published_time" content="2025-10-01T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-03T02:47:30.983Z">
+<meta property="article:modified_time" content="2025-10-03T02:49:47.854Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="WSL2">
 <meta property="article:tag" content="Ubuntu">
@@ -124,19 +124,24 @@
 <h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><hr>
 <h3 id="什麼是Docker-Compose"><a href="#什麼是Docker-Compose" class="headerlink" title="什麼是Docker Compose?"></a>什麼是Docker Compose?</h3><h5>Docker Compose是個定義如何<span style="color: red;">同時啟動多個 container </span>的設定檔</h5>
 <figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">angular-dev:</span></span><br><span class="line">    <span class="attr">build:</span> <span class="string">.</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;4200:4200&quot;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">.:/app</span></span><br><span class="line">    <span class="attr">command:</span> <span class="string">npm</span> <span class="string">start</span></span><br></pre></td></tr></table></figure>
-* ##### 執行 docker compose up → Docker Compose 幫你檢查：
-  1. ##### 如果有 build:，會先去執行 Dockerfile → 產生 image
-  2. ##### 然後用這個 image 去啟動 container
-  3. ##### 再依照 ports、volumes、command 等設定去運行
----
-### Dockerfile 跟 Docker Compose的執行順序：
-  1. ##### 執行docker compose up
-  2. ##### Docker Compose 讀取 docker-compose.yml
-  3. ##### 如果有 build: → 進入 Dockerfile → 建立/更新 image
-  4. ##### 從這個 image 建立 container
-  5. ##### 套用 docker-compose 裡的 ports、volumes、command 等設定
-  6. ##### Container 啟動並執行（可能是 Dockerfile的CMD 也可能被 docker-compose 的 command 覆蓋）
 
+<ul>
+<li><h5 id="執行-docker-compose-up-→-Docker-Compose-幫你檢查："><a href="#執行-docker-compose-up-→-Docker-Compose-幫你檢查：" class="headerlink" title="執行 docker compose up → Docker Compose 幫你檢查："></a>執行 docker compose up → Docker Compose 幫你檢查：</h5><ol>
+<li><h5 id="如果有-build-，會先去執行-Dockerfile-→-產生-image"><a href="#如果有-build-，會先去執行-Dockerfile-→-產生-image" class="headerlink" title="如果有 build:，會先去執行 Dockerfile → 產生 image"></a>如果有 build:，會先去執行 Dockerfile → 產生 image</h5></li>
+<li><h5 id="然後用這個-image-去啟動-container"><a href="#然後用這個-image-去啟動-container" class="headerlink" title="然後用這個 image 去啟動 container"></a>然後用這個 image 去啟動 container</h5></li>
+<li><h5 id="再依照-ports、volumes、command-等設定去運行"><a href="#再依照-ports、volumes、command-等設定去運行" class="headerlink" title="再依照 ports、volumes、command 等設定去運行"></a>再依照 ports、volumes、command 等設定去運行</h5></li>
+</ol>
+</li>
+</ul>
+<hr>
+<h3 id="Dockerfile-跟-Docker-Compose的執行順序："><a href="#Dockerfile-跟-Docker-Compose的執行順序：" class="headerlink" title="Dockerfile 跟 Docker Compose的執行順序："></a>Dockerfile 跟 Docker Compose的執行順序：</h3><ol>
+<li><h5 id="執行docker-compose-up"><a href="#執行docker-compose-up" class="headerlink" title="執行docker compose up"></a>執行docker compose up</h5></li>
+<li><h5 id="Docker-Compose-讀取-docker-compose-yml"><a href="#Docker-Compose-讀取-docker-compose-yml" class="headerlink" title="Docker Compose 讀取 docker-compose.yml"></a>Docker Compose 讀取 docker-compose.yml</h5></li>
+<li><h5 id="如果有-build-→-進入-Dockerfile-→-建立-更新-image"><a href="#如果有-build-→-進入-Dockerfile-→-建立-更新-image" class="headerlink" title="如果有 build: → 進入 Dockerfile → 建立&#x2F;更新 image"></a>如果有 build: → 進入 Dockerfile → 建立&#x2F;更新 image</h5></li>
+<li><h5 id="從這個-image-建立-container"><a href="#從這個-image-建立-container" class="headerlink" title="從這個 image 建立 container"></a>從這個 image 建立 container</h5></li>
+<li><h5 id="套用-docker-compose-裡的-ports、volumes、command-等設定"><a href="#套用-docker-compose-裡的-ports、volumes、command-等設定" class="headerlink" title="套用 docker-compose 裡的 ports、volumes、command 等設定"></a>套用 docker-compose 裡的 ports、volumes、command 等設定</h5></li>
+<li><h5 id="Container-啟動並執行（可能是-Dockerfile的CMD-也可能被-docker-compose-的-command-覆蓋）"><a href="#Container-啟動並執行（可能是-Dockerfile的CMD-也可能被-docker-compose-的-command-覆蓋）" class="headerlink" title="Container 啟動並執行（可能是 Dockerfile的CMD 也可能被 docker-compose 的 command 覆蓋）"></a>Container 啟動並執行（可能是 Dockerfile的CMD 也可能被 docker-compose 的 command 覆蓋）</h5></li>
+</ol>
 <ul>
 <li><h5 id="簡單來說："><a href="#簡單來說：" class="headerlink" title="簡單來說："></a>簡單來說：</h5><ol>
 <li><h5 style="color: red;">Dockerfile → 做出 image</h5></li>
@@ -207,7 +212,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmga8uqsd000i0sn1huseelwl" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmga8xq8s000e2cn12c2j511c" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

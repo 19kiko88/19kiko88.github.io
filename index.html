@@ -93,7 +93,7 @@
         
   
     <h1 itemprop="name">
-      <a class="p-name article-title" href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - Docker Compose</a>
+      <a class="p-name article-title" href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - 利用Docker Compose達到熱重載效果</a>
     </h1>
   
 
@@ -101,7 +101,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h5 id="在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神"><a href="#在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神" class="headerlink" title="在一般的開發流程中，[熱重載]是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!"></a>在一般的開發流程中，<code>[熱重載]</code>是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!</h5><h5 id="為了達到熱重載，這篇就來說說Docker-Compose。"><a href="#為了達到熱重載，這篇就來說說Docker-Compose。" class="headerlink" title="為了達到熱重載，這篇就來說說Docker Compose。"></a>為了達到熱重載，這篇就來說說Docker Compose。</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5>
+        <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h5 id="在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神"><a href="#在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神" class="headerlink" title="在一般的開發流程中，[熱重載]是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!"></a>在一般的開發流程中，<code>[熱重載]</code>是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!</h5><h5 id="這篇文章教大家如何透過Docker-Compose的volumes屬性來達到熱重載的效果"><a href="#這篇文章教大家如何透過Docker-Compose的volumes屬性來達到熱重載的效果" class="headerlink" title="這篇文章教大家如何透過Docker Compose的volumes屬性來達到熱重載的效果!"></a>這篇文章教大家如何透過Docker Compose的volumes屬性來達到熱重載的效果!</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5>
         
           <p class="article-more-link">
             <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/#more">Read More</a>
@@ -110,7 +110,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmgaoakcv000988n15lx174rf" data-title="Docker with WSL2(3) - Docker Compose" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmggbcf1x0005zgn1f80j8z4b" data-title="Docker with WSL2(3) - 利用Docker Compose達到熱重載效果" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -159,7 +159,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmgaoakcw000c88n1dr0i7d9x" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmggbcf1l0000zgn19gny62mr" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -208,7 +208,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmgaoakcx000e88n177w24m2b" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmggbcf28000rzgn1hlic2ikb" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -257,7 +257,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/Docker%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" data-id="cmgaoakcp000388n1esgfflz1" data-title="Docker 基本概念" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/Docker%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" data-id="cmggbcf1t0001zgn1f8m51z1s" data-title="Docker 基本概念" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -306,7 +306,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmgaoakcv000a88n143qba2l0" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/08/chrome%E5%A5%97%E4%BB%B6%E4%BD%BF%E7%94%A8Node-js%E5%A5%97%E4%BB%B6/" data-id="cmggbcf1x0004zgn1e73i6cob" data-title="Webpack打包(以Chrome extension為範例)" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -372,7 +372,7 @@
       <ul>
         
           <li>
-            <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - Docker Compose</a>
+            <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - 利用Docker Compose達到熱重載效果</a>
           </li>
         
           <li>

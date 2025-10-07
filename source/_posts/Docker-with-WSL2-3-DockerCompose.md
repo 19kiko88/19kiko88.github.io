@@ -1,5 +1,5 @@
 ---
-title: Docker with WSL2(3) - Docker Compose
+title: Docker with WSL2(3) - 利用Docker Compose達到熱重載效果
 date: 2025-10-01 16:26:33
 categories:
   - Docker
@@ -12,7 +12,7 @@ tags:
 ##### 但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。
 ##### 因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。
 ##### 在一般的開發流程中，`[熱重載]`是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!
-##### 為了達到熱重載，這篇就來說說Docker Compose。
+##### 這篇文章教大家如何透過Docker Compose的volumes屬性來達到熱重載的效果!
 ##### 
 <!-- more -->
 #
@@ -21,7 +21,7 @@ tags:
 #
 ---
 ### 什麼是Docker Compose?
-##### Docker Compose是個定義如何啟動 container 的設定檔
+<h5>Docker Compose是個定義如何<span style="color: red;">同時啟動多個 container </span>的設定檔</h5>
 ``` yaml
 services:
   angular-dev:
@@ -32,6 +32,7 @@ services:
       - .:/app
     command: npm start
 ```
+
 * ##### 執行 docker compose up → Docker Compose 幫你檢查：
   1. ##### 如果有 build:，會先去執行 Dockerfile → 產生 image
   2. ##### 然後用這個 image 去啟動 container
@@ -43,11 +44,11 @@ services:
   3. ##### 如果有 build: → 進入 Dockerfile → 建立/更新 image
   4. ##### 從這個 image 建立 container
   5. ##### 套用 docker-compose 裡的 ports、volumes、command 等設定
-  6. ##### Container 啟動並執行（可能是 CMD 也可能被 docker-compose 的 command 覆蓋）
+  6. ##### Container 啟動並執行（可能是 Dockerfile的CMD 也可能被 docker-compose 的 command 覆蓋）
 
 * ##### 簡單來說：
-  1. ##### Dockerfile → 做出 image
-  2. ##### docker-compose.yml → 啟動容器
+  1. <h5 style="color: red;">Dockerfile → 做出 image</h5>
+  2. <h5 style="color: red;">docker-compose.yml → 啟動容器</h5>  
 ---
 ### 建立Docker Compose檔案
 1. ##### 執行下面指令，建立docker-compose.yaml
@@ -55,16 +56,23 @@ services:
 nano docker-compose.yaml
 ```
 #
-  ##### volumes屬性我們就設成./，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄/app_dockercompose下。這邊要特別注意 angular-dev的command，我們也要跟之前一樣做port的mapping(0.0.0.0 mapping到port4200)，並且因為我們沒有再容器裡面安裝Angular CLI，所以不能直接用ng serve，改使用npx ng(npx 會自動執行 node_modules 裡的 ng，避免全域安裝版本問題)。
+  ##### 要做到熱重載的第一步，是確保當你在宿主機（你的電腦）上修改程式碼時，容器內的檔案能即時更新。這正是透過 volumes 中的繫結掛載 (Bind Mounts) 實現的。這行指令在宿主機的檔案系統和容器的檔案系統之間建立了一個實時的雙向通道。當你在本機儲存檔案時，Docker 會將變更立即寫入容器內的 /app_dockercompose 目錄中。所以volumes屬性我們就設成./，把WSL當前專案目錄的檔案都複製到容器的虛擬目錄/app_dockercompose下。
+
+  * ##### Docker Compose 要實現熱重載 (Hot Reload)，主要依靠兩個關鍵技術的結合：
+    1. ##### Docker Compose 的 volumes 設定 (繫結掛載)。
+    2. ##### 應用程式框架內建的開發伺服器 (如 ng serve, webpack-dev-server 等)。
+  <h5 style="color: red;">簡單來說，Compose 負責同步程式碼，而應用程式框架負責偵測變更並刷新瀏覽器。</h5>
+
+  ##### 這邊要特別注意 angular-dev的command，我們也要跟之前一樣做port的mapping(0.0.0.0 mapping到port4200)，並且因為我們沒有再容器裡面安裝Angular CLI，所以不能直接用ng serve，改使用npx ng(npx 會自動執行 node_modules 裡的 ng，避免全域安裝版本問題)。
 
 ``` yaml
 services:
   angular-dev:
-    image: node:18
-    container_name: angular-dev
+    image: node:18 #用 Node 官方 image
+    container_name: angular-dev # 
     working_dir: /app_dockercompose
     volumes:
-      - ./:/app_dockercompose
+      - ./:/app_dockercompose # 從docker-compose.yaml檔案目錄(專案資料夾)，掛載到docker建立的容器虛擬目錄(app_dockercompose)
     ports:
       - "4200:4200"
     command: sh -c "npm install && npx ng serve --host 0.0.0.0 --port 4200"
@@ -78,7 +86,8 @@ services:
       - "8080:80"    
 ```
 
-2. ##### 執行下面指令，啟動Docker Compose。
+2. ##### 執行下面指令，啟動Docker Compose。記得指令要在下在docker_compose.yaml所屬的目錄。
+{% asset_image docker_compose_up.jpg docker_compose_up %}
 ``` bash
 # 啟動（開發 + 部署）
 docker compose up

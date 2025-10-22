@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2025/10/22/Simple-Docker-App/project_structure.jpg">
 <meta property="article:published_time" content="2025-10-22T07:36:11.000Z">
-<meta property="article:modified_time" content="2025-10-22T07:46:32.462Z">
+<meta property="article:modified_time" content="2025-10-22T10:07:29.698Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2025/10/22/Simple-Docker-App/project_structure.jpg">
@@ -107,7 +107,11 @@
 <h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><hr>
 <ul>
 <li><h5 id="後端："><a href="#後端：" class="headerlink" title="後端："></a>後端：</h5><ol>
-<li><h5 id="關閉所有-WSL2-執行個體。"><a href="#關閉所有-WSL2-執行個體。" class="headerlink" title="關閉所有 WSL2 執行個體。"></a>關閉所有 WSL2 執行個體。</h5></li>
+<li><h5 id="建立一個後端-Net-WebAPI專案，這裡我用的是-Net-8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。"><a href="#建立一個後端-Net-WebAPI專案，這裡我用的是-Net-8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。" class="headerlink" title="建立一個後端.Net WebAPI專案，這裡我用的是.Net 8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。"></a>建立一個後端.Net WebAPI專案，這裡我用的是.Net 8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。</h5></li>
+</ol>
+  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[HttpGet]</span><br><span class="line">public IEnumerable&lt;WeatherForecast&gt; Get()</span><br><span class="line">&#123;</span><br><span class="line">    return Enumerable.Range(1, 5).Select(index =&gt; new WeatherForecast</span><br><span class="line">    &#123;</span><br><span class="line">        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),</span><br><span class="line">        TemperatureC = Random.Shared.Next(-20, 55),</span><br><span class="line">        Summary = Summaries[Random.Shared.Next(Summaries.Length)]</span><br><span class="line">    &#125;)</span><br><span class="line">    .ToArray();</span><br><span class="line">&#125;    </span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li><h5 id="建立Dockerfile"><a href="#建立Dockerfile" class="headerlink" title="建立Dockerfile"></a>建立Dockerfile</h5></li>
 </ol>
 </li>
 </ul>
@@ -115,7 +119,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh1oxhcs0005oon1d3pdb89y" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh1ty7h70005e0n1hxh3gl6z" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

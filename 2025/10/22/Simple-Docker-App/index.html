@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://example.com/2025/10/22/Simple-Docker-App/docker_ps.jpg">
 <meta property="og:image" content="http://example.com/2025/10/22/Simple-Docker-App/api_test.jpg">
 <meta property="article:published_time" content="2025-10-22T07:36:11.000Z">
-<meta property="article:modified_time" content="2025-10-23T08:41:57.803Z">
+<meta property="article:modified_time" content="2025-10-23T08:47:16.954Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2025/10/22/Simple-Docker-App/project_structure_2.jpg">
@@ -113,7 +113,7 @@
 <h5 id="整體的專案架構大致會如下："><a href="#整體的專案架構大致會如下：" class="headerlink" title="整體的專案架構大致會如下："></a>整體的專案架構大致會如下：</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/simple-docker-app</span><br><span class="line">├── /DockerBackend            # .NET Web API 專案資料夾</span><br><span class="line">│   └── Dockerfile</span><br><span class="line">├── /frontend           # Angular 專案資料夾</span><br><span class="line">│   └── Dockerfile</span><br><span class="line">├── /nginx              # Nginx 設定檔資料夾</span><br><span class="line">│   └── nginx.conf</span><br><span class="line">└── docker-compose.yml  # Docker Compose 主設定檔</span><br></pre></td></tr></table></figure>
 <h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><hr>
 <ul>
-<li><h5 id="後端："><a href="#後端：" class="headerlink" title="後端："></a>後端：</h5><ol>
+<li><h5 id="後端-Net-WebAPI："><a href="#後端-Net-WebAPI：" class="headerlink" title="後端.Net WebAPI："></a>後端.Net WebAPI：</h5><ol>
 <li><h5 id="建立一個後端-Net-WebAPI專案，這裡我用的是-Net-8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。"><a href="#建立一個後端-Net-WebAPI專案，這裡我用的是-Net-8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。" class="headerlink" title="建立一個後端.Net WebAPI專案，這裡我用的是.Net 8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。"></a>建立一個後端.Net WebAPI專案，這裡我用的是.Net 8，專案建立後，Controller裡面會有一個預設的測試API。我們就直接拿來使用，也不再另外更改程式了。</h5></li>
 </ol>
   <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[HttpGet]</span><br><span class="line">public IEnumerable&lt;WeatherForecast&gt; Get()</span><br><span class="line">&#123;</span><br><span class="line">    return Enumerable.Range(1, 5).Select(index =&gt; new WeatherForecast</span><br><span class="line">    &#123;</span><br><span class="line">        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),</span><br><span class="line">        TemperatureC = Random.Shared.Next(-20, 55),</span><br><span class="line">        Summary = Summaries[Random.Shared.Next(Summaries.Length)]</span><br><span class="line">    &#125;)</span><br><span class="line">    .ToArray();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -177,13 +177,13 @@
 </ol>
  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
 <h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h5 id="docker-container運行成功了"><a href="#docker-container運行成功了" class="headerlink" title="docker container運行成功了!"></a>docker container運行成功了!</h5> <img src="/2025/10/22/Simple-Docker-App/docker_ps.jpg" class="" title="docker_ps">
-<h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h5 id="api測試成功"><a href="#api測試成功" class="headerlink" title="api測試成功!!"></a>api測試成功!!</h5> <img src="/2025/10/22/Simple-Docker-App/api_test.jpg" class="" title="api_test"></li>
+<h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h5 id="api測試，成功取得api回應"><a href="#api測試，成功取得api回應" class="headerlink" title="api測試，成功取得api回應!!"></a>api測試，成功取得api回應!!</h5> <img src="/2025/10/22/Simple-Docker-App/api_test.jpg" class="" title="api_test"></li>
 </ol>
 </li>
 </ul>
-<h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><hr>
+<h5 id="後端API的部分到這裡算是完成了。"><a href="#後端API的部分到這裡算是完成了。" class="headerlink" title="後端API的部分到這裡算是完成了。"></a>後端API的部分到這裡算是完成了。</h5><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><hr>
 <ul>
-<li><h5 id="前端："><a href="#前端：" class="headerlink" title="前端："></a>前端：</h5></li>
+<li><h5 id="前端Angular："><a href="#前端Angular：" class="headerlink" title="前端Angular："></a>前端Angular：</h5></li>
 </ul>
 <h1 id="-30"><a href="#-30" class="headerlink" title=""></a></h1><h1 id="-31"><a href="#-31" class="headerlink" title=""></a></h1><h1 id="-32"><a href="#-32" class="headerlink" title=""></a></h1><h1 id="-33"><a href="#-33" class="headerlink" title=""></a></h1><hr>
 <ul>
@@ -197,7 +197,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh36ekce0000kcn139p6aurp" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh36in3v0001t8n18jxpd2sq" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

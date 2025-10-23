@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://example.com/2025/10/22/Simple-Docker-App/docker_ps.jpg">
 <meta property="og:image" content="http://example.com/2025/10/22/Simple-Docker-App/api_test.jpg">
 <meta property="article:published_time" content="2025-10-22T07:36:11.000Z">
-<meta property="article:modified_time" content="2025-10-23T09:25:29.026Z">
+<meta property="article:modified_time" content="2025-10-23T09:59:42.619Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2025/10/22/Simple-Docker-App/project_structure_2.jpg">
@@ -181,9 +181,9 @@
 </ol>
 </li>
 <li><h5 id="後端API的部分到這裡算是完成了。這裡我們來整理一下容器化之後的優點："><a href="#後端API的部分到這裡算是完成了。這裡我們來整理一下容器化之後的優點：" class="headerlink" title="後端API的部分到這裡算是完成了。這裡我們來整理一下容器化之後的優點："></a>後端API的部分到這裡算是完成了。這裡我們來整理一下容器化之後的優點：</h5><ol>
-<li><h5 id="開發環境的「在我電腦上可以執行」問題："><a href="#開發環境的「在我電腦上可以執行」問題：" class="headerlink" title="開發環境的「在我電腦上可以執行」問題："></a>開發環境的「在我電腦上可以執行」問題：</h5><h5 id="aaaaaaaaaaaaaaaaaaaaaaaa"><a href="#aaaaaaaaaaaaaaaaaaaaaaaa" class="headerlink" title="aaaaaaaaaaaaaaaaaaaaaaaa"></a>aaaaaaaaaaaaaaaaaaaaaaaa</h5></li>
-<li><h5 id="bbbbb"><a href="#bbbbb" class="headerlink" title="bbbbb"></a>bbbbb</h5><h5 id="bbbbbbbbbbbbbbbbbbbbbbbb"><a href="#bbbbbbbbbbbbbbbbbbbbbbbb" class="headerlink" title="bbbbbbbbbbbbbbbbbbbbbbbb"></a>bbbbbbbbbbbbbbbbbbbbbbbb</h5></li>
-<li><h5 id="ccccc"><a href="#ccccc" class="headerlink" title="ccccc"></a>ccccc</h5><h5 id="cccccccccccccccccccccccc"><a href="#cccccccccccccccccccccccc" class="headerlink" title="cccccccccccccccccccccccc"></a>cccccccccccccccccccccccc</h5></li>
+<li><h5 id="開發環境的「在我電腦上可以執行」問題："><a href="#開發環境的「在我電腦上可以執行」問題：" class="headerlink" title="開發環境的「在我電腦上可以執行」問題："></a>開發環境的「在我電腦上可以執行」問題：</h5><h5 id="這種情況一定不陌生，每個人的-Net-SDK-Runtime版本可能不同，這就可能導致版本較舊的開發人員無法正常執行新專案。上述的-Net可以替換成PostgreSQL-Redis-等等…，容器化後，可保持環境的一致性。"><a href="#這種情況一定不陌生，每個人的-Net-SDK-Runtime版本可能不同，這就可能導致版本較舊的開發人員無法正常執行新專案。上述的-Net可以替換成PostgreSQL-Redis-等等…，容器化後，可保持環境的一致性。" class="headerlink" title="這種情況一定不陌生，每個人的.Net SDK&#x2F;Runtime版本可能不同，這就可能導致版本較舊的開發人員無法正常執行新專案。上述的.Net可以替換成PostgreSQL. Redis. 等等…，容器化後，可保持環境的一致性。"></a>這種情況一定不陌生，每個人的.Net SDK&#x2F;Runtime版本可能不同，這就可能導致版本較舊的開發人員無法正常執行新專案。上述的.Net可以替換成PostgreSQL. Redis. 等等…，容器化後，可保持環境的一致性。</h5></li>
+<li><h5 id="CI-CD"><a href="#CI-CD" class="headerlink" title="CI&#x2F;CD"></a>CI&#x2F;CD</h5><h5 id="bbbbbbbbbbbbbbbbbbbbbbbb"><a href="#bbbbbbbbbbbbbbbbbbbbbbbb" class="headerlink" title="bbbbbbbbbbbbbbbbbbbbbbbb"></a>bbbbbbbbbbbbbbbbbbbbbbbb</h5></li>
+<li><h5 id="快速擴充"><a href="#快速擴充" class="headerlink" title="快速擴充"></a>快速擴充</h5><h5 id="假設電商有促銷活動，當發現流量快無法負荷時，只要在有安裝Docker的伺服器上，直接用image啟動容器即可及時分擔流量。不必像傳統VM，光是啟動時間就比Docker多了許多-VM為分鐘級，Docker則為秒級-，還要再複製程式碼以及設定WebServer…等繁雜程序。"><a href="#假設電商有促銷活動，當發現流量快無法負荷時，只要在有安裝Docker的伺服器上，直接用image啟動容器即可及時分擔流量。不必像傳統VM，光是啟動時間就比Docker多了許多-VM為分鐘級，Docker則為秒級-，還要再複製程式碼以及設定WebServer…等繁雜程序。" class="headerlink" title="假設電商有促銷活動，當發現流量快無法負荷時，只要在有安裝Docker的伺服器上，直接用image啟動容器即可及時分擔流量。不必像傳統VM，光是啟動時間就比Docker多了許多(VM為分鐘級，Docker則為秒級)，還要再複製程式碼以及設定WebServer…等繁雜程序。"></a>假設電商有促銷活動，當發現流量快無法負荷時，只要在有安裝Docker的伺服器上，直接用image啟動容器即可及時分擔流量。不必像傳統VM，光是啟動時間就比Docker多了許多(VM為分鐘級，Docker則為秒級)，還要再複製程式碼以及設定WebServer…等繁雜程序。</h5></li>
 </ol>
 </li>
 </ul>
@@ -203,7 +203,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh37vm7100018gn13e9z73sw" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh393zyq0005d8n1162ccea1" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

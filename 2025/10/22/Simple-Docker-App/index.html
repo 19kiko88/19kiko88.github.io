@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2025/10/22/Simple-Docker-App/project_structure.jpg">
 <meta property="article:published_time" content="2025-10-22T07:36:11.000Z">
-<meta property="article:modified_time" content="2025-10-22T10:17:29.592Z">
+<meta property="article:modified_time" content="2025-10-23T03:07:09.196Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2025/10/22/Simple-Docker-App/project_structure.jpg">
@@ -103,7 +103,9 @@
       
         <h5 id="這篇做個簡單的docker實作範例，後端我們使用-Net-WebAPI，並有個api可以查詢天氣預報，前端則使用Angular。把這個簡單的查詢小程式容器化。"><a href="#這篇做個簡單的docker實作範例，後端我們使用-Net-WebAPI，並有個api可以查詢天氣預報，前端則使用Angular。把這個簡單的查詢小程式容器化。" class="headerlink" title="這篇做個簡單的docker實作範例，後端我們使用.Net WebAPI，並有個api可以查詢天氣預報，前端則使用Angular。把這個簡單的查詢小程式容器化。"></a>這篇做個簡單的docker實作範例，後端我們使用.Net WebAPI，並有個api可以查詢天氣預報，前端則使用Angular。把這個簡單的查詢小程式容器化。</h5><span id="more"></span>
 <h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><hr>
-<h5 id="整體的專案架構大致會如下："><a href="#整體的專案架構大致會如下：" class="headerlink" title="整體的專案架構大致會如下："></a>整體的專案架構大致會如下：</h5><img src="/2025/10/22/Simple-Docker-App/project_structure.jpg" class="" title="project_structure">
+<h5 id="整體的專案架構大致會如下："><a href="#整體的專案架構大致會如下：" class="headerlink" title="整體的專案架構大致會如下："></a>整體的專案架構大致會如下：</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/simple-docker-app</span><br><span class="line">├── /backend            # .NET Web API 專案資料夾</span><br><span class="line">│   └── Dockerfile</span><br><span class="line">├── /frontend           # Angular 專案資料夾</span><br><span class="line">│   └── Dockerfile</span><br><span class="line">├── /nginx              # Nginx 設定檔資料夾</span><br><span class="line">│   └── nginx.conf</span><br><span class="line">└── docker-compose.yml  # Docker Compose 主設定檔</span><br></pre></td></tr></table></figure>
+
+<img src="/2025/10/22/Simple-Docker-App/project_structure.jpg" class="" title="project_structure">
 <h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><hr>
 <ul>
 <li><h5 id="後端："><a href="#後端：" class="headerlink" title="後端："></a>後端：</h5><ol>
@@ -127,7 +129,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh1uasel0008kwn14huoeoje" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmh2udam4000lh0n1d8ag1fq0" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

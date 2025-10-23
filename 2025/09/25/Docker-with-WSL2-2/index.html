@@ -24,7 +24,7 @@
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/docker_run.jpg">
 <meta property="og:image" content="http://example.com/2025/09/25/Docker-with-WSL2-2/docker_ps.jpg">
 <meta property="article:published_time" content="2025-09-25T08:26:33.000Z">
-<meta property="article:modified_time" content="2025-10-02T10:00:55.214Z">
+<meta property="article:modified_time" content="2025-10-23T05:58:18.138Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="WSL2">
 <meta property="article:tag" content="Ubuntu">
@@ -136,7 +136,8 @@
 <li><h5 id="複製專案到-WSL2-本地檔案系統："><a href="#複製專案到-WSL2-本地檔案系統：" class="headerlink" title="複製專案到 WSL2 本地檔案系統："></a>複製專案到 WSL2 本地檔案系統：</h5></li>
 </ol>
 <h5 id="創建-WSL2-專案資料夾（家目錄下）："><a href="#創建-WSL2-專案資料夾（家目錄下）：" class="headerlink" title="創建 WSL2 專案資料夾（家目錄下）："></a>創建 WSL2 專案資料夾（家目錄下）：</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 進入 WSL2 家目錄</span></span><br><span class="line"><span class="built_in">cd</span> ~</span><br><span class="line"><span class="built_in">mkdir</span> my-contact-form</span><br></pre></td></tr></table></figure>
-<h5 id="確認清空資料夾"><a href="#確認清空資料夾" class="headerlink" title="確認清空資料夾"></a>確認清空資料夾</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">    <span class="built_in">cd</span> ~/my-contact-form</span><br><span class="line">    <span class="built_in">rm</span> -rf ./*</span><br><span class="line">```        </span><br><span class="line"><span class="comment">##### 複製 Windows 專案到 WSL2</span></span><br><span class="line">``` bash</span><br><span class="line">    <span class="comment"># 排除不需要的目錄</span></span><br><span class="line">    rsync -av --progress \</span><br><span class="line">    --exclude node_modules \</span><br><span class="line">    --exclude .git \</span><br><span class="line">    --exclude .vs \</span><br><span class="line">    --exclude dist \</span><br><span class="line">    /mnt/d/Homer/Project_MyGit/my-form-app/ ~/my-contact-form/</span><br></pre></td></tr></table></figure>
+<h5 id="確認清空資料夾"><a href="#確認清空資料夾" class="headerlink" title="確認清空資料夾"></a>確認清空資料夾</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/my-contact-form</span><br><span class="line"><span class="built_in">rm</span> -rf ./*</span><br></pre></td></tr></table></figure>
+<h5 id="複製-Windows-專案到-WSL2"><a href="#複製-Windows-專案到-WSL2" class="headerlink" title="複製 Windows 專案到 WSL2"></a>複製 Windows 專案到 WSL2</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 排除不需要的目錄</span></span><br><span class="line">rsync -av --progress \</span><br><span class="line">--exclude node_modules \</span><br><span class="line">--exclude .git \</span><br><span class="line">--exclude .vs \</span><br><span class="line">--exclude dist \</span><br><span class="line">/mnt/d/Homer/Project_MyGit/my-form-app/ ~/my-contact-form/</span><br></pre></td></tr></table></figure>
 <h5 id="確認檔案成功複製到Ubuntu的-my-contact-form"><a href="#確認檔案成功複製到Ubuntu的-my-contact-form" class="headerlink" title="確認檔案成功複製到Ubuntu的~&#x2F;my-contact-form"></a>確認檔案成功複製到Ubuntu的~&#x2F;my-contact-form</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/my-contact-form</span><br><span class="line"><span class="built_in">ls</span> -l</span><br></pre></td></tr></table></figure>
 <img src="/2025/09/25/Docker-with-WSL2-2/rsync_copy.jpg" class="" title="rsync_copy">
 <h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><p><span style="color:red">缺點：每次 Windows 更新專案後要同步（可以用 git 管理避免手動複製）。</span>        </p>
@@ -320,7 +321,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmh2vgxef00002gn100vpfiuo" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmh30hzak00096wn1e4ki7f1x" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

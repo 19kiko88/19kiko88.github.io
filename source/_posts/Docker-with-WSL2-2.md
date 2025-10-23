@@ -35,7 +35,7 @@ CMD ["npm", "start"]
   * ##### 把原始檔案傳到Ubuntu Server有多種作法
     1. ##### 直接掛載 Windows 資料夾，WSL2 可以直接存取 Windows 資料夾：
     ``` bash
-    /mnt/<drive_letter>/path/to/project
+    /mnt/<磁碟機代號>/path/to/project
     ```
     ##### Windows 本機專案路徑：
     ``` text
@@ -74,10 +74,10 @@ CMD ["npm", "start"]
         mkdir my-contact-form
     ```
     ##### 確認清空資料夾
-    ``` bash            
+    ``` bash
         cd ~/my-contact-form
         rm -rf ./*
-    ```        
+    ```
     ##### 複製 Windows 專案到 WSL2
     ``` bash
         # 排除不需要的目錄

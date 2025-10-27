@@ -14,7 +14,7 @@
 <meta property="og:description" content="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-22T10:00:00.000Z">
-<meta property="article:modified_time" content="2025-10-02T09:15:21.018Z">
+<meta property="article:modified_time" content="2025-10-27T07:40:33.710Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="WSL2">
 <meta property="article:tag" content="Ubuntu">
@@ -223,7 +223,20 @@
  </li>
 <li><h5 id="驗證-Docker-是否已正確安裝："><a href="#驗證-Docker-是否已正確安裝：" class="headerlink" title="驗證 Docker 是否已正確安裝："></a>驗證 Docker 是否已正確安裝：</h5></li>
 </ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    docker --version</span><br><span class="line">    ```        </span><br><span class="line">    &#123;% asset_image docker_version.jpg docker_version %&#125; </span><br><span class="line">    11. <span class="comment">##### 測試 Docker：</span></span><br><span class="line">    ``` bash</span><br><span class="line">    docker run hello-world</span><br><span class="line">    ```  </span><br><span class="line">    &#123;% asset_image docker_run.jpg docker_run %&#125; </span><br><span class="line">---  </span><br><span class="line"><span class="comment">### 建立快照備份</span></span><br><span class="line">* <span class="comment">##### 到這邊已經成功在WSL裡面安裝好Ubuntu &amp; Docker Engine了。來做個快照備份，以防未來發生無法預測的意外!</span></span><br><span class="line">    1. <span class="comment">##### 關閉所有 WSL2 執行個體：</span></span><br><span class="line">    ``` bash</span><br><span class="line">    wsl --shutdown</span><br></pre></td></tr></table></figure>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker --version</span><br></pre></td></tr></table></figure>
+   
+<ol start="11">
+<li><h5 id="測試-Docker："><a href="#測試-Docker：" class="headerlink" title="測試 Docker："></a>測試 Docker：</h5></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run hello-world</span><br></pre></td></tr></table></figure>
+  </li>
+</ul>
+<hr>
+<h3 id="建立快照備份"><a href="#建立快照備份" class="headerlink" title="建立快照備份"></a>建立快照備份</h3><ul>
+<li><h5 id="到這邊已經成功在WSL裡面安裝好Ubuntu-Docker-Engine了。來做個快照備份，以防未來發生無法預測的意外"><a href="#到這邊已經成功在WSL裡面安裝好Ubuntu-Docker-Engine了。來做個快照備份，以防未來發生無法預測的意外" class="headerlink" title="到這邊已經成功在WSL裡面安裝好Ubuntu &amp; Docker Engine了。來做個快照備份，以防未來發生無法預測的意外!"></a>到這邊已經成功在WSL裡面安裝好Ubuntu &amp; Docker Engine了。來做個快照備份，以防未來發生無法預測的意外!</h5><ol>
+<li><h5 id="關閉所有-WSL2-執行個體："><a href="#關閉所有-WSL2-執行個體：" class="headerlink" title="關閉所有 WSL2 執行個體："></a>關閉所有 WSL2 執行個體：</h5></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsl --shutdown</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
 <li><h5 id="找到-VHDX-檔案的位置：-VHDX-檔案位於以下路徑："><a href="#找到-VHDX-檔案的位置：-VHDX-檔案位於以下路徑：" class="headerlink" title="找到 VHDX 檔案的位置： VHDX 檔案位於以下路徑："></a>找到 VHDX 檔案的位置： VHDX 檔案位於以下路徑：</h5></li>
@@ -259,7 +272,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmh393zyx000dd8n1bv3ob473" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmh8two34000j64n1aml7fvzl" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

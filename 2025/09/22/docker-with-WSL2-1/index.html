@@ -14,7 +14,7 @@
 <meta property="og:description" content="最近在學習Docker。想用.net 8 + mssql + kestrel + angular來建立一個容器化的CRUD網站，順便把過程記錄下來。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-22T10:00:00.000Z">
-<meta property="article:modified_time" content="2025-10-27T07:42:13.137Z">
+<meta property="article:modified_time" content="2025-10-27T08:26:34.294Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="WSL2">
 <meta property="article:tag" content="Ubuntu">
@@ -215,7 +215,7 @@
 </ol>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> systemctl <span class="built_in">enable</span> docker</span><br></pre></td></tr></table></figure>
 <ol start="9">
-<li><h5 id="設定-Docker-開機自動啟動：-1"><a href="#設定-Docker-開機自動啟動：-1" class="headerlink" title="設定 Docker 開機自動啟動："></a>設定 Docker 開機自動啟動：</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> usermod -aG docker <span class="variable">$USER</span></span><br><span class="line">newgrp docker</span><br></pre></td></tr></table></figure>
+<li><h5 id="將當前用戶添加到-Docker群組中，並立即生效群組權限。完成後，之後使用docker相關指令時，不用再加上sudo。："><a href="#將當前用戶添加到-Docker群組中，並立即生效群組權限。完成後，之後使用docker相關指令時，不用再加上sudo。：" class="headerlink" title="將當前用戶添加到 Docker群組中，並立即生效群組權限。完成後，之後使用docker相關指令時，不用再加上sudo。："></a>將當前用戶添加到 Docker群組中，並立即生效群組權限。完成後，之後使用docker相關指令時，不用再加上sudo。：</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> usermod -aG docker <span class="variable">$USER</span></span><br><span class="line">newgrp docker</span><br></pre></td></tr></table></figure>
 <h1 id="-44"><a href="#-44" class="headerlink" title=""></a></h1><h1 id="-45"><a href="#-45" class="headerlink" title=""></a></h1><h1 id="-46"><a href="#-46" class="headerlink" title=""></a></h1><h1 id="-47"><a href="#-47" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="可以執行下面指令，確認是否加入成功。"><a href="#可以執行下面指令，確認是否加入成功。" class="headerlink" title="可以執行下面指令，確認是否加入成功。"></a>可以執行下面指令，確認是否加入成功。</h5></li>
 </ul>
@@ -272,7 +272,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmh8tysze000nwon1atdc0ghj" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmh8vkj5v000eccn13r4k08ie" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

@@ -6,22 +6,23 @@
   
   <title>Line-API-群組推播 | HaoAreYou~</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成整個加入群組的人都可以收到推播訊息。">
+  <meta name="description" content="自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成把訊息推播到群組，讓有加入群組的人都可以收到推播訊息。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Line-API-群組推播">
 <meta property="og:url" content="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/index.html">
 <meta property="og:site_name" content="HaoAreYou~">
-<meta property="og:description" content="自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成整個加入群組的人都可以收到推播訊息。">
+<meta property="og:description" content="自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成把訊息推播到群組，讓有加入群組的人都可以收到推播訊息。">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/open_group_chat.jpg">
 <meta property="og:image" content="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/build.jpg">
 <meta property="og:image" content="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/open_webhook.jpg">
 <meta property="og:image" content="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/test_result.jpg">
 <meta property="article:published_time" content="2025-10-28T06:51:26.000Z">
-<meta property="article:modified_time" content="2025-10-28T07:27:23.776Z">
+<meta property="article:modified_time" content="2025-10-28T07:35:49.429Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Cloud Run">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/build.jpg">
+<meta name="twitter:image" content="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/open_group_chat.jpg">
   
     <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
   
@@ -108,13 +109,13 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="自己做了一個Side-Project，會用到Line-API的推播，但後來測試發現一次只能有一個Line帳號收到Line-BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成整個加入群組的人都可以收到推播訊息。"><a href="#自己做了一個Side-Project，會用到Line-API的推播，但後來測試發現一次只能有一個Line帳號收到Line-BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成整個加入群組的人都可以收到推播訊息。" class="headerlink" title="自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成整個加入群組的人都可以收到推播訊息。"></a>自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成整個加入群組的人都可以收到推播訊息。</h5><span id="more"></span>
+        <h5 id="自己做了一個Side-Project，會用到Line-API的推播，但後來測試發現一次只能有一個Line帳號收到Line-BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成把訊息推播到群組，讓有加入群組的人都可以收到推播訊息。"><a href="#自己做了一個Side-Project，會用到Line-API的推播，但後來測試發現一次只能有一個Line帳號收到Line-BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成把訊息推播到群組，讓有加入群組的人都可以收到推播訊息。" class="headerlink" title="自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成把訊息推播到群組，讓有加入群組的人都可以收到推播訊息。"></a>自己做了一個Side Project，會用到Line API的推播，但後來測試發現一次只能有一個Line帳號收到Line BOT的推播訊息，這篇記錄把原本的只有單人能收到推播訊息，改成把訊息推播到群組，讓有加入群組的人都可以收到推播訊息。</h5><span id="more"></span>
 <h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><hr>
 <h5 id="Line"><a href="#Line" class="headerlink" title="Line"></a>Line</h5><ol>
 <li><h5 id="首先要先把機器人邀請進入群組"><a href="#首先要先把機器人邀請進入群組" class="headerlink" title="首先要先把機器人邀請進入群組"></a>首先要先把機器人邀請進入群組</h5></li>
 <li><h5 id="要記得先到Line-Develope的Messaging-API頁籤把Allow-bot-to-join-group-chats打開"><a href="#要記得先到Line-Develope的Messaging-API頁籤把Allow-bot-to-join-group-chats打開" class="headerlink" title="要記得先到Line Develope的Messaging API頁籤把Allow bot to join group chats打開"></a>要記得先到Line Develope的Messaging API頁籤把Allow bot to join group chats打開</h5></li>
 </ol>
-
+<img src="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/open_group_chat.jpg" class="" title="open_group_chat">
 <h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><hr>
 <h3 id="Cloud-Run"><a href="#Cloud-Run" class="headerlink" title="Cloud Run"></a>Cloud Run</h3><ol>
 <li><h5 id="更新node-js後端程式碼，新增路由-lineWebhook"><a href="#更新node-js後端程式碼，新增路由-lineWebhook" class="headerlink" title="更新node.js後端程式碼，新增路由 &#x2F;lineWebhook"></a>更新node.js後端程式碼，新增路由 &#x2F;lineWebhook</h5></li>
@@ -149,7 +150,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/" data-id="cmha91jpa000830n1augqct1q" data-title="Line-API-群組推播" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/" data-id="cmha95yui000mogn173cobv7t" data-title="Line-API-群組推播" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

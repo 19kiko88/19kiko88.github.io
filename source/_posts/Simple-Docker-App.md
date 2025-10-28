@@ -1,7 +1,11 @@
 ---
 title: Simple-Docker-App
 date: 2025-10-22 15:36:11
+categories:
+  - Docker
 tags:
+  - WSL2
+  - Ubuntu
 ---
 ##### 這篇做個簡單的docker實作範例，後端我們使用.Net WebAPI，並有個api可以查詢天氣預報，前端則使用Angular。把這個簡單的查詢小程式容器化。
 <!-- more -->

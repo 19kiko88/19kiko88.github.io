@@ -165,7 +165,7 @@ tags:
     ``` bash
     sudo systemctl enable docker
     ```
-    9. ##### 設定 Docker 開機自動啟動：
+    9. ##### 將當前用戶添加到 Docker群組中，並立即生效群組權限。完成後，之後使用docker相關指令時，不用再加上sudo。：
         ``` bash
         sudo usermod -aG docker $USER
         newgrp docker
@@ -183,14 +183,18 @@ tags:
     10. ##### 驗證 Docker 是否已正確安裝：
     ``` bash
     docker --version
-    ```        
+    ```
     {% asset_image docker_version.jpg docker_version %} 
     11. ##### 測試 Docker：
     ``` bash
     docker run hello-world
-    ```  
-    {% asset_image docker_run.jpg docker_run %} 
----  
+    ```
+    {% asset_image docker_run.jpg docker_run %}
+#
+#
+#
+#    
+---
 ### 建立快照備份
 * ##### 到這邊已經成功在WSL裡面安裝好Ubuntu & Docker Engine了。來做個快照備份，以防未來發生無法預測的意外!
     1. ##### 關閉所有 WSL2 執行個體：

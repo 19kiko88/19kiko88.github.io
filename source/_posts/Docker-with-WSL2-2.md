@@ -155,7 +155,8 @@ CMD ["npm", "start"]
     CMD ["nginx", "-g", "daemon off;"]    
     ```
 
-    <h5 style="color: red;">這裡先解釋一下WORKDIR /app這個東西。WORKDIR 指的是容器裡的工作目錄，和 WSL 上的 ~/my-contact-form 沒有直接關聯，這裡的 /app 是容器裡的資料夾，跟 WSL 的 /home/weihao/my-contact-form 沒有關係!!</h5>
+    <h5 style="color: red;">這裡先解釋一下WORKDIR /app這個東西。WORKDIR 指的是容器裡的工作目錄，和 WSL 上的 ~/my-contact-form 沒有直接關聯，這裡的 /app 是容器裡的資料夾，跟 WSL 的 /home/weihao/my-contact-form 沒有關係!! 可以理解為Docker的工作目錄。後續的COPY. RUN. CMD等指令都會在此工作目錄下執行。
+    </h5>
 
     * ##### Dockerfile Buid階段的逐行解說：
         * ##### FROM node:18 AS build

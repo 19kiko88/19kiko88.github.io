@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Google App Script(GAS)應用 | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google App Script(GAS)這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Google App Script(GAS)應用">
+<meta property="og:url" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google App Script(GAS)這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_1.jpg">
+<meta property="article:published_time" content="2025-12-03T06:32:25.000Z">
+<meta property="article:modified_time" content="2025-12-03T07:28:59.516Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="GAS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_1.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Google-App-Script-GAS-應用" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" class="article-date">
+  <time class="dt-published" datetime="2025-12-03T06:32:25.000Z" itemprop="datePublished">2025-12-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Google App Script(GAS)應用
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google-App-Script-GAS-這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。"><a href="#最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google-App-Script-GAS-這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。" class="headerlink" title="最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google App Script(GAS)這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。"></a>最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google App Script(GAS)這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。</h5><span id="more"></span>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><hr>
+<h3 id="建立GAS新專案"><a href="#建立GAS新專案" class="headerlink" title="建立GAS新專案"></a>建立GAS新專案</h3><ol>
+<li><h5 id="進入到-App-Script的首頁"><a href="#進入到-App-Script的首頁" class="headerlink" title="進入到 App Script的首頁"></a>進入到 <a target="_blank" rel="noopener" href="https://script.google.com/home?hl=zh-tw">App Script的首頁</a></h5></li>
+<li><h5 id="要記得先到Line-Develope的Messaging-API頁籤把Allow-bot-to-join-group-chats打開"><a href="#要記得先到Line-Develope的Messaging-API頁籤把Allow-bot-to-join-group-chats打開" class="headerlink" title="要記得先到Line Develope的Messaging API頁籤把Allow bot to join group chats打開"></a>要記得先到Line Develope的Messaging API頁籤把Allow bot to join group chats打開</h5></li>
+</ol>
+
+<h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><hr>
+<h3 id="GAS程式碼版控"><a href="#GAS程式碼版控" class="headerlink" title="GAS程式碼版控"></a>GAS程式碼版控</h3><h5 id="詳細教學請參考-clasp-Apps-Script-CLI"><a href="#詳細教學請參考-clasp-Apps-Script-CLI" class="headerlink" title="詳細教學請參考 clasp - Apps Script CLI"></a>詳細教學請參考 <a target="_blank" rel="noopener" href="https://codelabs.developers.google.com/codelabs/clasp?hl=zh-tw#0">clasp - Apps Script CLI</a></h5><ol>
+<li><h5 id="進入到-App-Script的首頁-1"><a href="#進入到-App-Script的首頁-1" class="headerlink" title="進入到 App Script的首頁"></a>進入到 <a target="_blank" rel="noopener" href="https://script.google.com/home?hl=zh-tw">App Script的首頁</a></h5></li>
+<li><h5 id="必須安裝-Node-js-6-0-0-以上版本，才能使用-Apps-Script-CLI-clasp"><a href="#必須安裝-Node-js-6-0-0-以上版本，才能使用-Apps-Script-CLI-clasp" class="headerlink" title="必須安裝 Node.js 6.0.0 以上版本，才能使用 Apps Script CLI (clasp)"></a>必須安裝 Node.js 6.0.0 以上版本，才能使用 Apps Script CLI (clasp)</h5></li>
+<li><h5 id="執行指令，安裝clasp。"><a href="#執行指令，安裝clasp。" class="headerlink" title="執行指令，安裝clasp。"></a>執行指令，安裝clasp。</h5></li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i @google/clasp -g</span><br></pre></td></tr></table></figure>
+<img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_1.jpg" class="" title="install clasp">
+<ol start="4">
+<li><h5 id="安裝好clasp，先登入google帳號"><a href="#安裝好clasp，先登入google帳號" class="headerlink" title="安裝好clasp，先登入google帳號"></a>安裝好clasp，先登入google帳號</h5></li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp login</span><br></pre></td></tr></table></figure>
+<h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" data-id="cmiposvj50005gsn1a1xo3j76" data-title="Google App Script(GAS)應用" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Line-API-群組推播</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 10px;">GAS</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
+          </li>
+        
+          <li>
+            <a href="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/">Line-API-群組推播</a>
+          </li>
+        
+          <li>
+            <a href="/2025/10/22/Simple-Docker-App/">Simple-Docker-App</a>
+          </li>
+        
+          <li>
+            <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - 利用Docker Compose達到熱重載效果</a>
+          </li>
+        
+          <li>
+            <a href="/2025/09/25/Docker-with-WSL2-2/">Docker with WSL2(2) - Dockerfile</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

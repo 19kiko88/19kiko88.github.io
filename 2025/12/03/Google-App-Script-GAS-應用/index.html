@@ -24,8 +24,9 @@
 <meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_9.jpg">
 <meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_10.jpg">
 <meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_11.jpg">
+<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_12.jpg">
 <meta property="article:published_time" content="2025-12-03T06:32:25.000Z">
-<meta property="article:modified_time" content="2025-12-03T10:29:47.382Z">
+<meta property="article:modified_time" content="2025-12-03T10:47:47.003Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="GAS">
 <meta name="twitter:card" content="summary">
@@ -172,7 +173,7 @@
 <h5 id="到Google-App-Script的管理頁看，也會多了一個叫clasp-condelab的新專案。"><a href="#到Google-App-Script的管理頁看，也會多了一個叫clasp-condelab的新專案。" class="headerlink" title="到Google App Script的管理頁看，也會多了一個叫clasp_condelab的新專案。"></a>到Google App Script的管理頁看，也會多了一個叫clasp_condelab的新專案。</h5><img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_8.jpg" class="" title="new project">
 <h1 id="-44"><a href="#-44" class="headerlink" title=""></a></h1><h1 id="-45"><a href="#-45" class="headerlink" title=""></a></h1><h1 id="-46"><a href="#-46" class="headerlink" title=""></a></h1><h1 id="-47"><a href="#-47" class="headerlink" title=""></a></h1></li>
 <li><h5 id="push-pull"><a href="#push-pull" class="headerlink" title="push &amp; pull"></a>push &amp; pull</h5><ol>
-<li><h5 id="接著來試試看pull功能，我們在專案clasp-condelab的線上編輯器新增一個test-gs檔案。並在裡面新增內容"><a href="#接著來試試看pull功能，我們在專案clasp-condelab的線上編輯器新增一個test-gs檔案。並在裡面新增內容" class="headerlink" title="接著來試試看pull功能，我們在專案clasp_condelab的線上編輯器新增一個test.gs檔案。並在裡面新增內容"></a>接著來試試看pull功能，我們在專案clasp_condelab的線上編輯器新增一個test.gs檔案。並在裡面新增內容</h5></li>
+<li><h5 id="接著來試試看pull功能，我們在專案clasp-condelab的線上編輯器新增一個test檔案-不用副檔名-。並在裡面新增內容。編輯完成後要記得點選存檔"><a href="#接著來試試看pull功能，我們在專案clasp-condelab的線上編輯器新增一個test檔案-不用副檔名-。並在裡面新增內容。編輯完成後要記得點選存檔" class="headerlink" title="接著來試試看pull功能，我們在專案clasp_condelab的線上編輯器新增一個test檔案(不用副檔名)。並在裡面新增內容。編輯完成後要記得點選存檔!!"></a>接著來試試看pull功能，我們在專案clasp_condelab的線上編輯器新增一個test檔案(不用副檔名)。並在裡面新增內容。編輯完成後要記得點選存檔!!</h5></li>
 </ol>
 <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_9.jpg" class="" title="add new file">
 <h1 id="-48"><a href="#-48" class="headerlink" title=""></a></h1><h1 id="-49"><a href="#-49" class="headerlink" title=""></a></h1><h1 id="-50"><a href="#-50" class="headerlink" title=""></a></h1><h1 id="-51"><a href="#-51" class="headerlink" title=""></a></h1><img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_10.jpg" class="" title="add new file content">
@@ -181,8 +182,21 @@
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp pull</span><br></pre></td></tr></table></figure>
 <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_11.jpg" class="" title="pull done."></li>
+<li><h5 id="版本管理與部署，clasp-可讓您管理版本和部署作業。首先介紹一些詞彙："><a href="#版本管理與部署，clasp-可讓您管理版本和部署作業。首先介紹一些詞彙：" class="headerlink" title="版本管理與部署，clasp 可讓您管理版本和部署作業。首先介紹一些詞彙："></a>版本管理與部署，clasp 可讓您管理版本和部署作業。首先介紹一些詞彙：</h5><ul>
+<li><h5 id="版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。"><a href="#版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。" class="headerlink" title="版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。"></a>版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。</h5></li>
+<li><h5 id="部署作業：指令碼專案的已發布版本-通常是外掛程式或網頁應用程式-。需要版本號碼。"><a href="#部署作業：指令碼專案的已發布版本-通常是外掛程式或網頁應用程式-。需要版本號碼。" class="headerlink" title="部署作業：指令碼專案的已發布版本 (通常是外掛程式或網頁應用程式)。需要版本號碼。"></a>部署作業：指令碼專案的已發布版本 (通常是外掛程式或網頁應用程式)。需要版本號碼。</h5></li>
+</ul>
+<ol>
+<li><h5 id="建立快照前，對程式做些修改-修改完後也是要記得存檔-。"><a href="#建立快照前，對程式做些修改-修改完後也是要記得存檔-。" class="headerlink" title="建立快照前，對程式做些修改(修改完後也是要記得存檔!)。"></a>建立快照前，對程式做些修改(修改完後也是要記得存檔!)。</h5></li>
 </ol>
-<h1 id="-56"><a href="#-56" class="headerlink" title=""></a></h1><h1 id="-57"><a href="#-57" class="headerlink" title=""></a></h1><h1 id="-58"><a href="#-58" class="headerlink" title=""></a></h1><h1 id="-59"><a href="#-59" class="headerlink" title=""></a></h1><hr>
+ <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_12.jpg" class="">
+<h1 id="-56"><a href="#-56" class="headerlink" title=""></a></h1><h1 id="-57"><a href="#-57" class="headerlink" title=""></a></h1><h1 id="-58"><a href="#-58" class="headerlink" title=""></a></h1><h1 id="-59"><a href="#-59" class="headerlink" title=""></a></h1><ol start="2">
+<li><h5 id="接著執行指令，建立快照"><a href="#接著執行指令，建立快照" class="headerlink" title="接著執行指令，建立快照"></a>接著執行指令，建立快照</h5></li>
+</ol>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp version <span class="string">&quot;First version&quot;</span></span><br></pre></td></tr></table></figure>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp deploy 1 <span class="string">&quot;First deployment&quot;</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h1 id="-60"><a href="#-60" class="headerlink" title=""></a></h1><h1 id="-61"><a href="#-61" class="headerlink" title=""></a></h1><h1 id="-62"><a href="#-62" class="headerlink" title=""></a></h1><h1 id="-63"><a href="#-63" class="headerlink" title=""></a></h1><hr>
 <ul>
 <li><h5 id="Ref："><a href="#Ref：" class="headerlink" title="Ref："></a>Ref：</h5><ol>
 <li><h5 id="clasp-Apps-Script-CLI"><a href="#clasp-Apps-Script-CLI" class="headerlink" title="clasp - Apps Script CLI"></a><a target="_blank" rel="noopener" href="https://codelabs.developers.google.com/codelabs/clasp?hl=zh-tw#0">clasp - Apps Script CLI</a></h5></li>
@@ -194,7 +208,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" data-id="cmipvn6mn0004tkn1b7vm3q0x" data-title="Google App Script(GAS)應用" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" data-id="cmipvvmmw000190n1fgbzctm9" data-title="Google App Script(GAS)應用" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

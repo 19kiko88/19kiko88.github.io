@@ -13,28 +13,11 @@
 <meta property="og:site_name" content="HaoAreYou~">
 <meta property="og:description" content="最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google App Script(GAS)這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_1.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_2.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_3.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_4.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_5.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_6.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_7.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_8.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_9.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_10.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_11.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_12.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_13.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_14.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_15.jpg">
-<meta property="og:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_16.jpg">
 <meta property="article:published_time" content="2025-12-03T06:32:25.000Z">
-<meta property="article:modified_time" content="2025-12-04T09:52:41.544Z">
+<meta property="article:modified_time" content="2025-12-04T09:57:48.145Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="GAS">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_1.jpg">
   
     <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
   
@@ -129,99 +112,11 @@
 </ol>
 
 <h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><hr>
-<h3 id="GAS程式碼版控"><a href="#GAS程式碼版控" class="headerlink" title="GAS程式碼版控"></a>GAS程式碼版控</h3><h5 id="詳細教學請參考-clasp-Apps-Script-CLI"><a href="#詳細教學請參考-clasp-Apps-Script-CLI" class="headerlink" title="詳細教學請參考 clasp - Apps Script CLI"></a>詳細教學請參考 <a target="_blank" rel="noopener" href="https://codelabs.developers.google.com/codelabs/clasp?hl=zh-tw#0">clasp - Apps Script CLI</a></h5><ol>
-<li><h5 id="進入到-App-Script的管理頁"><a href="#進入到-App-Script的管理頁" class="headerlink" title="進入到 App Script的管理頁"></a>進入到 <a target="_blank" rel="noopener" href="https://script.google.com/home?hl=zh-tw">App Script的管理頁</a></h5></li>
-<li><h5 id="必須安裝-Node-js-6-0-0-以上版本，才能使用-Apps-Script-CLI-clasp"><a href="#必須安裝-Node-js-6-0-0-以上版本，才能使用-Apps-Script-CLI-clasp" class="headerlink" title="必須安裝 Node.js 6.0.0 以上版本，才能使用 Apps Script CLI (clasp)"></a>必須安裝 Node.js 6.0.0 以上版本，才能使用 Apps Script CLI (clasp)</h5></li>
-<li><h5 id="執行指令，安裝clasp。"><a href="#執行指令，安裝clasp。" class="headerlink" title="執行指令，安裝clasp。"></a>執行指令，安裝clasp。</h5></li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm i @google/clasp -g</span><br></pre></td></tr></table></figure>
-<h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_1.jpg" class="" title="install clasp">
-<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><ol start="4">
-<li><h5 id="安裝好clasp，先登入google帳號"><a href="#安裝好clasp，先登入google帳號" class="headerlink" title="安裝好clasp，先登入google帳號"></a>安裝好clasp，先登入google帳號</h5><ol>
-<li><h5 id="執行指令"><a href="#執行指令" class="headerlink" title="執行指令"></a>執行指令</h5></li>
-</ol>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp login</span><br></pre></td></tr></table></figure>
-<h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><ol start="2">
-<li><h5 id="會開啟一個登入頁面，要你登入google帳號。"><a href="#會開啟一個登入頁面，要你登入google帳號。" class="headerlink" title="會開啟一個登入頁面，要你登入google帳號。"></a>會開啟一個登入頁面，要你登入google帳號。</h5></li>
-</ol>
- <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_2.jpg" class="" title="login google">
-<h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><ol start="3">
-<li><h5 id="設定全線開放，我目前是只先開啟最下面的3個項目。"><a href="#設定全線開放，我目前是只先開啟最下面的3個項目。" class="headerlink" title="設定全線開放，我目前是只先開啟最下面的3個項目。"></a>設定全線開放，我目前是只先開啟最下面的3個項目。</h5></li>
-</ol>
- <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_3.jpg" class="" title="access_permission">
-<h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><ol start="4">
-<li><h5 id="登入成功。"><a href="#登入成功。" class="headerlink" title="登入成功。"></a>登入成功。</h5></li>
-</ol>
- <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_4.jpg" class="" title="Logged_in">
-<h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><h1 id="-30"><a href="#-30" class="headerlink" title=""></a></h1><h1 id="-31"><a href="#-31" class="headerlink" title=""></a></h1><ol start="5">
-<li><h5 id="登入成功後，記得要到App-Script的管理頁設定，開啟Google-Apps-Script-API。"><a href="#登入成功後，記得要到App-Script的管理頁設定，開啟Google-Apps-Script-API。" class="headerlink" title="登入成功後，記得要到App Script的管理頁設定，開啟Google Apps Script API。"></a>登入成功後，記得要到<a target="_blank" rel="noopener" href="https://script.google.com/home/usersettings">App Script的管理頁設定</a>，開啟Google Apps Script API。</h5></li>
-</ol>
- <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_5.jpg" class="" title="enable_Google Apps Script API">
-<h1 id="-32"><a href="#-32" class="headerlink" title=""></a></h1><h1 id="-33"><a href="#-33" class="headerlink" title=""></a></h1><h1 id="-34"><a href="#-34" class="headerlink" title=""></a></h1><h1 id="-35"><a href="#-35" class="headerlink" title=""></a></h1></li>
-<li><h5 id="建立本地專案"><a href="#建立本地專案" class="headerlink" title="建立本地專案"></a>建立本地專案</h5><ol>
-<li><h5 id="先移動到要建立專案的目錄"><a href="#先移動到要建立專案的目錄" class="headerlink" title="先移動到要建立專案的目錄"></a>先移動到要建立專案的目錄</h5></li>
-</ol>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">d:</span><br></pre></td></tr></table></figure>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span>  Project_MyGit\GoogleAppScript</span><br></pre></td></tr></table></figure>
-<h1 id="-36"><a href="#-36" class="headerlink" title=""></a></h1><h1 id="-37"><a href="#-37" class="headerlink" title=""></a></h1><h1 id="-38"><a href="#-38" class="headerlink" title=""></a></h1><h1 id="-39"><a href="#-39" class="headerlink" title=""></a></h1><ol start="2">
-<li><h5 id="建立專案目錄"><a href="#建立專案目錄" class="headerlink" title="建立專案目錄"></a>建立專案目錄</h5></li>
-</ol>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> clasp_condelab</span><br></pre></td></tr></table></figure>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> clasp_condelab</span><br></pre></td></tr></table></figure>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp create --title <span class="string">&quot;Clasp Codelab&quot;</span>  --<span class="built_in">type</span> standalone</span><br></pre></td></tr></table></figure>
-<h5 id="如果沒有開啟4-5-的Google-Apps-Script-API，會出現下面的錯誤。"><a href="#如果沒有開啟4-5-的Google-Apps-Script-API，會出現下面的錯誤。" class="headerlink" title="如果沒有開啟4.5.的Google Apps Script API，會出現下面的錯誤。"></a>如果沒有開啟4.5.的Google Apps Script API，會出現下面的錯誤。</h5> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_6.jpg" class="" title="clasp create error">
-<h1 id="-40"><a href="#-40" class="headerlink" title=""></a></h1><h1 id="-41"><a href="#-41" class="headerlink" title=""></a></h1><h1 id="-42"><a href="#-42" class="headerlink" title=""></a></h1><h1 id="-43"><a href="#-43" class="headerlink" title=""></a></h1><ol start="3">
-<li><h5 id="建立專案目錄完成後，會在目錄裡面多了兩個檔案-clasp-json-appsscript-json-。"><a href="#建立專案目錄完成後，會在目錄裡面多了兩個檔案-clasp-json-appsscript-json-。" class="headerlink" title="建立專案目錄完成後，會在目錄裡面多了兩個檔案(.clasp.json &amp; appsscript.json)。"></a>建立專案目錄完成後，會在目錄裡面多了兩個檔案(.clasp.json &amp; appsscript.json)。</h5></li>
-</ol>
- <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_7.jpg" class="" title="clasp create success">
-<h5 id="到Google-App-Script的管理頁看，也會多了一個叫clasp-condelab的新專案。"><a href="#到Google-App-Script的管理頁看，也會多了一個叫clasp-condelab的新專案。" class="headerlink" title="到Google App Script的管理頁看，也會多了一個叫clasp_condelab的新專案。"></a>到Google App Script的管理頁看，也會多了一個叫clasp_condelab的新專案。</h5> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_8.jpg" class="" title="new project">
-<h1 id="-44"><a href="#-44" class="headerlink" title=""></a></h1><h1 id="-45"><a href="#-45" class="headerlink" title=""></a></h1><h1 id="-46"><a href="#-46" class="headerlink" title=""></a></h1><h1 id="-47"><a href="#-47" class="headerlink" title=""></a></h1></li>
-<li><h5 id="push-pull-version-指令"><a href="#push-pull-version-指令" class="headerlink" title="push &amp; pull &amp; version 指令"></a>push &amp; pull &amp; version 指令</h5><ol>
-<li><h5 id="接著來試試看pull功能，我們在專案clasp-condelab的線上編輯器新增一個test檔案-不用副檔名-。並在裡面新增內容。編輯完成後要記得點選存檔"><a href="#接著來試試看pull功能，我們在專案clasp-condelab的線上編輯器新增一個test檔案-不用副檔名-。並在裡面新增內容。編輯完成後要記得點選存檔" class="headerlink" title="接著來試試看pull功能，我們在專案clasp_condelab的線上編輯器新增一個test檔案(不用副檔名)。並在裡面新增內容。編輯完成後要記得點選存檔!!"></a>接著來試試看pull功能，我們在專案clasp_condelab的線上編輯器新增一個test檔案(不用副檔名)。並在裡面新增內容。編輯完成後要記得點選存檔!!</h5> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_9.jpg" class="" title="add new file">
-<h1 id="-48"><a href="#-48" class="headerlink" title=""></a></h1><h1 id="-49"><a href="#-49" class="headerlink" title=""></a></h1><h1 id="-50"><a href="#-50" class="headerlink" title=""></a></h1><h1 id="-51"><a href="#-51" class="headerlink" title=""></a></h1> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_10.jpg" class="" title="add new file content">
-<h1 id="-52"><a href="#-52" class="headerlink" title=""></a></h1><h1 id="-53"><a href="#-53" class="headerlink" title=""></a></h1><h1 id="-54"><a href="#-54" class="headerlink" title=""></a></h1><h1 id="-55"><a href="#-55" class="headerlink" title=""></a></h1><h5 id="接著在本機執行pull指令，可以看到pull完成後，本機也多了一個在線上新增的test-gs檔案了。"><a href="#接著在本機執行pull指令，可以看到pull完成後，本機也多了一個在線上新增的test-gs檔案了。" class="headerlink" title="接著在本機執行pull指令，可以看到pull完成後，本機也多了一個在線上新增的test.gs檔案了。"></a>接著在本機執行pull指令，可以看到pull完成後，本機也多了一個在線上新增的test.gs檔案了。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp pull</span><br></pre></td></tr></table></figure>
- <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_11.jpg" class="" title="pull done.">
-<h1 id="-56"><a href="#-56" class="headerlink" title=""></a></h1><h1 id="-57"><a href="#-57" class="headerlink" title=""></a></h1><h1 id="-58"><a href="#-58" class="headerlink" title=""></a></h1><h1 id="-59"><a href="#-59" class="headerlink" title=""></a></h1></li>
-<li><h5 id="如果執行push的話，則是會在把你在本機編輯的GAS程式push到遠端上面。我們編輯一下本機GAS程式，並執行push來做個測試。"><a href="#如果執行push的話，則是會在把你在本機編輯的GAS程式push到遠端上面。我們編輯一下本機GAS程式，並執行push來做個測試。" class="headerlink" title="如果執行push的話，則是會在把你在本機編輯的GAS程式push到遠端上面。我們編輯一下本機GAS程式，並執行push來做個測試。"></a>如果執行push的話，則是會在把你在本機編輯的GAS程式push到遠端上面。我們編輯一下本機GAS程式，並執行push來做個測試。</h5> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_12.jpg" class="">
-<h1 id="-60"><a href="#-60" class="headerlink" title=""></a></h1><h1 id="-61"><a href="#-61" class="headerlink" title=""></a></h1><h1 id="-62"><a href="#-62" class="headerlink" title=""></a></h1> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp push</span><br></pre></td></tr></table></figure>
-<h1 id="-63"><a href="#-63" class="headerlink" title=""></a></h1><h1 id="-64"><a href="#-64" class="headerlink" title=""></a></h1><h1 id="-65"><a href="#-65" class="headerlink" title=""></a></h1><h5 id="重新整理GAS後，可以看到線上的GAS程式被改變了"><a href="#重新整理GAS後，可以看到線上的GAS程式被改變了" class="headerlink" title="重新整理GAS後，可以看到線上的GAS程式被改變了"></a>重新整理GAS後，可以看到線上的GAS程式被改變了</h5> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_13.jpg" class=""></li>
-<li><h5 id="如果執行version-“-備註-”的話，則是會在線上GAS上新增一個快照版本，可以把目前的程式內容做成一份快照存下來。我們編輯一下線上GAS程式，並執行version來做個測試。"><a href="#如果執行version-“-備註-”的話，則是會在線上GAS上新增一個快照版本，可以把目前的程式內容做成一份快照存下來。我們編輯一下線上GAS程式，並執行version來做個測試。" class="headerlink" title="如果執行version “{備註}”的話，則是會在線上GAS上新增一個快照版本，可以把目前的程式內容做成一份快照存下來。我們編輯一下線上GAS程式，並執行version來做個測試。"></a>如果執行version “{備註}”的話，則是會在線上GAS上新增一個快照版本，可以把目前的程式內容做成一份快照存下來。我們編輯一下線上GAS程式，並執行version來做個測試。</h5> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_14.jpg" class="">
-<h1 id="-66"><a href="#-66" class="headerlink" title=""></a></h1><h1 id="-67"><a href="#-67" class="headerlink" title=""></a></h1><h1 id="-68"><a href="#-68" class="headerlink" title=""></a></h1> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp version <span class="string">&quot;test&quot;</span></span><br></pre></td></tr></table></figure>
- <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_15.jpg" class="">
-<h1 id="-69"><a href="#-69" class="headerlink" title=""></a></h1><h1 id="-70"><a href="#-70" class="headerlink" title=""></a></h1><h1 id="-71"><a href="#-71" class="headerlink" title=""></a></h1><h5 id="切換到專案紀錄頁籤可以看到多了一份快照，幫你把目前的程式版本做了一份快照備份。"><a href="#切換到專案紀錄頁籤可以看到多了一份快照，幫你把目前的程式版本做了一份快照備份。" class="headerlink" title="切換到專案紀錄頁籤可以看到多了一份快照，幫你把目前的程式版本做了一份快照備份。"></a>切換到專案紀錄頁籤可以看到多了一份快照，幫你把目前的程式版本做了一份快照備份。</h5> <img src="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/clasp_16.jpg" class=""></li>
-</ol>
-<h1 id="-72"><a href="#-72" class="headerlink" title=""></a></h1><h1 id="-73"><a href="#-73" class="headerlink" title=""></a></h1><h1 id="-74"><a href="#-74" class="headerlink" title=""></a></h1><h1 id="-75"><a href="#-75" class="headerlink" title=""></a></h1><h1 id="-76"><a href="#-76" class="headerlink" title=""></a></h1><h5 id="最後，做個clasp-push跟clasp-version的比較"><a href="#最後，做個clasp-push跟clasp-version的比較" class="headerlink" title="最後，做個clasp push跟clasp version的比較"></a>最後，做個clasp push跟clasp version的比較</h5><ul>
-<li><h5 id="clasp-push-把本地程式碼-→-推上-GAS（覆蓋最新草稿）"><a href="#clasp-push-把本地程式碼-→-推上-GAS（覆蓋最新草稿）" class="headerlink" title="clasp push &#x3D; 把本地程式碼 → 推上 GAS（覆蓋最新草稿）"></a>clasp push &#x3D; 把本地程式碼 → 推上 GAS（覆蓋最新草稿）</h5></li>
-<li><h5 id="clasp-version-“test”-把目前線上程式碼-→-建立一個「命名版本（快照）」"><a href="#clasp-version-“test”-把目前線上程式碼-→-建立一個「命名版本（快照）」" class="headerlink" title="clasp version “test” &#x3D; 把目前線上程式碼 → 建立一個「命名版本（快照）」"></a>clasp version “test” &#x3D; 把目前線上程式碼 → 建立一個「命名版本（快照）」</h5></li>
-</ul>
-<p> <span style="color:red">最後的最後，clasp pull 只能抓取 Apps Script 的最新版本（HEAD）程式碼，不能指定版本!! Gemini可能會跟你說可以這樣用：clasp pull -v {版本號碼}，不要被騙了!!</span></p>
-<h1 id="-77"><a href="#-77" class="headerlink" title=""></a></h1><h1 id="-78"><a href="#-78" class="headerlink" title=""></a></h1><h1 id="-79"><a href="#-79" class="headerlink" title=""></a></h1><h1 id="-80"><a href="#-80" class="headerlink" title=""></a></h1><h1 id="-81"><a href="#-81" class="headerlink" title=""></a></h1></li>
-<li><h5 id="版本管理與部署，clasp-可讓您管理版本和部署作業。首先介紹一些詞彙："><a href="#版本管理與部署，clasp-可讓您管理版本和部署作業。首先介紹一些詞彙：" class="headerlink" title="版本管理與部署，clasp 可讓您管理版本和部署作業。首先介紹一些詞彙："></a>版本管理與部署，clasp 可讓您管理版本和部署作業。首先介紹一些詞彙：</h5><ul>
-<li><h5 id="版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。"><a href="#版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。" class="headerlink" title="版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。"></a>版本：「快照」編寫程式碼版本可視為用於部署作業的唯讀分支版本。</h5></li>
-<li><h5 id="部署作業：指令碼專案的已發布版本-通常是外掛程式或網頁應用程式-。需要版本號碼。"><a href="#部署作業：指令碼專案的已發布版本-通常是外掛程式或網頁應用程式-。需要版本號碼。" class="headerlink" title="部署作業：指令碼專案的已發布版本 (通常是外掛程式或網頁應用程式)。需要版本號碼。"></a>部署作業：指令碼專案的已發布版本 (通常是外掛程式或網頁應用程式)。需要版本號碼。</h5></li>
-</ul>
-<ol>
-<li><h5 id="建立快照前，對本機程式做些修改並存檔。"><a href="#建立快照前，對本機程式做些修改並存檔。" class="headerlink" title="建立快照前，對本機程式做些修改並存檔。"></a>建立快照前，對本機程式做些修改並存檔。</h5></li>
-</ol>
-<h1 id="-82"><a href="#-82" class="headerlink" title=""></a></h1><h1 id="-83"><a href="#-83" class="headerlink" title=""></a></h1><h1 id="-84"><a href="#-84" class="headerlink" title=""></a></h1><h1 id="-85"><a href="#-85" class="headerlink" title=""></a></h1><ol start="2">
-<li><h5 id="接著執行指令，建立快照"><a href="#接著執行指令，建立快照" class="headerlink" title="接著執行指令，建立快照"></a>接著執行指令，建立快照</h5></li>
-</ol>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp version <span class="string">&quot;version 2.0&quot;</span></span><br></pre></td></tr></table></figure>
- <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clasp deploy 1 <span class="string">&quot;First deployment&quot;</span></span><br></pre></td></tr></table></figure></li>
-</ol>
-<h1 id="-86"><a href="#-86" class="headerlink" title=""></a></h1><h1 id="-87"><a href="#-87" class="headerlink" title=""></a></h1><h1 id="-88"><a href="#-88" class="headerlink" title=""></a></h1><h1 id="-89"><a href="#-89" class="headerlink" title=""></a></h1><hr>
-<ul>
-<li><h5 id="Ref："><a href="#Ref：" class="headerlink" title="Ref："></a>Ref：</h5><ol>
-<li><h5 id="clasp-Apps-Script-CLI"><a href="#clasp-Apps-Script-CLI" class="headerlink" title="clasp - Apps Script CLI"></a><a target="_blank" rel="noopener" href="https://codelabs.developers.google.com/codelabs/clasp?hl=zh-tw#0">clasp - Apps Script CLI</a></h5></li>
-<li><h5 id="Google-Apps-Script-Local-Development-Tutorial"><a href="#Google-Apps-Script-Local-Development-Tutorial" class="headerlink" title="Google Apps Script Local Development Tutorial"></a><a target="_blank" rel="noopener" href="https://david-barreto.com/google-app-script-local-development-tutorial/">Google Apps Script Local Development Tutorial</a></h5></li>
-</ol>
-</li>
-</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" data-id="cmir9chxx00058gn1e90890pi" data-title="Google App Script(GAS)應用" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" data-id="cmir9lqyo000jwkn149x6hiyz" data-title="Google App Script(GAS)應用" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -234,9 +129,9 @@
 <nav id="article-nav">
   
   
-    <a href="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Line-API-群組推播</div>
+      <div class="article-nav-title">Google App Script(GAS)應用 - Clasp</div>
     </a>
   
 </nav>
@@ -263,7 +158,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
     </div>
   </div>
 
@@ -273,7 +168,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 10px;">GAS</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+      <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 15px;">GAS</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
     </div>
   </div>
 
@@ -299,6 +194,10 @@
           </li>
         
           <li>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
+          </li>
+        
+          <li>
             <a href="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/">Line-API-群組推播</a>
           </li>
         
@@ -308,10 +207,6 @@
         
           <li>
             <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - 利用Docker Compose達到熱重載效果</a>
-          </li>
-        
-          <li>
-            <a href="/2025/09/25/Docker-with-WSL2-2/">Docker with WSL2(2) - Dockerfile</a>
           </li>
         
       </ul>

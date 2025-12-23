@@ -14,7 +14,7 @@
 <meta property="og:description" content="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，舊問題一堆">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-12-23T02:31:08.000Z">
-<meta property="article:modified_time" content="2025-12-23T06:04:47.488Z">
+<meta property="article:modified_time" content="2025-12-23T06:07:04.087Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -101,6 +101,7 @@
       
         <h5 id="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機-Windows-11-測試時一切正常，但一放到遠端Server-Ubuntu-22-後，舊問題一堆"><a href="#先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機-Windows-11-測試時一切正常，但一放到遠端Server-Ubuntu-22-後，舊問題一堆" class="headerlink" title="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，舊問題一堆"></a>先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，舊問題一堆</h5><span id="more"></span>
 <h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<hr>
 <h5 id="第一個遇到的問題如下，主要是在告訴你-NET-7-編譯過程中，Selenium-4-6-引進的-Selenium-Manager（負責自動下載瀏覽器驅動程式的元件）在-Linux-環境下的二進位檔沒有被正確包含或找到。"><a href="#第一個遇到的問題如下，主要是在告訴你-NET-7-編譯過程中，Selenium-4-6-引進的-Selenium-Manager（負責自動下載瀏覽器驅動程式的元件）在-Linux-環境下的二進位檔沒有被正確包含或找到。" class="headerlink" title="第一個遇到的問題如下，主要是在告訴你.NET 7 編譯過程中，Selenium 4.6+ 引進的 Selenium Manager（負責自動下載瀏覽器驅動程式的元件）在 Linux 環境下的二進位檔沒有被正確包含或找到。"></a>第一個遇到的問題如下，主要是在告訴你.NET 7 編譯過程中，Selenium 4.6+ 引進的 Selenium Manager（負責自動下載瀏覽器驅動程式的元件）在 Linux 環境下的二進位檔沒有被正確包含或找到。</h5><pre><code><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.AggregateException: One or more errors occurred. (One or more errors occurred. (Selenium Manager binary &#x27;selenium-manager&#x27; was not found in the following paths:\n - /var/www/html/*****/selenium-manager\n - /var/www/html/*****/runtimes/linux/native/selenium-manager\n - /usr/lib/dotnet/shared/Microsoft.NETCore.App/7.0.19/selenium-manager))</span><br></pre></td></tr></table></figure>
 </code></pre>
 <h5 id="解法："><a href="#解法：" class="headerlink" title="解法："></a>解法：</h5><ul>
@@ -111,6 +112,7 @@
 </ul>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 Linux 伺服器上執行 (路徑請根據你的錯誤訊息)</span></span><br><span class="line"><span class="built_in">chmod</span> +x /var/www/html/StockBuyingHelper_Stg/runtimes/linux/native/selenium-manager  </span><br></pre></td></tr></table></figure>
 <h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<hr>
 <h5 id="第二個遇到的問題如下，這個錯誤-session-not-created-Chrome-instance-exited-代表-Selenium-已經找到了-Chrome，但-Chrome-在啟動時崩潰了。"><a href="#第二個遇到的問題如下，這個錯誤-session-not-created-Chrome-instance-exited-代表-Selenium-已經找到了-Chrome，但-Chrome-在啟動時崩潰了。" class="headerlink" title="第二個遇到的問題如下，這個錯誤 session not created: Chrome instance exited 代表 Selenium 已經找到了 Chrome，但 Chrome 在啟動時崩潰了。"></a>第二個遇到的問題如下，這個錯誤 session not created: Chrome instance exited 代表 Selenium 已經找到了 Chrome，但 Chrome 在啟動時崩潰了。</h5><pre><code><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.AggregateException: One or more errors occurred. (One or more errors occurred. (session not created: Chrome instance exited. Examine ChromeDriver verbose log to determine the cause. (SessionNotCreated)))</span><br></pre></td></tr></table></figure>
 </code></pre>
 <h5 id="解法：-1"><a href="#解法：-1" class="headerlink" title="解法："></a>解法：</h5><ul>
@@ -126,6 +128,7 @@
 </ul>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet add package Selenium.WebDriver.ChromeDriver --version 143.0.7499.16900</span><br></pre></td></tr></table></figure>
 <h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><hr>
+<hr>
 <h5 id="解決-Chrome-Instance-Exited-錯誤1-調整-C-Selenium-程式碼-最重要-在伺服器環境執行-Chrome，必須添加特定的啟動參數。請修改你的-StockService-cs-中初始化-ChromeDriver-的部分：var-options-new-ChromeOptions"><a href="#解決-Chrome-Instance-Exited-錯誤1-調整-C-Selenium-程式碼-最重要-在伺服器環境執行-Chrome，必須添加特定的啟動參數。請修改你的-StockService-cs-中初始化-ChromeDriver-的部分：var-options-new-ChromeOptions" class="headerlink" title="解決 Chrome Instance Exited 錯誤1. 調整 C# Selenium 程式碼 (最重要)在伺服器環境執行 Chrome，必須添加特定的啟動參數。請修改你的 StockService.cs 中初始化 ChromeDriver 的部分：var options &#x3D; new ChromeOptions();"></a>解決 Chrome Instance Exited 錯誤1. 調整 C# Selenium 程式碼 (最重要)在伺服器環境執行 Chrome，必須添加特定的啟動參數。請修改你的 StockService.cs 中初始化 ChromeDriver 的部分：var options &#x3D; new ChromeOptions();</h5><ul>
 <li><h5 id="必須添加的參數"><a href="#必須添加的參數" class="headerlink" title="必須添加的參數"></a>必須添加的參數</h5></li>
 </ul>
@@ -142,7 +145,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmji6kngr000a8sn1gt8o6ymj" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmji6nxoi000ehcn16yhjf9py" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

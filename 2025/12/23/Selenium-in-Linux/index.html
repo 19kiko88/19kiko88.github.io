@@ -14,7 +14,7 @@
 <meta property="og:description" content="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，舊問題一堆">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-12-23T02:31:08.000Z">
-<meta property="article:modified_time" content="2025-12-23T04:05:22.285Z">
+<meta property="article:modified_time" content="2025-12-23T05:56:44.775Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -122,14 +122,22 @@
 </ul>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update &amp;&amp; <span class="built_in">sudo</span> apt-get install -y \</span><br><span class="line">    libnss3 \</span><br><span class="line">    libatk-bridge2.0-0 \</span><br><span class="line">    libxcomposite1 \</span><br><span class="line">    libxdamage1 \</span><br><span class="line">    libxrandr2 \</span><br><span class="line">    libgbm1 \</span><br><span class="line">    libasound2 \</span><br><span class="line">    libpangocairo-1.0-0 \</span><br><span class="line">    libxshmfence1</span><br><span class="line"></span><br><span class="line"><span class="comment">### 3. 為什麼會發生這個錯誤？</span></span><br><span class="line">* **缺少 `--no-sandbox`**: 在 Linux 上以 root 或特定權限執行 Chrome 時，若不加此參數Chrome 會出於安全性考慮直接關閉。</span><br><span class="line">* **共享記憶體不足**: `/dev/shm` 在預設 Linux/Docker 環境中通常只有 64MB，Chrome 隨便個網頁就崩潰了。`--disable-dev-shm-usage` 會強制 Chrome 使用 `/tmp` 代替。</span><br><span class="line">* **版本不匹配**: 如果你手動放了 `ChromeDriver`，請刪除它，讓 Selenium 4.x 的 SeleniumManager 自動根據系統安裝的 Chrome 版本去抓對應的 Driver。</span><br><span class="line"></span><br><span class="line">**建議：** 先在 Linux 下執行一次 `google-chrome --version` 看看能不能跑，如果出現`<span class="built_in">command</span> not found`，代表你必須先安裝 Chrome。 </span><br></pre></td></tr></table></figure>
 <h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><ul>
-<li><h5 id="除了安裝Cheome之外，Linux-Server上還要另外安裝相關的依賴：-1"><a href="#除了安裝Cheome之外，Linux-Server上還要另外安裝相關的依賴：-1" class="headerlink" title="除了安裝Cheome之外，Linux Server上還要另外安裝相關的依賴："></a>除了安裝Cheome之外，Linux Server上還要另外安裝相關的依賴：</h5></li>
+<li><h5 id="除了在Linux-Server上安裝Cheome之外，-Net專案也要安裝ChromeDriver這個套件。在PowerShell切換到專案目錄後，執行下面套件安裝指令，記得版本要跟Linux-Server上的Chrome版本一致。"><a href="#除了在Linux-Server上安裝Cheome之外，-Net專案也要安裝ChromeDriver這個套件。在PowerShell切換到專案目錄後，執行下面套件安裝指令，記得版本要跟Linux-Server上的Chrome版本一致。" class="headerlink" title="除了在Linux Server上安裝Cheome之外，.Net專案也要安裝ChromeDriver這個套件。在PowerShell切換到專案目錄後，執行下面套件安裝指令，記得版本要跟Linux Server上的Chrome版本一致。"></a>除了在Linux Server上安裝Cheome之外，.Net專案也要安裝ChromeDriver這個套件。在PowerShell切換到專案目錄後，執行下面套件安裝指令，記得版本要跟Linux Server上的Chrome版本一致。</h5></li>
 </ul>
-<hr>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">   dotnet add package Selenium.WebDriver.ChromeDriver --version 143.0.7499.16900</span><br><span class="line">  ```  </span><br><span class="line">---</span><br><span class="line"><span class="comment">##### 解決 Chrome Instance Exited 錯誤1. 調整 C# Selenium 程式碼 (最重要)在伺服器環境執行 Chrome，必須添加特定的啟動參數。請修改你的 StockService.cs 中初始化 ChromeDriver 的部分：var options = new ChromeOptions();</span></span><br><span class="line"></span><br><span class="line">* <span class="comment">##### 必須添加的參數</span></span><br><span class="line">``` text</span><br><span class="line">    options.AddArgument(<span class="string">&quot;--headless&quot;</span>);                // 無頭模式，不啟動視窗</span><br><span class="line">    options.AddArgument(<span class="string">&quot;--no-sandbox&quot;</span>);               // 停用沙箱，Linux 伺服器必備</span><br><span class="line">    options.AddArgument(<span class="string">&quot;--disable-dev-shm-usage&quot;</span>);    // 解決記憶體限制問題 (/dev/shm)</span><br><span class="line">    options.AddArgument(<span class="string">&quot;--disable-gpu&quot;</span>);              // 停用 GPU 硬體加速</span><br><span class="line"></span><br><span class="line">    <span class="comment">### 可選：避免被偵測或提升穩定性</span></span><br><span class="line">    options.AddArgument(<span class="string">&quot;--window-size=1920,1080&quot;</span>);</span><br><span class="line">    options.AddArgument(<span class="string">&quot;--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">### 初始化 Driver</span></span><br><span class="line">    var driver = new ChromeDriver(options);</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h5 id="檢查並安裝缺少的系統依賴Chrome-雖然安裝好了，但它運行時需要許多-so-庫。請執行以下指令確保依賴完整："><a href="#檢查並安裝缺少的系統依賴Chrome-雖然安裝好了，但它運行時需要許多-so-庫。請執行以下指令確保依賴完整：" class="headerlink" title="*檢查並安裝缺少的系統依賴Chrome 雖然安裝好了，但它運行時需要許多 .so 庫。請執行以下指令確保依賴完整："></a>*檢查並安裝缺少的系統依賴Chrome 雖然安裝好了，但它運行時需要許多 .so 庫。請執行以下指令確保依賴完整：</h5></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get update</span><br><span class="line"><span class="built_in">sudo</span> apt-get install -y libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 libgbm1 libasound2 libpango-1.0-0 libcairo2</span><br></pre></td></tr></table></figure>
+<h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="檢查-ChromeDriver-版本ChromeDriver-的版本必須與-Google-Chrome-的版本完全匹配。檢查-Chrome-版本：google-chrome-–version"><a href="#檢查-ChromeDriver-版本ChromeDriver-的版本必須與-Google-Chrome-的版本完全匹配。檢查-Chrome-版本：google-chrome-–version" class="headerlink" title="檢查 ChromeDriver 版本ChromeDriver 的版本必須與 Google Chrome 的版本完全匹配。檢查 Chrome 版本：google-chrome –version"></a>檢查 ChromeDriver 版本ChromeDriver 的版本必須與 Google Chrome 的版本完全匹配。檢查 Chrome 版本：google-chrome –version</h5></li>
+</ul>
+<p>檢查 ChromeDriver 版本（如果你是手動下載的）：chromedriver –version<br>注意：如果你是透過 NuGet 套件 Selenium.WebDriver.ChromeDriver 安裝的，請確保套件版本與 Linux 上的 Chrome 版本一致。4. 手動測試啟動你可以直接在終端機測試 Chrome 是否能正常跑起來（不透過程式）：google-chrome –headless –no-sandbox –dump-dom <a target="_blank" rel="noopener" href="https://www.google.com/">https://www.google.com</a><br>如果有輸出 HTML 原始碼，代表 Chrome 核心沒問題。如果出現 error while loading shared libraries，請根據提示安裝缺少的 lib。5. 權限問題確保你的執行帳號有權限存取 Chrome：sudo chmod +x &#x2F;usr&#x2F;bin&#x2F;google-chrome</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmji2b0kl0017gsn17dnv1b9y" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmji6anr5000aton13wzzbyns" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -140,9 +148,9 @@
 <nav id="article-nav">
   
   
-    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Google App Script(GAS)應用 - Clasp</div>
+      <div class="article-nav-title">Google App Script(GAS)應用</div>
     </a>
   
 </nav>
@@ -205,11 +213,11 @@
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
           </li>
         
           <li>

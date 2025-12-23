@@ -14,7 +14,7 @@
 <meta property="og:description" content="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，舊問題一堆">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-12-23T02:31:08.000Z">
-<meta property="article:modified_time" content="2025-12-23T03:16:27.483Z">
+<meta property="article:modified_time" content="2025-12-23T03:22:19.429Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -100,21 +100,32 @@
     <div class="e-content article-entry" itemprop="articleBody">
       
         <h5 id="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機-Windows-11-測試時一切正常，但一放到遠端Server-Ubuntu-22-後，舊問題一堆"><a href="#先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機-Windows-11-測試時一切正常，但一放到遠端Server-Ubuntu-22-後，舊問題一堆" class="headerlink" title="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，舊問題一堆"></a>先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是使用透過HttpRequestMessage物件來發送Request，在取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，舊問題一堆</h5><span id="more"></span>
-<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><hr>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
 <h5 id="第一個遇到的問題如下，主要是在告訴你-NET-7-編譯過程中，Selenium-4-6-引進的-Selenium-Manager（負責自動下載瀏覽器驅動程式的元件）在-Linux-環境下的二進位檔沒有被正確包含或找到。"><a href="#第一個遇到的問題如下，主要是在告訴你-NET-7-編譯過程中，Selenium-4-6-引進的-Selenium-Manager（負責自動下載瀏覽器驅動程式的元件）在-Linux-環境下的二進位檔沒有被正確包含或找到。" class="headerlink" title="第一個遇到的問題如下，主要是在告訴你.NET 7 編譯過程中，Selenium 4.6+ 引進的 Selenium Manager（負責自動下載瀏覽器驅動程式的元件）在 Linux 環境下的二進位檔沒有被正確包含或找到。"></a>第一個遇到的問題如下，主要是在告訴你.NET 7 編譯過程中，Selenium 4.6+ 引進的 Selenium Manager（負責自動下載瀏覽器驅動程式的元件）在 Linux 環境下的二進位檔沒有被正確包含或找到。</h5><pre><code><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.AggregateException: One or more errors occurred. (One or more errors occurred. (Selenium Manager binary &#x27;selenium-manager&#x27; was not found in the following paths:\n - /var/www/html/*****/selenium-manager\n - /var/www/html/*****/runtimes/linux/native/selenium-manager\n - /usr/lib/dotnet/shared/Microsoft.NETCore.App/7.0.19/selenium-manager))</span><br></pre></td></tr></table></figure>
 </code></pre>
 <h5 id="解法："><a href="#解法：" class="headerlink" title="解法："></a>解法：</h5><ul>
 <li><h5 id="在編譯出的-publish-資料夾中，檢查是否存在以下路徑的檔案：-runtimes-linux-native-selenium-manager，並記得把這個檔案複製到遠端Linux-Server的對應目錄之下。"><a href="#在編譯出的-publish-資料夾中，檢查是否存在以下路徑的檔案：-runtimes-linux-native-selenium-manager，並記得把這個檔案複製到遠端Linux-Server的對應目錄之下。" class="headerlink" title="在編譯出的 publish 資料夾中，檢查是否存在以下路徑的檔案： runtimes&#x2F;linux&#x2F;native&#x2F;selenium-manager，並記得把這個檔案複製到遠端Linux Server的對應目錄之下。"></a>在編譯出的 publish 資料夾中，檢查是否存在以下路徑的檔案： runtimes&#x2F;linux&#x2F;native&#x2F;selenium-manager，並記得把這個檔案複製到遠端Linux Server的對應目錄之下。</h5></li>
 </ul>
-<h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><ul>
+<h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="將整個-publish-資料夾上傳到-Linux-後，必須賦予該二進位檔執行權限，否則-Selenium-會因為「權限不足」而回報「找不到檔案」："><a href="#將整個-publish-資料夾上傳到-Linux-後，必須賦予該二進位檔執行權限，否則-Selenium-會因為「權限不足」而回報「找不到檔案」：" class="headerlink" title="將整個 publish 資料夾上傳到 Linux 後，必須賦予該二進位檔執行權限，否則 Selenium 會因為「權限不足」而回報「找不到檔案」："></a>將整個 publish 資料夾上傳到 Linux 後，必須賦予該二進位檔執行權限，否則 Selenium 會因為「權限不足」而回報「找不到檔案」：</h5></li>
 </ul>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 Linux 伺服器上執行 (路徑請根據你的錯誤訊息)</span></span><br><span class="line"><span class="built_in">chmod</span> +x /var/www/html/StockBuyingHelper_Stg/runtimes/linux/native/selenium-manager  </span><br></pre></td></tr></table></figure>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<h5 id="第二個遇到的問題如下，這個錯誤-session-not-created-Chrome-instance-exited-代表-Selenium-已經找到了-Chrome，但-Chrome-在啟動時崩潰了。"><a href="#第二個遇到的問題如下，這個錯誤-session-not-created-Chrome-instance-exited-代表-Selenium-已經找到了-Chrome，但-Chrome-在啟動時崩潰了。" class="headerlink" title="第二個遇到的問題如下，這個錯誤 session not created: Chrome instance exited 代表 Selenium 已經找到了 Chrome，但 Chrome 在啟動時崩潰了。"></a>第二個遇到的問題如下，這個錯誤 session not created: Chrome instance exited 代表 Selenium 已經找到了 Chrome，但 Chrome 在啟動時崩潰了。</h5><pre><code><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">System.AggregateException: One or more errors occurred. (One or more errors occurred. (session not created: Chrome instance exited. Examine ChromeDriver verbose log to determine the cause. (SessionNotCreated)))</span><br></pre></td></tr></table></figure>
+</code></pre>
+<h5 id="解法：-1"><a href="#解法：-1" class="headerlink" title="解法："></a>解法：</h5><ul>
+<li><h5 id="在編譯出的-publish-資料夾中，檢查是否存在以下路徑的檔案：-runtimes-linux-native-selenium-manager，並記得把這個檔案複製到遠端Linux-Server的對應目錄之下。-1"><a href="#在編譯出的-publish-資料夾中，檢查是否存在以下路徑的檔案：-runtimes-linux-native-selenium-manager，並記得把這個檔案複製到遠端Linux-Server的對應目錄之下。-1" class="headerlink" title="在編譯出的 publish 資料夾中，檢查是否存在以下路徑的檔案： runtimes&#x2F;linux&#x2F;native&#x2F;selenium-manager，並記得把這個檔案複製到遠端Linux Server的對應目錄之下。"></a>在編譯出的 publish 資料夾中，檢查是否存在以下路徑的檔案： runtimes&#x2F;linux&#x2F;native&#x2F;selenium-manager，並記得把這個檔案複製到遠端Linux Server的對應目錄之下。</h5></li>
+</ul>
+<h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="將整個-publish-資料夾上傳到-Linux-後，必須賦予該二進位檔執行權限，否則-Selenium-會因為「權限不足」而回報「找不到檔案」：-1"><a href="#將整個-publish-資料夾上傳到-Linux-後，必須賦予該二進位檔執行權限，否則-Selenium-會因為「權限不足」而回報「找不到檔案」：-1" class="headerlink" title="將整個 publish 資料夾上傳到 Linux 後，必須賦予該二進位檔執行權限，否則 Selenium 會因為「權限不足」而回報「找不到檔案」："></a>將整個 publish 資料夾上傳到 Linux 後，必須賦予該二進位檔執行權限，否則 Selenium 會因為「權限不足」而回報「找不到檔案」：</h5></li>
+</ul>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 Linux 伺服器上執行 (路徑請根據你的錯誤訊息)</span></span><br><span class="line"><span class="built_in">chmod</span> +x /var/www/html/StockBuyingHelper_Stg/runtimes/linux/native/selenium-manager  </span><br></pre></td></tr></table></figure>
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><hr>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmji0k5vh0014gcn10b1tcti4" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmji0rmf70014ssn1hqsf993o" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

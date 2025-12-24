@@ -14,7 +14,7 @@
 <meta property="og:description" content="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是透過HttpRequestMessage物件來發送Request，再取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，就問題一堆">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-12-23T02:31:08.000Z">
-<meta property="article:modified_time" content="2025-12-24T06:38:37.956Z">
+<meta property="article:modified_time" content="2025-12-24T06:40:43.346Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -121,7 +121,13 @@
 <h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><ul>
 <li><h5 id="確認安裝成功："><a href="#確認安裝成功：" class="headerlink" title="確認安裝成功："></a>確認安裝成功：</h5></li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">chromedriver --version</span><br><span class="line">```    </span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">---</span><br><span class="line">---</span><br><span class="line"><span class="comment">##### .NET 7 / C# 的 ChromeOption 設定</span></span><br><span class="line"></span><br><span class="line">* <span class="comment">##### 確認 Chrome 真的存在。</span></span><br><span class="line">``` bash</span><br><span class="line"><span class="built_in">which</span> google-chrome</span><br><span class="line"><span class="built_in">which</span> google-chrome-stable</span><br><span class="line">google-chrome --version</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chromedriver --version</span><br></pre></td></tr></table></figure>
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><hr>
+<hr>
+<h5 id="NET-7-C-的-ChromeOption-設定"><a href="#NET-7-C-的-ChromeOption-設定" class="headerlink" title=".NET 7 &#x2F; C# 的 ChromeOption 設定"></a>.NET 7 &#x2F; C# 的 ChromeOption 設定</h5><ul>
+<li><h5 id="確認-Chrome-真的存在。"><a href="#確認-Chrome-真的存在。" class="headerlink" title="確認 Chrome 真的存在。"></a>確認 Chrome 真的存在。</h5></li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">which</span> google-chrome</span><br><span class="line"><span class="built_in">which</span> google-chrome-stable</span><br><span class="line">google-chrome --version</span><br></pre></td></tr></table></figure>
 
 <h5 id="只要其中一個有路徑，把那條路徑填進："><a href="#只要其中一個有路徑，把那條路徑填進：" class="headerlink" title="只要其中一個有路徑，把那條路徑填進："></a>只要其中一個有路徑，把那條路徑填進：</h5><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">options.BinaryLocation = <span class="string">&quot;這裡&quot;</span>;</span><br></pre></td></tr></table></figure>
 
@@ -146,7 +152,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmjjn8ggq000944n11z6he9cx" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmjjnapsv000i2cn107gn869n" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

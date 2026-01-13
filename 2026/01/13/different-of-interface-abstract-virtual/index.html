@@ -14,7 +14,7 @@
 <meta property="og:description" content="different of interface, abstract, virtual.">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-01-13T02:15:24.000Z">
-<meta property="article:modified_time" content="2026-01-13T08:31:53.119Z">
+<meta property="article:modified_time" content="2026-01-13T08:36:23.777Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OOP">
 <meta name="twitter:card" content="summary">
@@ -159,21 +159,22 @@
 <h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><h5 id="Site-C：override-呼叫-base（進階）"><a href="#Site-C：override-呼叫-base（進階）" class="headerlink" title="Site C：override + 呼叫 base（進階）"></a>Site C：override + 呼叫 base（進階）</h5>  <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">SiteCCrawler</span> : <span class="title">SeleniumCrawlerBase</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">InitDriver</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">base</span>.InitDriver(); <span class="comment">//保留父類邏輯</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> options = (ChromeOptions)((ChromeDriver)Driver).Options;</span><br><span class="line">        options.AddArgument(<span class="string">&quot;--disable-blink-features=AutomationControlled&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">async</span> Task <span class="title">CrawlCoreAsync</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        Driver.Navigate().GoToUrl(<span class="string">&quot;https://site-c.com&quot;</span>);</span><br><span class="line">        <span class="keyword">await</span> Task.CompletedTask;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> Task <span class="title">AfterCrawlAsync</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        Console.WriteLine(<span class="string">&quot;Site C cleanup&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> Task.CompletedTask;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><h5 id="上層使用（只看-interface）"><a href="#上層使用（只看-interface）" class="headerlink" title="上層使用（只看 interface）"></a>上層使用（只看 interface）</h5>  <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">CrawlJob</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">readonly</span> IWebCrawler _crawler;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CrawlJob</span>(<span class="params">IWebCrawler crawler</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        _crawler = crawler;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Task <span class="title">RunAsync</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> _crawler.CrawlAsync();<span class="comment">//使用父類別的CrawlAsync()，其內容無法變更。</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
-<li><h5 id="完全不知道-Selenium，只依賴於interface，可把實作隨時替換成Playwright達成與Selenium解藕。"><a href="#完全不知道-Selenium，只依賴於interface，可把實作隨時替換成Playwright達成與Selenium解藕。" class="headerlink" title="完全不知道 Selenium，只依賴於interface，可把實作隨時替換成Playwright達成與Selenium解藕。"></a><span style="color:red">完全不知道 Selenium，只依賴於interface，可把實作隨時替換成Playwright達成與Selenium解藕。</span></h5></li>
-<li><h5 id="提供可-override-的擴充點-1"><a href="#提供可-override-的擴充點-1" class="headerlink" title="提供可 override 的擴充點"></a>提供可 override 的擴充點</h5></li>
+<li><h5 id="完全不知道-Selenium，只依賴於interface，可把實作透過相依注入-DI-隨時替換成Playwright達成與Selenium解藕。"><a href="#完全不知道-Selenium，只依賴於interface，可把實作透過相依注入-DI-隨時替換成Playwright達成與Selenium解藕。" class="headerlink" title="完全不知道 Selenium，只依賴於interface，可把實作透過相依注入(DI)隨時替換成Playwright達成與Selenium解藕。"></a><span style="color:red">完全不知道 Selenium，只依賴於interface，可把實作透過相依注入(DI)隨時替換成Playwright達成與Selenium解藕。</span></h5></li>
 </ul>
 </li>
 </ul>
-<h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><pre><code>
----
-* ##### Ref：
-    1. #####  [abstract (C# 參考)](https://learn.microsoft.com/zh-tw/dotnet/csharp/language-reference/keywords/abstract)
-</code></pre>
+<h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h5 id="Ref："><a href="#Ref：" class="headerlink" title="Ref："></a>Ref：</h5><ol>
+<li><h5 id="abstract-C-參考"><a href="#abstract-C-參考" class="headerlink" title="abstract (C# 參考)"></a><a target="_blank" rel="noopener" href="https://learn.microsoft.com/zh-tw/dotnet/csharp/language-reference/keywords/abstract">abstract (C# 參考)</a></h5></li>
+</ol>
+</li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/13/different-of-interface-abstract-virtual/" data-id="cmkcc2tal000ljgn15jqcf705" data-title="different of interface, abstract, virtual." class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/01/13/different-of-interface-abstract-virtual/" data-id="cmkcc8eth0016u4n137c82wn8" data-title="different of interface, abstract, virtual." class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -255,11 +256,11 @@
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
           </li>
         
           <li>

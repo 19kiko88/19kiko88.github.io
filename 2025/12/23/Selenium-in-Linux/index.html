@@ -14,7 +14,7 @@
 <meta property="og:description" content="先前有個SideProject，會用網路爬蟲收集其他網站的資料。之前用的方式是透過HttpRequestMessage物件來發送Request，再取得整個網頁內容。但如果網頁有使用ajax時，就要使用Selenium。原本在本機(Windows 11)測試時一切正常，但一放到遠端Server(Ubuntu 22)後，就問題一堆">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-12-23T02:31:08.000Z">
-<meta property="article:modified_time" content="2025-12-24T06:40:43.346Z">
+<meta property="article:modified_time" content="2025-12-24T11:01:14.626Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -137,7 +137,7 @@
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> OpenQA.Selenium;</span><br><span class="line"><span class="keyword">using</span> OpenQA.Selenium.Chrome;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> options = <span class="keyword">new</span> ChromeOptions();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 必要設定</span></span><br><span class="line">options.AddArgument(<span class="string">&quot;--headless=new&quot;</span>);          <span class="comment">// Linux 無 GUI 必開</span></span><br><span class="line">options.AddArgument(<span class="string">&quot;--disable-dev-shm-usage&quot;</span>); <span class="comment">// 避免共享記憶體問題</span></span><br><span class="line">options.AddArgument(<span class="string">&quot;--no-sandbox&quot;</span>);             <span class="comment">// 就算非 root 也安全</span></span><br><span class="line">options.AddArgument(<span class="string">&quot;--window-size=1920,1080&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 強烈建議：明確指定 Chrome 路徑</span></span><br><span class="line">options.BinaryLocation = <span class="string">&quot;/usr/bin/google-chrome-stable&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">var</span> driver = <span class="keyword">new</span> ChromeDriver(options);</span><br><span class="line"></span><br><span class="line">driver.Navigate().GoToUrl(<span class="string">&quot;https://www.google.com&quot;</span>);</span><br><span class="line">Console.WriteLine(driver.Title);</span><br></pre></td></tr></table></figure>
 <hr>
 <hr>
-<h5 id="如果上面該安裝的套件都安裝後，還是一直出現-session-not-created-的-issue-的話。"><a href="#如果上面該安裝的套件都安裝後，還是一直出現-session-not-created-的-issue-的話。" class="headerlink" title="如果上面該安裝的套件都安裝後，還是一直出現 session not created 的 issue 的話。"></a>如果上面該安裝的套件都安裝後，還是一直出現 session not created 的 issue 的話。</h5><ul>
+<h5 id="如果上面該安裝的套件都安裝後，還是一直出現-session-not-created-的-issue-的話。建議直接看ChromeDriver的log比較快，Selenium回應的訊息很籠統，不同的問題有可能都是相同的錯誤回應。透過log找到問題點後，再用ChatGPT幫你Debug，不然debug會de到瘋掉"><a href="#如果上面該安裝的套件都安裝後，還是一直出現-session-not-created-的-issue-的話。建議直接看ChromeDriver的log比較快，Selenium回應的訊息很籠統，不同的問題有可能都是相同的錯誤回應。透過log找到問題點後，再用ChatGPT幫你Debug，不然debug會de到瘋掉" class="headerlink" title="如果上面該安裝的套件都安裝後，還是一直出現 session not created 的 issue 的話。建議直接看ChromeDriver的log比較快，Selenium回應的訊息很籠統，不同的問題有可能都是相同的錯誤回應。透過log找到問題點後，再用ChatGPT幫你Debug，不然debug會de到瘋掉!!"></a>如果上面該安裝的套件都安裝後，還是一直出現 session not created 的 issue 的話。建議直接看ChromeDriver的log比較快，Selenium回應的訊息很籠統，不同的問題有可能都是相同的錯誤回應。透過log找到問題點後，再用ChatGPT幫你Debug，不然debug會de到瘋掉!!</h5><ul>
 <li><h5 id="開啟-Selenium-Manager-ChromeDriver-log-來觀察錯誤。"><a href="#開啟-Selenium-Manager-ChromeDriver-log-來觀察錯誤。" class="headerlink" title="開啟 Selenium Manager + ChromeDriver log 來觀察錯誤。"></a>開啟 Selenium Manager + ChromeDriver log 來觀察錯誤。</h5></li>
 </ul>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> service = ChromeDriverService.CreateDefaultService();</span><br><span class="line">service.EnableVerboseLogging = <span class="literal">true</span>;</span><br><span class="line">service.LogPath = <span class="string">&quot;chromedriver.log&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">var</span> driver = <span class="keyword">new</span> ChromeDriver(service, options);</span><br></pre></td></tr></table></figure>
@@ -146,13 +146,17 @@
 <li><h5 id="執行後查看："><a href="#執行後查看：" class="headerlink" title="執行後查看："></a>執行後查看：</h5></li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> chromedriver.log</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nano chromedriver.log</span><br></pre></td></tr></table></figure>
+<h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><hr>
+<hr>
+<h5 id="publish-code"><a href="#publish-code" class="headerlink" title="publish code"></a>publish code</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet publish -c Release -r linux-x64 --self-contained <span class="literal">true</span> -p:PublishSingleFile=<span class="literal">false</span></span><br></pre></td></tr></table></figure>
 
 
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmjjnapsv000i2cn107gn869n" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmkc7vozk000afgn1c1hw9kpb" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -162,10 +166,19 @@
     
 <nav id="article-nav">
   
+    <a href="/2026/01/13/different-of-interface-abstract-virtual/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          different of interface, abstract, virtual.
+        
+      </div>
+    </a>
   
-    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" id="article-nav-older" class="article-nav-link-wrap">
+  
+    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Google App Script(GAS)應用</div>
+      <div class="article-nav-title">Google App Script(GAS)應用 - Clasp</div>
     </a>
   
 </nav>
@@ -182,7 +195,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li></ul>
     </div>
   </div>
 
@@ -192,7 +205,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
     </div>
   </div>
 
@@ -202,7 +215,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 15px;">GAS</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+      <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 15px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
     </div>
   </div>
 
@@ -211,7 +224,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
     </div>
   </div>
 
@@ -224,11 +237,11 @@
       <ul>
         
           <li>
-            <a href="/2025/12/23/Selenium-in-Linux/">Selenium in Linux</a>
+            <a href="/2026/01/13/different-of-interface-abstract-virtual/">different of interface, abstract, virtual.</a>
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
+            <a href="/2025/12/23/Selenium-in-Linux/">Selenium in Linux</a>
           </li>
         
           <li>
@@ -236,11 +249,11 @@
           </li>
         
           <li>
-            <a href="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/">Line-API-群組推播</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
           </li>
         
           <li>
-            <a href="/2025/10/22/Simple-Docker-App/">Simple-Docker-App</a>
+            <a href="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/">Line-API-群組推播</a>
           </li>
         
       </ul>
@@ -256,7 +269,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       
-      &copy; 2025 John Doe<br>
+      &copy; 2026 John Doe<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>

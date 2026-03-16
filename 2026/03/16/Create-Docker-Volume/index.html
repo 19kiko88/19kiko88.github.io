@@ -14,7 +14,7 @@
 <meta property="og:description" content="自己有個Side Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的(登入帳號用sa. 連線的port使用1433….etc)。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433 port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為 Docker 啟動後無法直接修改 Port 映">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-16T06:32:04.394Z">
+<meta property="article:modified_time" content="2026-03-16T06:40:15.253Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -120,22 +120,38 @@
 <li><h5 id="U-sa-P-‘你的舊密碼’-指定登入帳號（sa）與密碼。"><a href="#U-sa-P-‘你的舊密碼’-指定登入帳號（sa）與密碼。" class="headerlink" title="-U sa -P ‘你的舊密碼’: 指定登入帳號（sa）與密碼。"></a>-U sa -P ‘你的舊密碼’: 指定登入帳號（sa）與密碼。</h5></li>
 </ul>
 </li>
+<li><h5 id="SQL-指令核心-Q-後面的內容"><a href="#SQL-指令核心-Q-後面的內容" class="headerlink" title="SQL 指令核心 (-Q 後面的內容)"></a>SQL 指令核心 (-Q 後面的內容)</h5><h5 id="Q-代表-“Query”，意思是「執行完括號內的-SQL-指令後就退出」。"><a href="#Q-代表-“Query”，意思是「執行完括號內的-SQL-指令後就退出」。" class="headerlink" title="-Q 代表 “Query”，意思是「執行完括號內的 SQL 指令後就退出」。"></a>-Q 代表 “Query”，意思是「執行完括號內的 SQL 指令後就退出」。</h5><ul>
+<li><h5 id="BACKUP-DATABASE-你的資料庫名-指定要備份哪一個資料夾。"><a href="#BACKUP-DATABASE-你的資料庫名-指定要備份哪一個資料夾。" class="headerlink" title="BACKUP DATABASE [你的資料庫名]: 指定要備份哪一個資料夾。"></a>BACKUP DATABASE [你的資料庫名]: 指定要備份哪一個資料夾。</h5></li>
+<li><h5 id="TO-DISK-N’-var-opt-mssql-data-backup-bak’"><a href="#TO-DISK-N’-var-opt-mssql-data-backup-bak’" class="headerlink" title="TO DISK &#x3D; N’&#x2F;var&#x2F;opt&#x2F;mssql&#x2F;data&#x2F;backup.bak’:"></a>TO DISK &#x3D; N’&#x2F;var&#x2F;opt&#x2F;mssql&#x2F;data&#x2F;backup.bak’:</h5><ul>
+<li><h5 id="重點：-這是指容器內部的路徑。"><a href="#重點：-這是指容器內部的路徑。" class="headerlink" title="重點： 這是指容器內部的路徑。"></a>重點： 這是指容器內部的路徑。</h5></li>
+<li><h5 id="它會把備份檔放在容器裡的-var-opt-mssql-data-資料夾下，檔名為-backup-bak。"><a href="#它會把備份檔放在容器裡的-var-opt-mssql-data-資料夾下，檔名為-backup-bak。" class="headerlink" title="它會把備份檔放在容器裡的 &#x2F;var&#x2F;opt&#x2F;mssql&#x2F;data&#x2F; 資料夾下，檔名為 backup.bak。"></a>它會把備份檔放在容器裡的 &#x2F;var&#x2F;opt&#x2F;mssql&#x2F;data&#x2F; 資料夾下，檔名為 backup.bak。</h5></li>
 </ul>
 </li>
-<li><h5 id="檢查是否建立成功："><a href="#檢查是否建立成功：" class="headerlink" title="檢查是否建立成功："></a>檢查是否建立成功：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume <span class="built_in">ls</span></span><br></pre></td></tr></table></figure></li>
+<li><h5 id="WITH-NOFORMAT-NOINIT…-這些是備份的參數："><a href="#WITH-NOFORMAT-NOINIT…-這些是備份的參數：" class="headerlink" title="WITH NOFORMAT, NOINIT…: 這些是備份的參數："></a>WITH NOFORMAT, NOINIT…: 這些是備份的參數：</h5><ul>
+<li><h5 id="NAME-‘Full-Backup’-給這次備份取個名字。"><a href="#NAME-‘Full-Backup’-給這次備份取個名字。" class="headerlink" title="NAME &#x3D; ‘Full Backup’: 給這次備份取個名字。"></a>NAME &#x3D; ‘Full Backup’: 給這次備份取個名字。</h5></li>
+<li><h5 id="STATS-10-每完成-10-就顯示一次進度（讓你知道它沒當機）。"><a href="#STATS-10-每完成-10-就顯示一次進度（讓你知道它沒當機）。" class="headerlink" title="STATS &#x3D; 10: 每完成 10% 就顯示一次進度（讓你知道它沒當機）。"></a>STATS &#x3D; 10: 每完成 10% 就顯示一次進度（讓你知道它沒當機）。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
-<hr>
+<ul>
+<li><h5 id="檢查是否建立成功："><a href="#檢查是否建立成功：" class="headerlink" title="檢查是否建立成功："></a>檢查是否建立成功：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume <span class="built_in">ls</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
 <ul>
 <li><h3 id="手動建立-Volume"><a href="#手動建立-Volume" class="headerlink" title="手動建立 Volume"></a>手動建立 Volume</h3>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume create sbh_db_volume</span><br></pre></td></tr></table></figure></li>
 <li><h5 id="檢查是否建立成功：-1"><a href="#檢查是否建立成功：-1" class="headerlink" title="檢查是否建立成功："></a>檢查是否建立成功：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume <span class="built_in">ls</span></span><br></pre></td></tr></table></figure></li>
 </ul>
-<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><hr>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/03/16/Create-Docker-Volume/" data-id="cmmst3jg70000f8n16z25ekqb" data-title="Create Docker Volume" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/03/16/Create-Docker-Volume/" data-id="cmmstdwzj0000uwn1gcq2c6du" data-title="Create Docker Volume" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

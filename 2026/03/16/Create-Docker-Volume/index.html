@@ -18,7 +18,7 @@
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/check_docker_run.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/check_DB_run.jpg">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-16T08:59:21.282Z">
+<meta property="article:modified_time" content="2026-03-16T09:05:23.268Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="Docker Volume">
@@ -157,61 +157,49 @@
 <h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
 <ul>
 <li><h5 id="新增VPS的對外Port"><a href="#新增VPS的對外Port" class="headerlink" title="新增VPS的對外Port"></a>新增VPS的對外Port</h5><ol>
-<li><h5 id="先前提到，不使用預設的1433-Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。"><a href="#先前提到，不使用預設的1433-Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。" class="headerlink" title="先前提到，不使用預設的1433 Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。"></a>先前提到，不使用預設的1433 Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。</h5></li>
+<li><h5 id="先前提到，不使用預設的1433-Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。"><a href="#先前提到，不使用預設的1433-Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。" class="headerlink" title="先前提到，不使用預設的1433 Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。"></a>先前提到，不使用預設的1433 Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -tunlp | grep [要開放的VPS對外Port]</span><br></pre></td></tr></table></figure>
+</li>
+<li><h5 id="使用-netstat-如果沒安裝，可能需要-apt-install-net-tools"><a href="#使用-netstat-如果沒安裝，可能需要-apt-install-net-tools" class="headerlink" title="使用 netstat (如果沒安裝，可能需要 apt install net-tools)"></a>使用 netstat (如果沒安裝，可能需要 apt install net-tools)</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install net-tools</span><br></pre></td></tr></table></figure>
+</li>
+<li><h5 id="開通後可用下面指令確認。"><a href="#開通後可用下面指令確認。" class="headerlink" title="開通後可用下面指令確認。"></a>開通後可用下面指令確認。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ufw status</span><br></pre></td></tr></table></figure></li>
 </ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netstat -tunlp | grep [要開放的VPS對外Port]</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li><h5 id="使用-netstat-如果沒安裝，可能需要-apt-install-net-tools"><a href="#使用-netstat-如果沒安裝，可能需要-apt-install-net-tools" class="headerlink" title="使用 netstat (如果沒安裝，可能需要 apt install net-tools)"></a>使用 netstat (如果沒安裝，可能需要 apt install net-tools)</h5></li>
-</ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt install net-tools</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><h5 id="開通後可用下面指令確認。"><a href="#開通後可用下面指令確認。" class="headerlink" title="開通後可用下面指令確認。"></a>開通後可用下面指令確認。</h5></li>
-</ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ufw status</span><br></pre></td></tr></table></figure></li>
+</li>
 </ul>
 <h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
 <ul>
 <li><h3 id="建立-Volume"><a href="#建立-Volume" class="headerlink" title="建立 Volume"></a>建立 Volume</h3><ol>
-<li><h5 id="手動建立-Volume。"><a href="#手動建立-Volume。" class="headerlink" title="手動建立 Volume。"></a>手動建立 Volume。</h5></li>
+<li><h5 id="手動建立-Volume。"><a href="#手動建立-Volume。" class="headerlink" title="手動建立 Volume。"></a>手動建立 Volume。</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume create sbh_db_volume</span><br></pre></td></tr></table></figure>
+<h5 id="sbh-db-volume為Volume名稱，之後掛載時會用到。"><a href="#sbh-db-volume為Volume名稱，之後掛載時會用到。" class="headerlink" title="sbh_db_volume為Volume名稱，之後掛載時會用到。"></a><span style="color:red">sbh_db_volume</span>為Volume名稱，之後掛載時會用到。</h5></li>
+<li><h5 id="檢查是否建立成功："><a href="#檢查是否建立成功：" class="headerlink" title="檢查是否建立成功："></a>檢查是否建立成功：</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume <span class="built_in">ls</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><h5 id="啟動新容器（換-Port、掛載-Volume）："><a href="#啟動新容器（換-Port、掛載-Volume）：" class="headerlink" title="啟動新容器（換 Port、掛載 Volume）："></a>啟動新容器（換 Port、掛載 Volume）：</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -e <span class="string">&quot;ACCEPT_EULA=Y&quot;</span> -e <span class="string">&quot;MSSQL_SA_PASSWORD=密碼&quot;</span> \</span><br><span class="line">-p [要開放的VPS對外Port]:1433 --name mssql_sbh \</span><br><span class="line">-v sbh_db_volume:/var/opt/mssql \</span><br><span class="line">-d mcr.microsoft.com/mssql/server:2022-latest</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h5 id="–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。"><a href="#–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。" class="headerlink" title="–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。"></a>–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。</h5></li>
+<li><h5 id="d-detached-讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。"><a href="#d-detached-讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。" class="headerlink" title="-d (detached): 讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。"></a>-d (detached): 讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。</h5></li>
+<li><h5 id="v-sbh-db-volume-var-opt-mssql"><a href="#v-sbh-db-volume-var-opt-mssql" class="headerlink" title="-v sbh_db_volume:&#x2F;var&#x2F;opt&#x2F;mssql:"></a>-v sbh_db_volume:&#x2F;var&#x2F;opt&#x2F;mssql:</h5><ul>
+<li><h5 id="sbh-db-volume-之前先建立好的-Docker-Volume（像是一個獨立的虛擬硬碟）。"><a href="#sbh-db-volume-之前先建立好的-Docker-Volume（像是一個獨立的虛擬硬碟）。" class="headerlink" title="sbh_db_volume: 之前先建立好的 Docker Volume（像是一個獨立的虛擬硬碟）。"></a>sbh_db_volume: 之前先建立好的 Docker Volume（像是一個獨立的虛擬硬碟）。</h5></li>
+<li><h5 id="var-opt-mssql-容器內存放所有資料庫檔案的根目錄。"><a href="#var-opt-mssql-容器內存放所有資料庫檔案的根目錄。" class="headerlink" title="&#x2F;var&#x2F;opt&#x2F;mssql: 容器內存放所有資料庫檔案的根目錄。"></a>&#x2F;var&#x2F;opt&#x2F;mssql: 容器內存放所有資料庫檔案的根目錄。</h5></li>
+<li><h5 id="mcr-microsoft-com-mssql-server-2022-latest-指定從微軟官方倉庫下載-2022-最新版的-SQL-Server-映像檔。"><a href="#mcr-microsoft-com-mssql-server-2022-latest-指定從微軟官方倉庫下載-2022-最新版的-SQL-Server-映像檔。" class="headerlink" title="mcr.microsoft.com&#x2F;mssql&#x2F;server:2022-latest: 指定從微軟官方倉庫下載 2022 最新版的 SQL Server 映像檔。"></a>mcr.microsoft.com&#x2F;mssql&#x2F;server:2022-latest: 指定從微軟官方倉庫下載 2022 最新版的 SQL Server 映像檔。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><h5 id="確認容器是否啟用"><a href="#確認容器是否啟用" class="headerlink" title="確認容器是否啟用"></a>確認容器是否啟用</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
+ <img src="/2026/03/16/Create-Docker-Volume/check_docker_run.jpg" class="" title="check_docker_run">
+</li>
+<li><h5 id="透過新Port連線至DB，確認DB連線正常。-因還未完成掛載流程，所以裡面還沒有資料"><a href="#透過新Port連線至DB，確認DB連線正常。-因還未完成掛載流程，所以裡面還沒有資料" class="headerlink" title="透過新Port連線至DB，確認DB連線正常。(因還未完成掛載流程，所以裡面還沒有資料)"></a>透過新Port連線至DB，確認DB連線正常。(因還未完成掛載流程，所以裡面還沒有資料)</h5> <img src="/2026/03/16/Create-Docker-Volume/check_DB_run.jpg" class="" title="check_DB_run"></li>
 </ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume create sbh_db_volume</span><br></pre></td></tr></table></figure>
-<h5 id="sbh-db-volume為Volume名稱，之後掛載時會用到。"><a href="#sbh-db-volume為Volume名稱，之後掛載時會用到。" class="headerlink" title="sbh_db_volume為Volume名稱，之後掛載時會用到。"></a><span style="color:red">sbh_db_volume</span>為Volume名稱，之後掛載時會用到。</h5><ol start="2">
-<li><h5 id="檢查是否建立成功："><a href="#檢查是否建立成功：" class="headerlink" title="檢查是否建立成功："></a>檢查是否建立成功：</h5></li>
-</ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume <span class="built_in">ls</span></span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><h5 id="啟動新容器（換-Port、掛載-Volume）："><a href="#啟動新容器（換-Port、掛載-Volume）：" class="headerlink" title="啟動新容器（換 Port、掛載 Volume）："></a>啟動新容器（換 Port、掛載 Volume）：</h5></li>
-</ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -e <span class="string">&quot;ACCEPT_EULA=Y&quot;</span> -e <span class="string">&quot;MSSQL_SA_PASSWORD=密碼&quot;</span> \</span><br><span class="line">-p [要開放的VPS對外Port]:1433 --name mssql_sbh \</span><br><span class="line">-v sbh_db_volume:/var/opt/mssql \</span><br><span class="line">-d mcr.microsoft.com/mssql/server:2022-latest</span><br></pre></td></tr></table></figure>
-<pre><code>* ##### --name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。
-* ##### -d (detached): 讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。
-* ##### -v sbh_db_volume:/var/opt/mssql:
-  * ##### sbh_db_volume: 之前先建立好的 Docker Volume（像是一個獨立的虛擬硬碟）。
-  * ##### /var/opt/mssql: 容器內存放所有資料庫檔案的根目錄。
-* ##### mcr.microsoft.com/mssql/server:2022-latest: 指定從微軟官方倉庫下載 2022 最新版的 SQL Server 映像檔。
-</code></pre>
-<ol start="4">
-<li><h5 id="確認容器是否啟用"><a href="#確認容器是否啟用" class="headerlink" title="確認容器是否啟用"></a>確認容器是否啟用</h5></li>
-</ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -a</span><br></pre></td></tr></table></figure>
-  <img src="/2026/03/16/Create-Docker-Volume/check_docker_run.jpg" class="" title="check_docker_run">
-
-<ol start="5">
-<li><h5 id="透過新Port連線至DB，確認DB連線正常。-因還未完成掛載流程，所以裡面還沒有資料"><a href="#透過新Port連線至DB，確認DB連線正常。-因還未完成掛載流程，所以裡面還沒有資料" class="headerlink" title="透過新Port連線至DB，確認DB連線正常。(因還未完成掛載流程，所以裡面還沒有資料)"></a>透過新Port連線至DB，確認DB連線正常。(因還未完成掛載流程，所以裡面還沒有資料)</h5></li>
-</ol>
-  <img src="/2026/03/16/Create-Docker-Volume/check_DB_run.jpg" class="" title="check_DB_run"></li>
+</li>
 </ul>
 <h5 id="之前資料是存在容器內部-可寫層-裡，Container刪除後，資料就沒了。現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個-Volume，資料（-mdf-ldf）和登入帳號設定都會永遠留著。"><a href="#之前資料是存在容器內部-可寫層-裡，Container刪除後，資料就沒了。現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個-Volume，資料（-mdf-ldf）和登入帳號設定都會永遠留著。" class="headerlink" title="之前資料是存在容器內部(可寫層)裡，Container刪除後，資料就沒了。現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個 Volume，資料（.mdf&#x2F;.ldf）和登入帳號設定都會永遠留著。"></a><span style="color:red">之前資料是存在容器內部(可寫層)裡，Container刪除後，資料就沒了。</span>現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個 Volume，資料（.mdf&#x2F;.ldf）和登入帳號設定都會永遠留著。</h5><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><hr>
 <ul>
 <li><h3 id="將備份還原到新環境-容器"><a href="#將備份還原到新環境-容器" class="headerlink" title="將備份還原到新環境(容器)"></a>將備份還原到新環境(容器)</h3><ol>
-<li><h5 id="執行指令"><a href="#執行指令" class="headerlink" title="執行指令"></a>執行指令</h5></li>
+<li><h5 id="執行指令"><a href="#執行指令" class="headerlink" title="執行指令"></a>執行指令</h5> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">cp</span> ./backup.bak mssql_new:/var/opt/mssql/data/backup.bak</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h5 id="dddd"><a href="#dddd" class="headerlink" title="dddd"></a>dddd</h5></li>
+</ul>
+</li>
 </ol>
-  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">cp</span> ./backup.bak mssql_new:/var/opt/mssql/data/backup.bak</span><br></pre></td></tr></table></figure>
-<pre><code>* ##### dddd
-</code></pre>
 </li>
 </ul>
 

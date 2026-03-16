@@ -19,8 +19,10 @@
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/check_docker_run.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/check_DB_run.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/copy_success.jpg">
+<meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/access_denied.jpg">
+<meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/restore_success.jpg">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-16T09:41:20.675Z">
+<meta property="article:modified_time" content="2026-03-16T10:23:43.898Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="Docker Volume">
@@ -222,8 +224,29 @@
 </ul>
 </li>
 </ol>
-  <img src="/2026/03/16/Create-Docker-Volume/copy_success.jpg" class="" title="copy_success"></li>
+  <img src="/2026/03/16/Create-Docker-Volume/copy_success.jpg" class="" title="copy_success">
+
+<ol start="2">
+<li><h5 id="執行資料庫還原語法"><a href="#執行資料庫還原語法" class="headerlink" title="執行資料庫還原語法"></a>執行資料庫還原語法</h5> <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 1. 先確認備份檔內的邏輯檔案名稱 (LogicalName)</span></span><br><span class="line">RESTORE FILELISTONLY <span class="keyword">FROM</span> DISK <span class="operator">=</span> <span class="string">&#x27;/var/opt/mssql/data/backup.bak&#x27;</span>;</span><br><span class="line"></span><br><span class="line">USE [master];</span><br><span class="line">RESTORE DATABASE [你的資料庫名] </span><br><span class="line"><span class="keyword">FROM</span> DISK <span class="operator">=</span> N<span class="string">&#x27;/var/opt/mssql/data/backup.bak&#x27;</span> </span><br><span class="line"><span class="keyword">WITH</span> FILE <span class="operator">=</span> <span class="number">1</span>, NOUNLOAD, REPLACE, STATS <span class="operator">=</span> <span class="number">5</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><h5 id="Access-Denied的問題："><a href="#Access-Denied的問題：" class="headerlink" title="Access Denied的問題："></a>Access Denied的問題：</h5>  <img src="/2026/03/16/Create-Docker-Volume/access_denied.jpg" class="" title="access_denied">
+<ul>
+<li><h5 id="以-root-身份進入-Container，預設情況下，docker-exec-可能會沿用-mssql-的低權限帳號，所以你沒辦法-chown。請強制以-root-身份進入："><a href="#以-root-身份進入-Container，預設情況下，docker-exec-可能會沿用-mssql-的低權限帳號，所以你沒辦法-chown。請強制以-root-身份進入：" class="headerlink" title="以 root 身份進入 Container，預設情況下，docker exec 可能會沿用 mssql 的低權限帳號，所以你沒辦法 chown。請強制以 root 身份進入："></a>以 root 身份進入 Container，預設情況下，docker exec 可能會沿用 mssql 的低權限帳號，所以你沒辦法 chown。請強制以 root 身份進入：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -u 0 -it &lt;容器名稱或ID&gt; /bin/bash</span><br></pre></td></tr></table></figure></li>
+<li><h5 id="在容器內執行標準權限校正："><a href="#在容器內執行標準權限校正：" class="headerlink" title="在容器內執行標準權限校正："></a>在容器內執行標準權限校正：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 強制將擁有者改回 mssql (SQL Server 的執行帳號)</span></span><br><span class="line"><span class="built_in">chown</span> mssql:root /var/opt/mssql/data/backup.bak</span><br></pre></td></tr></table></figure>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 設定標準的讀寫權限 (擁有者讀寫，其他人唯讀)</span></span><br><span class="line"><span class="built_in">chmod</span> 664 /var/opt/mssql/data/backup.bak</span><br></pre></td></tr></table></figure></li>
+<li><h5 id="驗證權限狀態"><a href="#驗證權限狀態" class="headerlink" title="驗證權限狀態"></a>驗證權限狀態</h5><pre><code class="language-bash">ls -lh /var/opt/mssql/data/backup.bak
+</code></pre>
+</li>
 </ul>
+</li>
+</ul>
+ <img src="/2026/03/16/Create-Docker-Volume/restore_success.jpg" class="" title="restore_success"></li>
+</ol>
+</li>
+</ul>
+<p>最終檢查清單<br>[ ] 刪除舊容器： 確認新容器資料都對了，再執行 docker rm -f &lt;舊容器&gt;。</p>
+<p>[ ] 驗證 sa： 進入新容器後，立刻按照我們先前討論的，建立一個新管理員帳號並 停用 sa。</p>
+<p>[ ] 防火牆： 記得在 VPS 的防火牆開啟 54321 並關閉 1433。        </p>
 
       
     </div>

@@ -14,7 +14,7 @@
 <meta property="og:description" content="自己有個Side Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的(登入帳號用sa. 連線的port使用1433….etc)。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433 port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為 Docker 啟動後無法直接修改 Port 映">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-16T03:36:06.259Z">
+<meta property="article:modified_time" content="2026-03-16T06:32:04.394Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -102,15 +102,40 @@
         <h5 id="自己有個Side-Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的-登入帳號用sa-連線的port使用1433…-etc-。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433-port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為-Docker-啟動後無法直接修改-Port-映射，必須刪除舊容器並重新-run-一個新的。由於當初沒掛載-Volume，直接刪除容器會導致資料永久遺失。-為了保全資料，我必須先將資料備份出來，並在建立新容器時設定-Volume-掛載，確保未來即使再更換容器設定，資料也能持久保存。"><a href="#自己有個Side-Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的-登入帳號用sa-連線的port使用1433…-etc-。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433-port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為-Docker-啟動後無法直接修改-Port-映射，必須刪除舊容器並重新-run-一個新的。由於當初沒掛載-Volume，直接刪除容器會導致資料永久遺失。-為了保全資料，我必須先將資料備份出來，並在建立新容器時設定-Volume-掛載，確保未來即使再更換容器設定，資料也能持久保存。" class="headerlink" title="自己有個Side Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的(登入帳號用sa. 連線的port使用1433….etc)。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433 port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為 Docker 啟動後無法直接修改 Port 映射，必須刪除舊容器並重新 run 一個新的。由於當初沒掛載 Volume，直接刪除容器會導致資料永久遺失。 為了保全資料，我必須先將資料備份出來，並在建立新容器時設定 Volume 掛載，確保未來即使再更換容器設定，資料也能持久保存。"></a>自己有個Side Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的(登入帳號用sa. 連線的port使用1433….etc)。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433 port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為 Docker 啟動後無法直接修改 Port 映射，必須刪除舊容器並重新 run 一個新的。由於當初沒掛載 Volume，直接刪除容器會導致資料永久遺失。 為了保全資料，我必須先將資料備份出來，並在建立新容器時設定 Volume 掛載，確保未來即使再更換容器設定，資料也能持久保存。</h5><span id="more"></span>
 <h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
 <ul>
-<li><h3 id="手動建立-Volume"><a href="#手動建立-Volume" class="headerlink" title="手動建立 Volume"></a>手動建立 Volume</h3>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume create sbh_db_volume</span><br></pre></td></tr></table></figure></li>
+<li><h3 id="備份資料庫"><a href="#備份資料庫" class="headerlink" title="備份資料庫"></a>備份資料庫</h3>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> docker <span class="built_in">exec</span> -it &lt;舊容器名稱&gt; /opt/mssql-tools18/bin/sqlcmd \</span><br><span class="line">-S localhost -U sa -P <span class="string">&#x27;你的舊密碼&#x27;</span> \</span><br><span class="line">-Q <span class="string">&quot;BACKUP DATABASE [你的資料庫名] TO DISK = N&#x27;/var/opt/mssql/data/backup.bak&#x27; WITH NOFORMAT, NOINIT, NAME = &#x27;Full Backup&#x27;, SKIP, NOREWIND, NOUNLOAD, STATS = 10&quot;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><h5 id="Docker-外殼部分"><a href="#Docker-外殼部分" class="headerlink" title="Docker 外殼部分"></a>Docker 外殼部分</h5><ul>
+<li><h5 id="docker-exec-這是-Docker-的指令，用來進入一個「正在執行中」的容器執行後面的動作。"><a href="#docker-exec-這是-Docker-的指令，用來進入一個「正在執行中」的容器執行後面的動作。" class="headerlink" title="docker exec: 這是 Docker 的指令，用來進入一個「正在執行中」的容器執行後面的動作。"></a>docker exec: 這是 Docker 的指令，用來進入一個「正在執行中」的容器執行後面的動作。</h5></li>
+<li><h5 id="it"><a href="#it" class="headerlink" title="-it:"></a>-it:</h5><ul>
+<li><h5 id="i-interactive-讓你與容器互動。"><a href="#i-interactive-讓你與容器互動。" class="headerlink" title="-i: (interactive) 讓你與容器互動。"></a>-i: (interactive) 讓你與容器互動。</h5></li>
+<li><h5 id="t-tty-分配一個虛擬終端，讓你能在畫面上看到執行的過程（例如看到備份進度-）。"><a href="#t-tty-分配一個虛擬終端，讓你能在畫面上看到執行的過程（例如看到備份進度-）。" class="headerlink" title="-t: (tty) 分配一個虛擬終端，讓你能在畫面上看到執行的過程（例如看到備份進度 %）。"></a>-t: (tty) 分配一個虛擬終端，讓你能在畫面上看到執行的過程（例如看到備份進度 %）。</h5></li>
+</ul>
+</li>
+<li><h5 id="docker-exec-這是-Docker-的指令，用來進入一個「正在執行中」的容器執行後面的動作。-1"><a href="#docker-exec-這是-Docker-的指令，用來進入一個「正在執行中」的容器執行後面的動作。-1" class="headerlink" title="docker exec: 這是 Docker 的指令，用來進入一個「正在執行中」的容器執行後面的動作。"></a>docker exec: 這是 Docker 的指令，用來進入一個「正在執行中」的容器執行後面的動作。</h5></li>
+</ul>
+</li>
+<li><h5 id="SQL-工具與登入部分"><a href="#SQL-工具與登入部分" class="headerlink" title="SQL 工具與登入部分"></a>SQL 工具與登入部分</h5><ul>
+<li><h5 id="opt-mssql-tools18-bin-sqlcmd-這是-SQL-Server-在-Linux-版中內建的指令列管理工具（sqlcmd）的完整路徑。"><a href="#opt-mssql-tools18-bin-sqlcmd-這是-SQL-Server-在-Linux-版中內建的指令列管理工具（sqlcmd）的完整路徑。" class="headerlink" title="&#x2F;opt&#x2F;mssql-tools18&#x2F;bin&#x2F;sqlcmd: 這是 SQL Server 在 Linux 版中內建的指令列管理工具（sqlcmd）的完整路徑。"></a>&#x2F;opt&#x2F;mssql-tools18&#x2F;bin&#x2F;sqlcmd: 這是 SQL Server 在 Linux 版中內建的指令列管理工具（sqlcmd）的完整路徑。</h5></li>
+<li><h5 id="S-localhost-指定-Server，因為我們已經在容器內部了，所以用-localhost。"><a href="#S-localhost-指定-Server，因為我們已經在容器內部了，所以用-localhost。" class="headerlink" title="-S localhost: 指定 Server，因為我們已經在容器內部了，所以用 localhost。"></a>-S localhost: 指定 Server，因為我們已經在容器內部了，所以用 localhost。</h5></li>
+<li><h5 id="U-sa-P-‘你的舊密碼’-指定登入帳號（sa）與密碼。"><a href="#U-sa-P-‘你的舊密碼’-指定登入帳號（sa）與密碼。" class="headerlink" title="-U sa -P ‘你的舊密碼’: 指定登入帳號（sa）與密碼。"></a>-U sa -P ‘你的舊密碼’: 指定登入帳號（sa）與密碼。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><h5 id="檢查是否建立成功："><a href="#檢查是否建立成功：" class="headerlink" title="檢查是否建立成功："></a>檢查是否建立成功：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume <span class="built_in">ls</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 <h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
+<hr>
+<ul>
+<li><h3 id="手動建立-Volume"><a href="#手動建立-Volume" class="headerlink" title="手動建立 Volume"></a>手動建立 Volume</h3>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume create sbh_db_volume</span><br></pre></td></tr></table></figure></li>
+<li><h5 id="檢查是否建立成功：-1"><a href="#檢查是否建立成功：-1" class="headerlink" title="檢查是否建立成功："></a>檢查是否建立成功：</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker volume <span class="built_in">ls</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/03/16/Create-Docker-Volume/" data-id="cmmsmte5m0005x4n1fhgq3q24" data-title="Create Docker Volume" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/03/16/Create-Docker-Volume/" data-id="cmmst3jg70000f8n16z25ekqb" data-title="Create Docker Volume" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -194,11 +219,11 @@
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
           </li>
         
       </ul>

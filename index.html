@@ -75,6 +75,49 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Create-Docker-Volume" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/03/16/Create-Docker-Volume/" class="article-date">
+  <time class="dt-published" datetime="2026-03-16T03:23:49.000Z" itemprop="datePublished">2026-03-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/03/16/Create-Docker-Volume/">Create Docker Volume</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="自己有個Side-Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的-登入帳號用sa-連線的port使用1433…-etc-。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433-port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為-Docker-啟動後無法直接修改-Port-映射，必須刪除舊容器並重新-run-一個新的。由於當初沒掛載-Volume，直接刪除容器會導致資料永久遺失。-為了保全資料，我必須先將資料備份出來，並在建立新容器時設定-Volume-掛載，確保未來即使再更換容器設定，資料也能持久保存。"><a href="#自己有個Side-Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的-登入帳號用sa-連線的port使用1433…-etc-。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433-port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為-Docker-啟動後無法直接修改-Port-映射，必須刪除舊容器並重新-run-一個新的。由於當初沒掛載-Volume，直接刪除容器會導致資料永久遺失。-為了保全資料，我必須先將資料備份出來，並在建立新容器時設定-Volume-掛載，確保未來即使再更換容器設定，資料也能持久保存。" class="headerlink" title="自己有個Side Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的(登入帳號用sa. 連線的port使用1433….etc)。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433 port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為 Docker 啟動後無法直接修改 Port 映射，必須刪除舊容器並重新 run 一個新的。由於當初沒掛載 Volume，直接刪除容器會導致資料永久遺失。 為了保全資料，我必須先將資料備份出來，並在建立新容器時設定 Volume 掛載，確保未來即使再更換容器設定，資料也能持久保存。"></a>自己有個Side Project，資料庫是架在VPS上的Linux用Docker運行。當初為了求快，設定都用預設的(登入帳號用sa. 連線的port使用1433….etc)。最近看一下Log，發現被不明人士大量連線，嘗試破解密碼。問一下AI後，建議我不用要預設的sa帳號以及預設的1433 port。改帳號比較簡單，但要改Port的話就比較麻煩了。因為 Docker 啟動後無法直接修改 Port 映射，必須刪除舊容器並重新 run 一個新的。由於當初沒掛載 Volume，直接刪除容器會導致資料永久遺失。 為了保全資料，我必須先將資料備份出來，並在建立新容器時設定 Volume 掛載，確保未來即使再更換容器設定，資料也能持久保存。</h5>
+        
+          <p class="article-more-link">
+            <a href="/2026/03/16/Create-Docker-Volume/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/03/16/Create-Docker-Volume/" data-id="cmmsmte5m0005x4n1fhgq3q24" data-title="Create Docker Volume" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-different-of-interface-abstract-virtual" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/01/13/different-of-interface-abstract-virtual/" class="article-date">
@@ -110,7 +153,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/01/13/different-of-interface-abstract-virtual/" data-id="cmkl0bsfq001bzcn1dxz8au9s" data-title="different of interface, abstract, virtual." class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/01/13/different-of-interface-abstract-virtual/" data-id="cmmsmte5x000lx4n1bgdpgond" data-title="different of interface, abstract, virtual." class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -155,59 +198,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmkl0bsfn0011zcn19r4g5wz3" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/23/Selenium-in-Linux/" data-id="cmmsmte5n0006x4n1bzi53de2" data-title="Selenium in Linux" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Google-App-Script-GAS-應用-clasp" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/" class="article-date">
-  <time class="dt-published" datetime="2025-12-03T06:32:25.000Z" itemprop="datePublished">2025-12-03</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h5 id="Clasp（Command-Line-Apps-Script-Projects）是-Google-官方推出的工具，用來讓你在本機撰寫-Apps-Script。把-Apps-Script（GAS）當成一般程式專案來寫、上傳、版本控制。"><a href="#Clasp（Command-Line-Apps-Script-Projects）是-Google-官方推出的工具，用來讓你在本機撰寫-Apps-Script。把-Apps-Script（GAS）當成一般程式專案來寫、上傳、版本控制。" class="headerlink" title="Clasp（Command Line Apps Script Projects）是 Google 官方推出的工具，用來讓你在本機撰寫 Apps Script。把 Apps Script（GAS）當成一般程式專案來寫、上傳、版本控制。"></a>Clasp（Command Line Apps Script Projects）是 Google 官方推出的工具，用來讓你在本機撰寫 Apps Script。把 Apps Script（GAS）當成一般程式專案來寫、上傳、版本控制。</h5>
-        
-          <p class="article-more-link">
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/" data-id="cmkl0bsfb0008zcn17byxeqtx" data-title="Google App Script(GAS)應用 - Clasp" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li></ul>
-
     </footer>
   </div>
   
@@ -251,11 +245,60 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" data-id="cmkl0bsfc000azcn1de0v53kj" data-title="Google App Script(GAS)應用" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/" data-id="cmmsmte5q000ax4n12gckf4c9" data-title="Google App Script(GAS)應用" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Google-App-Script-GAS-應用-clasp" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/" class="article-date">
+  <time class="dt-published" datetime="2025-12-03T06:32:25.000Z" itemprop="datePublished">2025-12-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="Clasp（Command-Line-Apps-Script-Projects）是-Google-官方推出的工具，用來讓你在本機撰寫-Apps-Script。把-Apps-Script（GAS）當成一般程式專案來寫、上傳、版本控制。"><a href="#Clasp（Command-Line-Apps-Script-Projects）是-Google-官方推出的工具，用來讓你在本機撰寫-Apps-Script。把-Apps-Script（GAS）當成一般程式專案來寫、上傳、版本控制。" class="headerlink" title="Clasp（Command Line Apps Script Projects）是 Google 官方推出的工具，用來讓你在本機撰寫 Apps Script。把 Apps Script（GAS）當成一般程式專案來寫、上傳、版本控制。"></a>Clasp（Command Line Apps Script Projects）是 Google 官方推出的工具，用來讓你在本機撰寫 Apps Script。把 Apps Script（GAS）當成一般程式專案來寫、上傳、版本控制。</h5>
+        
+          <p class="article-more-link">
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/" data-id="cmmsmte5r000bx4n17eqsdatk" data-title="Google App Script(GAS)應用 - Clasp" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li></ul>
 
     </footer>
   </div>
@@ -300,7 +343,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/" data-id="cmkl0bsfm0010zcn13dh660bd" data-title="Line-API-群組推播" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/" data-id="cmmsmte67001fx4n12hbuaaoa" data-title="Line-API-群組推播" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -349,7 +392,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmkl0bsfo0014zcn169g7abt7" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/22/Simple-Docker-App/" data-id="cmmsmte5u000fx4n1cc2qfdbl" data-title="Simple-Docker-App" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -398,7 +441,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmkl0bsfa0007zcn12ng05g43" data-title="Docker with WSL2(3) - 利用Docker Compose達到熱重載效果" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmmsmte5k0004x4n174dne4xu" data-title="Docker with WSL2(3) - 利用Docker Compose達到熱重載效果" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -447,7 +490,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmkl0bsf70002zcn123zz1h4k" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/25/Docker-with-WSL2-2/" data-id="cmmsmte5e0001x4n194p8ek5o" data-title="Docker with WSL2(2) - Dockerfile" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -496,60 +539,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmkl0bsfp0017zcn1doav6qt1" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/09/22/docker-with-WSL2-1/" data-id="cmmsmte6d001nx4n16tzbgt0n" data-title="Docker with WSL2(1) - 安裝Ubuntu + Docker Engin，並且建立快照備份!" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Docker 基本概念" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2025/09/22/Docker%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" class="article-date">
-  <time class="dt-published" datetime="2025-09-22T09:32:56.000Z" itemprop="datePublished">2025-09-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Docker/">Docker</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2025/09/22/Docker%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/">Docker 基本概念</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h5 id="最近在自學Docker，萬事起頭難，這邊紀錄一些Docker的基本知識跟名詞解釋。"><a href="#最近在自學Docker，萬事起頭難，這邊紀錄一些Docker的基本知識跟名詞解釋。" class="headerlink" title="最近在自學Docker，萬事起頭難，這邊紀錄一些Docker的基本知識跟名詞解釋。"></a>最近在自學Docker，萬事起頭難，這邊紀錄一些Docker的基本知識跟名詞解釋。</h5>
-        
-          <p class="article-more-link">
-            <a href="/2025/09/22/Docker%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2025/09/22/Docker%20%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5/" data-id="cmkl0bsfd000czcn1hjtngh1t" data-title="Docker 基本概念" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li></ul>
 
     </footer>
   </div>
@@ -603,7 +597,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
     </div>
   </div>
 
@@ -616,6 +610,10 @@
       <ul>
         
           <li>
+            <a href="/2026/03/16/Create-Docker-Volume/">Create Docker Volume</a>
+          </li>
+        
+          <li>
             <a href="/2026/01/13/different-of-interface-abstract-virtual/">different of interface, abstract, virtual.</a>
           </li>
         
@@ -624,15 +622,11 @@
           </li>
         
           <li>
-            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
-          </li>
-        
-          <li>
             <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8/">Google App Script(GAS)應用</a>
           </li>
         
           <li>
-            <a href="/2025/10/28/Line-API-%E7%BE%A4%E7%B5%84%E6%8E%A8%E6%92%AD/">Line-API-群組推播</a>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
           </li>
         
       </ul>

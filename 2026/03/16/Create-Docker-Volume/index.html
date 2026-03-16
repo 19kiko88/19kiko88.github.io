@@ -18,7 +18,7 @@
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/check_docker_run.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/check_DB_run.jpg">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-16T08:47:12.264Z">
+<meta property="article:modified_time" content="2026-03-16T08:59:21.282Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="Docker Volume">
@@ -186,16 +186,13 @@
 <li><h5 id="啟動新容器（換-Port、掛載-Volume）："><a href="#啟動新容器（換-Port、掛載-Volume）：" class="headerlink" title="啟動新容器（換 Port、掛載 Volume）："></a>啟動新容器（換 Port、掛載 Volume）：</h5></li>
 </ol>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker run -e <span class="string">&quot;ACCEPT_EULA=Y&quot;</span> -e <span class="string">&quot;MSSQL_SA_PASSWORD=密碼&quot;</span> \</span><br><span class="line">-p [要開放的VPS對外Port]:1433 --name mssql_sbh \</span><br><span class="line">-v sbh_db_volume:/var/opt/mssql \</span><br><span class="line">-d mcr.microsoft.com/mssql/server:2022-latest</span><br></pre></td></tr></table></figure>
-<ul>
-<li><h5 id="–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。"><a href="#–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。" class="headerlink" title="–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。"></a>–name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。</h5></li>
-<li><h5 id="d-detached-讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。"><a href="#d-detached-讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。" class="headerlink" title="-d (detached): 讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。"></a>-d (detached): 讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。</h5></li>
-<li><h5 id="v-sbh-db-volume-var-opt-mssql"><a href="#v-sbh-db-volume-var-opt-mssql" class="headerlink" title="-v sbh_db_volume:&#x2F;var&#x2F;opt&#x2F;mssql:"></a>-v sbh_db_volume:&#x2F;var&#x2F;opt&#x2F;mssql:</h5><ul>
-<li><h5 id="sbh-db-volume-之前先建立好的-Docker-Volume（像是一個獨立的虛擬硬碟）。"><a href="#sbh-db-volume-之前先建立好的-Docker-Volume（像是一個獨立的虛擬硬碟）。" class="headerlink" title="sbh_db_volume: 之前先建立好的 Docker Volume（像是一個獨立的虛擬硬碟）。"></a>sbh_db_volume: 之前先建立好的 Docker Volume（像是一個獨立的虛擬硬碟）。</h5></li>
-<li><h5 id="var-opt-mssql-容器內存放所有資料庫檔案的根目錄。"><a href="#var-opt-mssql-容器內存放所有資料庫檔案的根目錄。" class="headerlink" title="&#x2F;var&#x2F;opt&#x2F;mssql: 容器內存放所有資料庫檔案的根目錄。"></a>&#x2F;var&#x2F;opt&#x2F;mssql: 容器內存放所有資料庫檔案的根目錄。</h5></li>
-</ul>
-</li>
-<li><h5 id="mcr-microsoft-com-mssql-server-2022-latest-指定從微軟官方倉庫下載-2022-最新版的-SQL-Server-映像檔。"><a href="#mcr-microsoft-com-mssql-server-2022-latest-指定從微軟官方倉庫下載-2022-最新版的-SQL-Server-映像檔。" class="headerlink" title="mcr.microsoft.com&#x2F;mssql&#x2F;server:2022-latest: 指定從微軟官方倉庫下載 2022 最新版的 SQL Server 映像檔。"></a>mcr.microsoft.com&#x2F;mssql&#x2F;server:2022-latest: 指定從微軟官方倉庫下載 2022 最新版的 SQL Server 映像檔。</h5></li>
-</ul>
+<pre><code>* ##### --name：給這個新容器一個好記的名字，避免像之前系統隨機產生的。
+* ##### -d (detached): 讓容器在背景執行。如果沒有加這個，你關掉終端機（SSH）時容器就會跟著關掉。
+* ##### -v sbh_db_volume:/var/opt/mssql:
+  * ##### sbh_db_volume: 之前先建立好的 Docker Volume（像是一個獨立的虛擬硬碟）。
+  * ##### /var/opt/mssql: 容器內存放所有資料庫檔案的根目錄。
+* ##### mcr.microsoft.com/mssql/server:2022-latest: 指定從微軟官方倉庫下載 2022 最新版的 SQL Server 映像檔。
+</code></pre>
 <ol start="4">
 <li><h5 id="確認容器是否啟用"><a href="#確認容器是否啟用" class="headerlink" title="確認容器是否啟用"></a>確認容器是否啟用</h5></li>
 </ol>
@@ -208,6 +205,15 @@
   <img src="/2026/03/16/Create-Docker-Volume/check_DB_run.jpg" class="" title="check_DB_run"></li>
 </ul>
 <h5 id="之前資料是存在容器內部-可寫層-裡，Container刪除後，資料就沒了。現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個-Volume，資料（-mdf-ldf）和登入帳號設定都會永遠留著。"><a href="#之前資料是存在容器內部-可寫層-裡，Container刪除後，資料就沒了。現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個-Volume，資料（-mdf-ldf）和登入帳號設定都會永遠留著。" class="headerlink" title="之前資料是存在容器內部(可寫層)裡，Container刪除後，資料就沒了。現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個 Volume，資料（.mdf&#x2F;.ldf）和登入帳號設定都會永遠留著。"></a><span style="color:red">之前資料是存在容器內部(可寫層)裡，Container刪除後，資料就沒了。</span>現在把資料存在外部實體空間裡面，並掛載至容器，以後無論你怎麼更新、刪除、重新啟動容器，只要掛載這個 Volume，資料（.mdf&#x2F;.ldf）和登入帳號設定都會永遠留著。</h5><h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h3 id="將備份還原到新環境-容器"><a href="#將備份還原到新環境-容器" class="headerlink" title="將備份還原到新環境(容器)"></a>將備份還原到新環境(容器)</h3><ol>
+<li><h5 id="執行指令"><a href="#執行指令" class="headerlink" title="執行指令"></a>執行指令</h5></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">cp</span> ./backup.bak mssql_new:/var/opt/mssql/data/backup.bak</span><br></pre></td></tr></table></figure>
+<pre><code>* ##### dddd
+</code></pre>
+</li>
+</ul>
 
       
     </div>

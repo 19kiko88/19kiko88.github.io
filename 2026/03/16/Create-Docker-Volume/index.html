@@ -25,7 +25,7 @@
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/json_mounts.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/valume_path_mapping.jpg">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-17T05:59:38.733Z">
+<meta property="article:modified_time" content="2026-03-17T06:07:28.910Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="Docker Volume">
@@ -269,27 +269,14 @@
 </li>
 <li><h5 id="路徑對應關係如下："><a href="#路徑對應關係如下：" class="headerlink" title="路徑對應關係如下："></a>路徑對應關係如下：</h5></li>
 </ul>
- <img src="/2026/03/16/Create-Docker-Volume/valume_path_mapping.jpg" class="" title="valume_path_mapping"></li>
+ <img src="/2026/03/16/Create-Docker-Volume/valume_path_mapping.jpg" class="" title="valume_path_mapping">
+</li>
+<li><h5 id="即時同步測試-雙向確認"><a href="#即時同步測試-雙向確認" class="headerlink" title="即時同步測試 (雙向確認)"></a>即時同步測試 (雙向確認)</h5><ul>
+<li><h5 id="執行下面指令，在VPS產生一個-txt空檔案："><a href="#執行下面指令，在VPS產生一個-txt空檔案：" class="headerlink" title="執行下面指令，在VPS產生一個.txt空檔案："></a>執行下面指令，在VPS產生一個.txt空檔案：</h5></li>
+</ul>
+ <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">        <span class="built_in">sudo</span> <span class="built_in">touch</span> [Source路徑]/data/test_volume.txt</span><br><span class="line">        ```       </span><br><span class="line">        * <span class="comment">##### 在容器內部執行下面指令，&lt;span style=&quot;color:red&quot;&gt;如果你在容器內看到了 test_volume.txt，代表雙向同步完全沒問題。&lt;/span&gt;：</span></span><br><span class="line">        ``` bash</span><br><span class="line">        docker <span class="built_in">exec</span> mssql_sbh <span class="built_in">ls</span> /var/opt/mssql/data</span><br><span class="line">        ```        </span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#    </span></span><br><span class="line">---     </span><br><span class="line">* <span class="comment">### 總結</span></span><br><span class="line">    * <span class="comment">##### 快速流程：</span></span><br><span class="line">        * <span class="comment">##### (舊容器)：執行資料庫備份，產生 .bak。</span></span><br><span class="line">        * <span class="comment">##### 搬運：把 .bak 從舊容器或舊路徑拉出來，放到 VPS 的某個物理目錄。</span></span><br><span class="line">        * <span class="comment">##### 準備：建立一個新的 Volume (docker volume create ...)。</span></span><br><span class="line">        * <span class="comment">##### (新容器)：啟動新容器時，掛載這個新 Volume。</span></span><br><span class="line">        * <span class="comment">##### 還原：將 .bak 丟進新 Volume，執行還原。</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line">---     </span><br><span class="line">* <span class="comment">### (補充)停用sa帳號</span></span><br><span class="line">    ``` sql</span><br><span class="line">    SELECT </span><br><span class="line">        name AS LoginName, </span><br><span class="line">        type_desc AS LoginType, </span><br><span class="line">        is_disabled AS IsDisabled</span><br><span class="line">    FROM sys.server_principals </span><br><span class="line">    WHERE IS_SRVROLEMEMBER(<span class="string">&#x27;sysadmin&#x27;</span>, name) = 1;</span><br><span class="line"></span><br><span class="line">    -- 1. 將你的新帳號加入到伺服器層級的角色 <span class="string">&#x27;sysadmin&#x27;</span></span><br><span class="line">    ALTER SERVER ROLE sysadmin ADD MEMBER [新帳號名稱];</span><br><span class="line">    GO</span><br><span class="line"></span><br><span class="line">    ALTER LOGIN sa DISABLE;</span><br></pre></td></tr></table></figure></li>
 </ol>
 </li>
-</ul>
-<h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><hr>
-<ul>
-<li><h3 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h3><ul>
-<li><h5 id="快速流程："><a href="#快速流程：" class="headerlink" title="快速流程："></a>快速流程：</h5><ul>
-<li><h5 id="舊容器-：執行資料庫備份，產生-bak。"><a href="#舊容器-：執行資料庫備份，產生-bak。" class="headerlink" title="(舊容器)：執行資料庫備份，產生 .bak。"></a>(舊容器)：執行資料庫備份，產生 .bak。</h5></li>
-<li><h5 id="搬運：把-bak-從舊容器或舊路徑拉出來，放到-VPS-的某個物理目錄。"><a href="#搬運：把-bak-從舊容器或舊路徑拉出來，放到-VPS-的某個物理目錄。" class="headerlink" title="搬運：把 .bak 從舊容器或舊路徑拉出來，放到 VPS 的某個物理目錄。"></a>搬運：把 .bak 從舊容器或舊路徑拉出來，放到 VPS 的某個物理目錄。</h5></li>
-<li><h5 id="準備：建立一個新的-Volume-docker-volume-create-…-。"><a href="#準備：建立一個新的-Volume-docker-volume-create-…-。" class="headerlink" title="準備：建立一個新的 Volume (docker volume create …)。"></a>準備：建立一個新的 Volume (docker volume create …)。</h5></li>
-<li><h5 id="新容器-：啟動新容器時，掛載這個新-Volume。"><a href="#新容器-：啟動新容器時，掛載這個新-Volume。" class="headerlink" title="(新容器)：啟動新容器時，掛載這個新 Volume。"></a>(新容器)：啟動新容器時，掛載這個新 Volume。</h5></li>
-<li><h5 id="還原：將-bak-丟進新-Volume，執行還原。"><a href="#還原：將-bak-丟進新-Volume，執行還原。" class="headerlink" title="還原：將 .bak 丟進新 Volume，執行還原。"></a>還原：將 .bak 丟進新 Volume，執行還原。</h5></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><hr>
-<ul>
-<li><h3 id="補充-停用sa帳號"><a href="#補充-停用sa帳號" class="headerlink" title="(補充)停用sa帳號"></a>(補充)停用sa帳號</h3>  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">    name <span class="keyword">AS</span> LoginName, </span><br><span class="line">    type_desc <span class="keyword">AS</span> LoginType, </span><br><span class="line">    is_disabled <span class="keyword">AS</span> IsDisabled</span><br><span class="line"><span class="keyword">FROM</span> sys.server_principals </span><br><span class="line"><span class="keyword">WHERE</span> IS_SRVROLEMEMBER(<span class="string">&#x27;sysadmin&#x27;</span>, name) <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 1. 將你的新帳號加入到伺服器層級的角色 &#x27;sysadmin&#x27;</span></span><br><span class="line"><span class="keyword">ALTER</span> SERVER ROLE sysadmin <span class="keyword">ADD</span> <span class="keyword">MEMBER</span> [新帳號名稱];</span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">ALTER</span> LOGIN sa DISABLE;</span><br></pre></td></tr></table></figure></li>
 </ul>
 <hr>
 <ul>

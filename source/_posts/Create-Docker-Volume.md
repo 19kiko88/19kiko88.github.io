@@ -1,5 +1,5 @@
 ---
-title: Create Docker Volume
+title: Docker Volume With MSSQL Server
 date: 2026-03-16 11:23:49
 categories:
   - Docker
@@ -41,16 +41,16 @@ tags:
 
         {% asset_image backup_db.jpg backup_db %}
 
-    4. ### SQL Server 在 Linux 容器中預設存放資料與備份檔的地方
+    4. ##### SQL Server 在 Linux 容器中預設存放資料與備份檔的地方
         ##### 如果你是為了確認備份要放哪裡，或者是想看資料庫檔案（.mdf, .ldf）在哪，可以執行下面指令(容器名稱可以透過docker ps -a查詢)：
         ``` bash
         docker exec -it <容器名稱> ls -lh /var/opt/mssql/data/
         ```
 
-    5. ### 確認備份完成
+    5. ##### 確認備份完成
         {% asset_image check_backup_file.jpg check_backup_file %}
 
-    6. ### 將備份檔從容器複製到實體主機：
+    6. ##### 將備份檔從容器複製到實體主機：
         ``` bash
         docker cp <舊容器名稱>:/var/opt/mssql/data/backup.bak ./backup.bak
         ```
@@ -59,7 +59,7 @@ tags:
 #
 #
 ---
-* ##### 新增VPS的對外Port
+* ### 新增VPS的對外Port
     1. ##### 先前提到，不使用預設的1433 Port來直接連線DB，所以我們要在VPS開一個新的對外Port來Mapping到1433。
         ``` bash
         netstat -tunlp | grep [要開放的VPS對外Port]
@@ -121,7 +121,7 @@ tags:
 #
 ---
 * ### 將備份還原到新環境(容器)
-    1. ##### 執行指令把備份檔複製到
+    1. ##### 執行指令把在VPS上的bak備份檔複製到將主機檔案複製到「容器內的虛擬路徑」(Volume目錄)
         ``` bash
         docker cp ./backup.bak mssql_sbh:/var/opt/mssql/data/backup.bak
         ```
@@ -149,7 +149,7 @@ tags:
         FROM DISK = N'/var/opt/mssql/data/backup.bak' 
         WITH FILE = 1, NOUNLOAD, REPLACE, STATS = 5;
         ```
-        * ##### Access Denied的問題：
+        * ##### 還原資料庫時，遇到了Access Denied的問題，處理方式如下：
             {% asset_image access_denied.jpg access_denied %}
             * ##### 以 root 身份進入 Container，預設情況下，docker exec 可能會沿用 mssql 的低權限帳號，所以你沒辦法 chown。請強制以 root 身份進入：
                 ``` bash
@@ -167,9 +167,103 @@ tags:
             * ##### 驗證權限狀態                          
                 ``` bash
                 ls -lh /var/opt/mssql/data/backup.bak
-                ```              
-        {% asset_image restore_success.jpg restore_success %}            
-            
+                ```
+        {% asset_image restore_success.jpg restore_success %}
+
+    3. ##### 測試資料庫查詢
+        ##### 處理完Access Denied的問題後，我們來用連線到新的Port測試資料查詢。
+        {% asset_image query_success.jpg query_success %}
+#
+#
+#
+---     
+* ### 測試Volume是否正常運行
+    1. ##### 物理路徑對比測試
+        * ##### 執行下面指令：
+        ``` bash
+        docker inspect mssql_sbh
+        ```
+        {% asset_image json_mounts.jpg json_mounts %}    
+        * ##### 並從回傳的JSON中找到"Mount"區段。你會看到類似這樣的資訊：
+            * ##### Source: /var/lib/docker/volumes/xxx/_data (這是 VPS 上的路徑)
+            * ##### Destination: /var/opt/mssql (這是容器內部的路徑)
+        * ##### 測試動作：
+            * ##### 在 VPS 執行 ls -l [Source的路徑] (VPS的Volume物理掛載路徑)。
+            * ##### 再進入到data目錄(backup.bak的存放目錄)
+            * ##### 如果你能看到 backup.bak 出現在那裡，代表 Volume 掛載成功，容器內外的通道是通的。
+        * ##### 路徑對應關係如下：
+        {% asset_image valume_path_mapping.jpg valume_path_mapping %}
+
+    2. ##### 即時同步測試 (雙向確認)
+        * ##### 執行下面指令，在VPS產生一個.txt空檔案：
+        ``` bash
+        sudo touch [Source路徑]/data/test_volume.txt
+        ```
+        * ##### 在容器內部執行下面指令，<span style="color:red">如果你在容器內看到了 test_volume.txt，代表雙向同步完全沒問題。</span>：
+        ``` bash
+        docker exec mssql_sbh ls /var/opt/mssql/data
+        ```
+        {% asset_image volume_test_2.jpg volume_test_2 %}        
+#
+#
+#    
+---     
+* ### 總結
+    * ##### 快速流程：
+        * ##### (舊容器)：執行資料庫備份，產生 .bak。
+        * ##### 搬運：把 .bak 從舊容器或舊路徑拉出來，放到 VPS 的某個物理目錄。
+        * ##### 準備：建立一個新的 Volume (docker volume create ...)。
+        * ##### (新容器)：啟動新容器時，掛載這個新 Volume。
+        * ##### 還原：將 .bak 丟進新 Volume，執行還原。
+#
+#
+#
+---     
+* ### (補充)停用sa帳號
+    ``` sql
+    SELECT 
+        name AS LoginName, 
+        type_desc AS LoginType, 
+        is_disabled AS IsDisabled
+    FROM sys.server_principals 
+    WHERE IS_SRVROLEMEMBER('sysadmin', name) = 1;
+
+    -- 1. 將你的新帳號加入到伺服器層級的角色 'sysadmin'
+    ALTER SERVER ROLE sysadmin ADD MEMBER [新帳號名稱];
+    GO
+
+    ALTER LOGIN sa DISABLE;
+    ```
+#
+#
+#    
+---
+* ### (補充)關閉1433 Port
+    1. ##### 關閉1433
+    ``` bash
+    sudo ufw delete allow 1433
+    ```
+    1. ##### 確認ufw
+    ``` bash
+    ufw status
+    ```
+#
+#
+#    
+---  
+* ### (補充)停用舊的Container
+    1. ##### 暫時停止 (Stop)
+    ``` bash
+    docker stop <舊容器名稱或ID>
+    ```
+    1. ##### 永久刪除 (Remove)
+    ``` bash
+    docker rm -f <舊容器名稱或ID>
+    ```
+#
+#
+#    
+---    
 
 
 

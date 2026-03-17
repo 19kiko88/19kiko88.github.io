@@ -23,8 +23,9 @@
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/restore_success.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/query_success.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/json_mounts.jpg">
+<meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/valume_path_mapping.jpg">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-17T03:45:52.730Z">
+<meta property="article:modified_time" content="2026-03-17T05:47:52.040Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="Docker Volume">
@@ -267,8 +268,27 @@
 </li>
 <li><h5 id="路徑對應關係如下："><a href="#路徑對應關係如下：" class="headerlink" title="路徑對應關係如下："></a>路徑對應關係如下：</h5></li>
 </ul>
-</li>
+  <img src="/2026/03/16/Create-Docker-Volume/valume_path_mapping.jpg" class="" title="valume_path_mapping"></li>
 </ul>
+<h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h3 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h3></li>
+</ul>
+<h5 id="快速流程：-舊容器-備份DB資料-備份檔-bak-複製到VPS物理路徑-建立新Volume-啟動新容器，並掛載新Volume-新容器-還原DB資料"><a href="#快速流程：-舊容器-備份DB資料-備份檔-bak-複製到VPS物理路徑-建立新Volume-啟動新容器，並掛載新Volume-新容器-還原DB資料" class="headerlink" title="快速流程：(舊容器)備份DB資料 &#x3D;&gt; 備份檔(.bak)複製到VPS物理路徑 &#x3D;&gt; 建立新Volume &#x3D;&gt; 啟動新容器，並掛載新Volume &#x3D;&gt; (新容器)還原DB資料"></a>快速流程：(舊容器)備份DB資料 &#x3D;&gt; 備份檔(.bak)複製到VPS物理路徑 &#x3D;&gt; 建立新Volume &#x3D;&gt; 啟動新容器，並掛載新Volume &#x3D;&gt; (新容器)還原DB資料</h5><h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h3 id="補充-停用sa帳號"><a href="#補充-停用sa帳號" class="headerlink" title="(補充)停用sa帳號"></a>(補充)停用sa帳號</h3>  <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> </span><br><span class="line">    name <span class="keyword">AS</span> LoginName, </span><br><span class="line">    type_desc <span class="keyword">AS</span> LoginType, </span><br><span class="line">    is_disabled <span class="keyword">AS</span> IsDisabled</span><br><span class="line"><span class="keyword">FROM</span> sys.server_principals </span><br><span class="line"><span class="keyword">WHERE</span> IS_SRVROLEMEMBER(<span class="string">&#x27;sysadmin&#x27;</span>, name) <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 1. 將你的新帳號加入到伺服器層級的角色 &#x27;sysadmin&#x27;</span></span><br><span class="line"><span class="keyword">ALTER</span> SERVER ROLE sysadmin <span class="keyword">ADD</span> <span class="keyword">MEMBER</span> [新帳號名稱];</span><br><span class="line">GO</span><br><span class="line"></span><br><span class="line"><span class="keyword">ALTER</span> LOGIN sa DISABLE;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<hr>
+<ul>
+<li><h3 id="補充-關閉1433-Port"><a href="#補充-關閉1433-Port" class="headerlink" title="(補充)關閉1433 Port"></a>(補充)關閉1433 Port</h3></li>
+</ul>
+<hr>
+<ul>
+<li><h3 id="補充-停用舊的Container"><a href="#補充-停用舊的Container" class="headerlink" title="(補充)停用舊的Container"></a>(補充)停用舊的Container</h3></li>
+</ul>
+<p>最終檢查清單<br>[ ] 刪除舊容器： 確認新容器資料都對了，再執行 docker rm -f &lt;舊容器&gt;。</p>
+<p>[ ] 驗證 sa： 進入新容器後，立刻按照我們先前討論的，建立一個新管理員帳號並 停用 sa。</p>
+<p>[ ] 防火牆： 記得在 VPS 的防火牆開啟 54321 並關閉 1433。        </p>
 
       
     </div>

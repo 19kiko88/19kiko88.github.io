@@ -26,7 +26,7 @@
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/valume_path_mapping.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/volume_test_2.jpg">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-17T06:21:57.885Z">
+<meta property="article:modified_time" content="2026-03-17T06:23:30.706Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="Docker Volume">
@@ -315,8 +315,16 @@
 </ul>
 <h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><hr>
 <ul>
-<li><h3 id="補充-停用舊的Container"><a href="#補充-停用舊的Container" class="headerlink" title="(補充)停用舊的Container"></a>(補充)停用舊的Container</h3></li>
+<li><h3 id="補充-停用舊的Container"><a href="#補充-停用舊的Container" class="headerlink" title="(補充)停用舊的Container"></a>(補充)停用舊的Container</h3><ol>
+<li><h5 id="暫時停止-Stop"><a href="#暫時停止-Stop" class="headerlink" title="暫時停止 (Stop)"></a>暫時停止 (Stop)</h5></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stop &lt;舊容器名稱或ID&gt;</span><br></pre></td></tr></table></figure>
+<ol>
+<li><h5 id="永久刪除-Remove"><a href="#永久刪除-Remove" class="headerlink" title="永久刪除 (Remove)"></a>永久刪除 (Remove)</h5></li>
+</ol>
+  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">rm</span> -f &lt;舊容器名稱或ID&gt;</span><br></pre></td></tr></table></figure></li>
 </ul>
+<h1 id="-27"><a href="#-27" class="headerlink" title=""></a></h1><h1 id="-28"><a href="#-28" class="headerlink" title=""></a></h1><h1 id="-29"><a href="#-29" class="headerlink" title=""></a></h1><hr>
 <p>最終檢查清單<br>[ ] 刪除舊容器： 確認新容器資料都對了，再執行 docker rm -f &lt;舊容器&gt;。</p>
 <p>[ ] 驗證 sa： 進入新容器後，立刻按照我們先前討論的，建立一個新管理員帳號並 停用 sa。</p>
 <p>[ ] 防火牆： 記得在 VPS 的防火牆開啟 54321 並關閉 1433。        </p>

@@ -24,7 +24,7 @@
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/query_success.jpg">
 <meta property="og:image" content="http://example.com/2026/03/16/Create-Docker-Volume/json_mounts.jpg">
 <meta property="article:published_time" content="2026-03-16T03:23:49.000Z">
-<meta property="article:modified_time" content="2026-03-17T02:55:33.305Z">
+<meta property="article:modified_time" content="2026-03-17T03:33:45.063Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Docker">
 <meta property="article:tag" content="Docker Volume">
@@ -260,11 +260,14 @@
 </ul>
 </li>
 <li><h5 id="測試動作："><a href="#測試動作：" class="headerlink" title="測試動作："></a>測試動作：</h5><ul>
-<li><h5 id="在-VPS-執行-ls-l-Source的路徑-。"><a href="#在-VPS-執行-ls-l-Source的路徑-。" class="headerlink" title="在 VPS 執行 ls -l [Source的路徑]。"></a>在 VPS 執行 ls -l [Source的路徑]。</h5></li>
+<li><h5 id="在-VPS-執行-ls-l-Source的路徑-VPS的Volume物理掛載路徑-。"><a href="#在-VPS-執行-ls-l-Source的路徑-VPS的Volume物理掛載路徑-。" class="headerlink" title="在 VPS 執行 ls -l [Source的路徑] (VPS的Volume物理掛載路徑)。"></a>在 VPS 執行 ls -l [Source的路徑] (VPS的Volume物理掛載路徑)。</h5></li>
+<li><h5 id="再進入到data目錄-backup-bak的存放目錄"><a href="#再進入到data目錄-backup-bak的存放目錄" class="headerlink" title="再進入到data目錄(backup.bak的存放目錄)"></a>再進入到data目錄(backup.bak的存放目錄)</h5></li>
 <li><h5 id="如果你能看到-backup-bak-出現在那裡，代表-Volume-掛載成功，容器內外的通道是通的。"><a href="#如果你能看到-backup-bak-出現在那裡，代表-Volume-掛載成功，容器內外的通道是通的。" class="headerlink" title="如果你能看到 backup.bak 出現在那裡，代表 Volume 掛載成功，容器內外的通道是通的。"></a>如果你能看到 backup.bak 出現在那裡，代表 Volume 掛載成功，容器內外的通道是通的。</h5></li>
 </ul>
 </li>
+<li><h5 id="路徑對應關係如下："><a href="#路徑對應關係如下：" class="headerlink" title="路徑對應關係如下："></a>路徑對應關係如下：</h5></li>
 </ul>
+<p>  {asset_image valume_path_mapping.jpg valume_path_mapping}</p>
 </li>
 </ul>
 <hr>
@@ -274,6 +277,10 @@
 <hr>
 <ul>
 <li><h3 id="補充-關閉1433-Port"><a href="#補充-關閉1433-Port" class="headerlink" title="(補充)關閉1433 Port"></a>(補充)關閉1433 Port</h3></li>
+</ul>
+<hr>
+<ul>
+<li><h3 id="補充-停用舊的Container"><a href="#補充-停用舊的Container" class="headerlink" title="(補充)停用舊的Container"></a>(補充)停用舊的Container</h3></li>
 </ul>
 <p>最終檢查清單<br>[ ] 刪除舊容器： 確認新容器資料都對了，再執行 docker rm -f &lt;舊容器&gt;。</p>
 <p>[ ] 驗證 sa： 進入新容器後，立刻按照我們先前討論的，建立一個新管理員帳號並 停用 sa。</p>

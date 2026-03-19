@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>DB連線字串處理 | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="從寫程式以來，我的觀念都是把DB連線字串加密後放到Web.config或是appsetings.json裡面。之後偶然在網路上看到文章，都一致不建議在設定檔裡面放密碼，問了一下AI後才發現，原來還有這麼多自己沒想到的細節。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DB連線字串處理">
+<meta property="og:url" content="http://example.com/2026/03/19/DB%E9%80%A3%E7%B7%9A%E5%AD%97%E4%B8%B2%E8%99%95%E7%90%86/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="從寫程式以來，我的觀念都是把DB連線字串加密後放到Web.config或是appsetings.json裡面。之後偶然在網路上看到文章，都一致不建議在設定檔裡面放密碼，問了一下AI後才發現，原來還有這麼多自己沒想到的細節。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-03-19T03:32:07.000Z">
+<meta property="article:modified_time" content="2026-03-19T09:41:19.445Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-DB連線字串處理" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/03/19/DB%E9%80%A3%E7%B7%9A%E5%AD%97%E4%B8%B2%E8%99%95%E7%90%86/" class="article-date">
+  <time class="dt-published" datetime="2026-03-19T03:32:07.000Z" itemprop="datePublished">2026-03-19</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      DB連線字串處理
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="從寫程式以來，我的觀念都是把DB連線字串加密後放到Web-config或是appsetings-json裡面。之後偶然在網路上看到文章，都一致不建議在設定檔裡面放密碼，問了一下AI後才發現，原來還有這麼多自己沒想到的細節。"><a href="#從寫程式以來，我的觀念都是把DB連線字串加密後放到Web-config或是appsetings-json裡面。之後偶然在網路上看到文章，都一致不建議在設定檔裡面放密碼，問了一下AI後才發現，原來還有這麼多自己沒想到的細節。" class="headerlink" title="從寫程式以來，我的觀念都是把DB連線字串加密後放到Web.config或是appsetings.json裡面。之後偶然在網路上看到文章，都一致不建議在設定檔裡面放密碼，問了一下AI後才發現，原來還有這麼多自己沒想到的細節。"></a>從寫程式以來，我的觀念都是把DB連線字串加密後放到Web.config或是appsetings.json裡面。之後偶然在網路上看到文章，都一致不建議在設定檔裡面放密碼，問了一下AI後才發現，原來還有這麼多自己沒想到的細節。</h5><span id="more"></span>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h3 id="Net-Framework設定檔轉化-Web-config-Transformation"><a href="#Net-Framework設定檔轉化-Web-config-Transformation" class="headerlink" title=".Net Framework設定檔轉化 (Web.config Transformation)"></a>.Net Framework設定檔轉化 (Web.config Transformation)</h3><ol>
+<li><h5 id="如果是舊的-NET-Framework-ASP-NET-專案，可以透過設定檔轉化來隔離開發環境跟正是環境的連線字串設定。"><a href="#如果是舊的-NET-Framework-ASP-NET-專案，可以透過設定檔轉化來隔離開發環境跟正是環境的連線字串設定。" class="headerlink" title="如果是舊的 .NET Framework (ASP.NET) 專案，可以透過設定檔轉化來隔離開發環境跟正是環境的連線字串設定。"></a>如果是舊的 .NET Framework (ASP.NET) 專案，可以透過設定檔轉化來隔離開發環境跟正是環境的連線字串設定。</h5><ul>
+<li><h5 id="Web-config-留開發用連線字串。"><a href="#Web-config-留開發用連線字串。" class="headerlink" title="Web.config 留開發用連線字串。"></a>Web.config 留開發用連線字串。</h5></li>
+<li><h5 id="Web-Release-config-寫入取代邏輯（如下）："><a href="#Web-Release-config-寫入取代邏輯（如下）：" class="headerlink" title="Web.Release.config 寫入取代邏輯（如下）："></a>Web.Release.config 寫入取代邏輯（如下）：</h5></li>
+</ul>
+ <figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">connectionStrings</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">add</span> <span class="attr">name</span>=<span class="string">&quot;MyDB&quot;</span> </span></span><br><span class="line"><span class="tag">    <span class="attr">connectionString</span>=<span class="string">&quot;真正的正式連線字串&quot;</span> </span></span><br><span class="line"><span class="tag">    <span class="attr">xdt:Transform</span>=<span class="string">&quot;SetAttributes&quot;</span> <span class="attr">xdt:Locator</span>=<span class="string">&quot;Match(name)&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">connectionStrings</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+</li>
+</ul>
+<h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h3 id="Net-配置覆蓋-Configuration-Overriding-。"><a href="#Net-配置覆蓋-Configuration-Overriding-。" class="headerlink" title=".Net 配置覆蓋 (Configuration Overriding)。"></a>.Net 配置覆蓋 (Configuration Overriding)。</h3></li>
+<li><h5 id="在-Net裡面也有類似-Net-Framework設定檔轉化的功能。-NET-預設會按照特定的順序讀取多個配置來源，預設的讀取順序通常如下："><a href="#在-Net裡面也有類似-Net-Framework設定檔轉化的功能。-NET-預設會按照特定的順序讀取多個配置來源，預設的讀取順序通常如下：" class="headerlink" title="在.Net裡面也有類似.Net Framework設定檔轉化的功能。.NET 預設會按照特定的順序讀取多個配置來源，預設的讀取順序通常如下："></a>在.Net裡面也有類似.Net Framework設定檔轉化的功能。.NET 預設會按照特定的順序讀取多個配置來源，預設的讀取順序通常如下：</h5><ul>
+<li><h5 id="appsettings-json-最基礎、通用的設定"><a href="#appsettings-json-最基礎、通用的設定" class="headerlink" title="appsettings.json (最基礎、通用的設定)"></a>appsettings.json (最基礎、通用的設定)</h5></li>
+<li><h5 id="appsettings-Environment-json-如-Production-或-Development"><a href="#appsettings-Environment-json-如-Production-或-Development" class="headerlink" title="appsettings.{Environment}.json (如 Production 或 Development)"></a>appsettings.{Environment}.json (如 Production 或 Development)</h5></li>
+<li><h5 id="User-Secrets"><a href="#User-Secrets" class="headerlink" title="User Secrets"></a>User Secrets</h5></li>
+</ul>
+</li>
+</ul>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h3 id="避免機密資訊-ex：連線字串-在Internet上裸奔"><a href="#避免機密資訊-ex：連線字串-在Internet上裸奔" class="headerlink" title="避免機密資訊(ex：連線字串)在Internet上裸奔"></a>避免機密資訊(ex：連線字串)在Internet上裸奔</h3><h5 id="快速看完上面-Net跟-Net-Framework設定檔的用法後。要記得push程式時。建議別把Web-Release-config推到遠端的git，避免機密資訊-ex：連線字串-被公開。"><a href="#快速看完上面-Net跟-Net-Framework設定檔的用法後。要記得push程式時。建議別把Web-Release-config推到遠端的git，避免機密資訊-ex：連線字串-被公開。" class="headerlink" title="快速看完上面.Net跟.Net Framework設定檔的用法後。要記得push程式時。建議別把Web.Release.config推到遠端的git，避免機密資訊(ex：連線字串)被公開。"></a>快速看完上面.Net跟.Net Framework設定檔的用法後。要記得push程式時。建議<span style="color:red">別把Web.Release.config推到遠端的git，避免機密資訊(ex：連線字串)被公開。</span></h5><ul>
+<li><h5 id="-9"><a href="#-9" class="headerlink" title=""></a></h5><ul>
+<li><h5 id="我有問過AI：我把repository設成private不行嗎-以下是AI給我的回應，順便列上給大家參考："><a href="#我有問過AI：我把repository設成private不行嗎-以下是AI給我的回應，順便列上給大家參考：" class="headerlink" title="我有問過AI：我把repository設成private不行嗎? 以下是AI給我的回應，順便列上給大家參考："></a>我有問過AI：我把repository設成private不行嗎? 以下是AI給我的回應，順便列上給大家參考：</h5><ul>
+<li><h5 id="「凡走過必留下痕跡」-Git-History-：如果你今天不小心把密碼推上去，然後發現不對勁，立刻刪除並再推一次-Commit，密碼依然存在於-Git-的歷史紀錄中。任何有權限存取這個-Repo-的人，只要翻閱-git-log-或回溯舊版本，就能輕易看到那個密碼。"><a href="#「凡走過必留下痕跡」-Git-History-：如果你今天不小心把密碼推上去，然後發現不對勁，立刻刪除並再推一次-Commit，密碼依然存在於-Git-的歷史紀錄中。任何有權限存取這個-Repo-的人，只要翻閱-git-log-或回溯舊版本，就能輕易看到那個密碼。" class="headerlink" title="「凡走過必留下痕跡」 (Git History)：如果你今天不小心把密碼推上去，然後發現不對勁，立刻刪除並再推一次 Commit，密碼依然存在於 Git 的歷史紀錄中。任何有權限存取這個 Repo 的人，只要翻閱 git log 或回溯舊版本，就能輕易看到那個密碼。"></a>「凡走過必留下痕跡」 (Git History)：如果你今天不小心把密碼推上去，然後發現不對勁，立刻刪除並再推一次 Commit，密碼依然存在於 Git 的歷史紀錄中。任何有權限存取這個 Repo 的人，只要翻閱 git log 或回溯舊版本，就能輕易看到那個密碼。</h5></li>
+<li><h5 id="權限擴散-Least-Privilege-Principle-：開發專案的人（工程師）通常不需要知道正式環境（Production）的資料庫密碼。如果密碼在-Git-裡，代表所有能看到-Code-的人（包含實習生、外包廠商、測試人員）都變相擁有了正式環境的通行證。一旦其中一個人的-GitHub-帳號被盜，或是電腦遺失，你的正式環境就大門敞開了。"><a href="#權限擴散-Least-Privilege-Principle-：開發專案的人（工程師）通常不需要知道正式環境（Production）的資料庫密碼。如果密碼在-Git-裡，代表所有能看到-Code-的人（包含實習生、外包廠商、測試人員）都變相擁有了正式環境的通行證。一旦其中一個人的-GitHub-帳號被盜，或是電腦遺失，你的正式環境就大門敞開了。" class="headerlink" title="權限擴散 (Least Privilege Principle)：開發專案的人（工程師）通常不需要知道正式環境（Production）的資料庫密碼。如果密碼在 Git 裡，代表所有能看到 Code 的人（包含實習生、外包廠商、測試人員）都變相擁有了正式環境的通行證。一旦其中一個人的 GitHub 帳號被盜，或是電腦遺失，你的正式環境就大門敞開了。"></a>權限擴散 (Least Privilege Principle)：開發專案的人（工程師）通常不需要知道正式環境（Production）的資料庫密碼。如果密碼在 Git 裡，代表所有能看到 Code 的人（包含實習生、外包廠商、測試人員）都變相擁有了正式環境的通行證。一旦其中一個人的 GitHub 帳號被盜，或是電腦遺失，你的正式環境就大門敞開了。</h5></li>
+<li><h5 id="CI-CD-與自動化工具的弱點：現代開發流程會串接很多第三方工具（如-Jenkins-SonarQube-Snyk-漏洞掃描）。這些工具會-Clone-你的程式碼進行分析。如果密碼在裡面，這些工具的-Log-或資料庫裡也會留下密碼紀錄。你的安全邊界不再只是-GitHub，而是所有接觸過這份程式碼的平台。"><a href="#CI-CD-與自動化工具的弱點：現代開發流程會串接很多第三方工具（如-Jenkins-SonarQube-Snyk-漏洞掃描）。這些工具會-Clone-你的程式碼進行分析。如果密碼在裡面，這些工具的-Log-或資料庫裡也會留下密碼紀錄。你的安全邊界不再只是-GitHub，而是所有接觸過這份程式碼的平台。" class="headerlink" title="CI&#x2F;CD 與自動化工具的弱點：現代開發流程會串接很多第三方工具（如 Jenkins, SonarQube, Snyk 漏洞掃描）。這些工具會 Clone 你的程式碼進行分析。如果密碼在裡面，這些工具的 Log 或資料庫裡也會留下密碼紀錄。你的安全邊界不再只是 GitHub，而是所有接觸過這份程式碼的平台。"></a>CI&#x2F;CD 與自動化工具的弱點：現代開發流程會串接很多第三方工具（如 Jenkins, SonarQube, Snyk 漏洞掃描）。這些工具會 Clone 你的程式碼進行分析。如果密碼在裡面，這些工具的 Log 或資料庫裡也會留下密碼紀錄。你的安全邊界不再只是 GitHub，而是所有接觸過這份程式碼的平台。</h5></li>
+<li><h5 id="服務供應商的風險-Supply-Chain-Attack-：即便你的-Repo-是-Private，你依然是把密碼託管給了-GitHub-Microsoft-。歷史上曾發生過多次-GitHub-內部人員濫用權限或系統漏洞導致-Private-Repo-外洩的事件。在大公司架構中，我們會假設-「第三方平台不可完全信任」。"><a href="#服務供應商的風險-Supply-Chain-Attack-：即便你的-Repo-是-Private，你依然是把密碼託管給了-GitHub-Microsoft-。歷史上曾發生過多次-GitHub-內部人員濫用權限或系統漏洞導致-Private-Repo-外洩的事件。在大公司架構中，我們會假設-「第三方平台不可完全信任」。" class="headerlink" title="服務供應商的風險 (Supply Chain Attack)：即便你的 Repo 是 Private，你依然是把密碼託管給了 GitHub (Microsoft)。歷史上曾發生過多次 GitHub 內部人員濫用權限或系統漏洞導致 Private Repo 外洩的事件。在大公司架構中，我們會假設**「第三方平台不可完全信任」。"></a>服務供應商的風險 (Supply Chain Attack)：即便你的 Repo 是 Private，你依然是把密碼託管給了 GitHub (Microsoft)。歷史上曾發生過多次 GitHub 內部人員濫用權限或系統漏洞導致 Private Repo 外洩的事件。在大公司架構中，我們會假設**「第三方平台不可完全信任」。</h5></li>
+</ul>
+</li>
+</ul>
+<h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="接著我又另外問了AI：如果我把連線字串改成加密後的字串也不建議嗎-以下是整理過後，AI給我的回應："><a href="#接著我又另外問了AI：如果我把連線字串改成加密後的字串也不建議嗎-以下是整理過後，AI給我的回應：" class="headerlink" title="接著我又另外問了AI：如果我把連線字串改成加密後的字串也不建議嗎? 以下是整理過後，AI給我的回應："></a>接著我又另外問了AI：如果我把連線字串改成加密後的字串也不建議嗎? 以下是整理過後，AI給我的回應：</h5><ul>
+<li><h5 id="解密金鑰放哪？-如果你把加密後的密碼放-Git，卻把解密金鑰也放-Git，那加密等於白做。"><a href="#解密金鑰放哪？-如果你把加密後的密碼放-Git，卻把解密金鑰也放-Git，那加密等於白做。" class="headerlink" title="解密金鑰放哪？ 如果你把加密後的密碼放 Git，卻把解密金鑰也放 Git，那加密等於白做。"></a>解密金鑰放哪？ 如果你把加密後的密碼放 Git，卻把解密金鑰也放 Git，那加密等於白做。</h5></li>
+<li><h5 id="程式碼風險：如果將金鑰寫死在-C-程式碼中，駭客只需透過「反編譯（Decompile）」就能在幾秒鐘內挖出金鑰並解密。"><a href="#程式碼風險：如果將金鑰寫死在-C-程式碼中，駭客只需透過「反編譯（Decompile）」就能在幾秒鐘內挖出金鑰並解密。" class="headerlink" title="程式碼風險：如果將金鑰寫死在 C# 程式碼中，駭客只需透過「反編譯（Decompile）」就能在幾秒鐘內挖出金鑰並解密。"></a>程式碼風險：如果將金鑰寫死在 C# 程式碼中，駭客只需透過「反編譯（Decompile）」就能在幾秒鐘內挖出金鑰並解密。</h5></li>
+<li><h5 id="演算法會過時：現在安全的-AES-或-RSA-加密，幾年後可能被破解。將加密密碼留存在版本控制中，等於是留給未來的駭客一個「離線破解」的機會。"><a href="#演算法會過時：現在安全的-AES-或-RSA-加密，幾年後可能被破解。將加密密碼留存在版本控制中，等於是留給未來的駭客一個「離線破解」的機會。" class="headerlink" title="演算法會過時：現在安全的 AES 或 RSA 加密，幾年後可能被破解。將加密密碼留存在版本控制中，等於是留給未來的駭客一個「離線破解」的機會。"></a>演算法會過時：現在安全的 AES 或 RSA 加密，幾年後可能被破解。將加密密碼留存在版本控制中，等於是留給未來的駭客一個「離線破解」的機會。</h5></li>
+</ul>
+</li>
+</ul>
+<h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="接著我又另外問了AI：如果我把加密金鑰用另一份檔案存下，並把這份檔案加到git-ignore裡呢-以下是整理過後，AI給我的回應："><a href="#接著我又另外問了AI：如果我把加密金鑰用另一份檔案存下，並把這份檔案加到git-ignore裡呢-以下是整理過後，AI給我的回應：" class="headerlink" title="接著我又另外問了AI：如果我把加密金鑰用另一份檔案存下，並把這份檔案加到git ignore裡呢? 以下是整理過後，AI給我的回應："></a>接著我又另外問了AI：如果我把加密金鑰用另一份檔案存下，並把這份檔案加到git ignore裡呢? 以下是整理過後，AI給我的回應：</h5><ul>
+<li><h5 id="災難復原：萬一那份被-Ignore-的金鑰檔丟了（例如你換電腦或伺服器硬碟壞了），你連自己都解不開密碼。"><a href="#災難復原：萬一那份被-Ignore-的金鑰檔丟了（例如你換電腦或伺服器硬碟壞了），你連自己都解不開密碼。" class="headerlink" title="災難復原：萬一那份被 Ignore 的金鑰檔丟了（例如你換電腦或伺服器硬碟壞了），你連自己都解不開密碼。"></a>災難復原：萬一那份被 Ignore 的金鑰檔丟了（例如你換電腦或伺服器硬碟壞了），你連自己都解不開密碼。</h5></li>
+<li><h5 id="程式複雜化：你的-C-程式碼必須多寫一段「讀取金鑰-讀取加密密碼-執行解密」的邏輯。"><a href="#程式複雜化：你的-C-程式碼必須多寫一段「讀取金鑰-讀取加密密碼-執行解密」的邏輯。" class="headerlink" title="程式複雜化：你的 C# 程式碼必須多寫一段「讀取金鑰 -&gt; 讀取加密密碼 -&gt; 執行解密」的邏輯。"></a>程式複雜化：你的 C# 程式碼必須多寫一段「讀取金鑰 -&gt; 讀取加密密碼 -&gt; 執行解密」的邏輯。</h5></li>
+<li><h5 id="維護麻煩：你每次換密碼，都要先加密、貼到-JSON。再確保金鑰檔也有同步更新。"><a href="#維護麻煩：你每次換密碼，都要先加密、貼到-JSON。再確保金鑰檔也有同步更新。" class="headerlink" title="維護麻煩：你每次換密碼，都要先加密、貼到 JSON。再確保金鑰檔也有同步更新。"></a>維護麻煩：你每次換密碼，都要先加密、貼到 JSON。再確保金鑰檔也有同步更新。</h5></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/03/19/DB%E9%80%A3%E7%B7%9A%E5%AD%97%E4%B8%B2%E8%99%95%E7%90%86/" data-id="cmmxa6bll0000ycn14mig610w" data-title="DB連線字串處理" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/03/16/Create-Docker-Volume/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Docker Volume With MSSQL Server</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 15px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/03/19/DB%E9%80%A3%E7%B7%9A%E5%AD%97%E4%B8%B2%E8%99%95%E7%90%86/">DB連線字串處理</a>
+          </li>
+        
+          <li>
+            <a href="/2026/03/16/Create-Docker-Volume/">Docker Volume With MSSQL Server</a>
+          </li>
+        
+          <li>
+            <a href="/2026/01/13/different-of-interface-abstract-virtual/">different of interface, abstract, virtual.</a>
+          </li>
+        
+          <li>
+            <a href="/2025/12/23/Selenium-in-Linux/">Selenium in Linux</a>
+          </li>
+        
+          <li>
+            <a href="/2025/12/03/Google-App-Script-GAS-%E6%87%89%E7%94%A8-clasp/">Google App Script(GAS)應用 - Clasp</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

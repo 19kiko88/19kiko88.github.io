@@ -14,7 +14,7 @@
 <meta property="og:description" content="從寫程式以來，我的觀念都是把DB連線字串加密後放到Web.config或是appsetings.json裡面。之後偶然在網路上看到文章，都一致不建議在設定檔裡面放密碼，問了一下AI後才發現，原來還有這麼多自己沒想到的細節。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-03-19T03:32:07.000Z">
-<meta property="article:modified_time" content="2026-03-24T09:29:51.923Z">
+<meta property="article:modified_time" content="2026-03-24T09:30:40.108Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -184,14 +184,13 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 找到 PID</span></span><br><span class="line">pid=$(systemctl show -p MainPID my-web-app.service | <span class="built_in">cut</span> -d= -f2)</span><br><span class="line"><span class="comment"># 查看該進程的環境變數</span></span><br><span class="line"><span class="built_in">sudo</span> <span class="built_in">cat</span> /proc/<span class="variable">$pid</span>/environ | <span class="built_in">tr</span> <span class="string">&#x27;\0&#x27;</span> <span class="string">&#x27;\n&#x27;</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
-<li><h5 id="改成這個方案後，又多了下面幾個優點："><a href="#改成這個方案後，又多了下面幾個優點：" class="headerlink" title="改成這個方案後，又多了下面幾個優點："></a>改成這個方案後，又多了下面幾個優點：</h5><ol>
+</ul>
+<h5 id="改成這個方案後，又多了下面幾個優點："><a href="#改成這個方案後，又多了下面幾個優點：" class="headerlink" title="改成這個方案後，又多了下面幾個優點："></a>改成這個方案後，又多了下面幾個優點：</h5><ol>
 <li><h5 id="不留痕跡：伺服器上的-appsettings-json-就算被駭客偷走，裡面也只有假密碼。"><a href="#不留痕跡：伺服器上的-appsettings-json-就算被駭客偷走，裡面也只有假密碼。" class="headerlink" title="不留痕跡：伺服器上的 appsettings.json 就算被駭客偷走，裡面也只有假密碼。"></a>不留痕跡：伺服器上的 appsettings.json 就算被駭客偷走，裡面也只有假密碼。</h5></li>
 <li><h5 id="權限隔離：只有擁有-sudo-權限的人可以看-etc-systemd-system-下的設定。"><a href="#權限隔離：只有擁有-sudo-權限的人可以看-etc-systemd-system-下的設定。" class="headerlink" title="權限隔離：只有擁有 sudo 權限的人可以看 &#x2F;etc&#x2F;systemd&#x2F;system&#x2F; 下的設定。"></a>權限隔離：只有擁有 sudo 權限的人可以看 &#x2F;etc&#x2F;systemd&#x2F;system&#x2F; 下的設定。</h5></li>
 <li><h5 id="防止誤推：開發者在本地開發時用自己的-User-Secrets，推上-Git-時不用擔心漏刪密碼。"><a href="#防止誤推：開發者在本地開發時用自己的-User-Secrets，推上-Git-時不用擔心漏刪密碼。" class="headerlink" title="防止誤推：開發者在本地開發時用自己的 User Secrets，推上 Git 時不用擔心漏刪密碼。"></a>防止誤推：開發者在本地開發時用自己的 User Secrets，推上 Git 時不用擔心漏刪密碼。</h5></li>
 </ol>
-<h5 id="整體而言，還是比上面的範例還要好。"><a href="#整體而言，還是比上面的範例還要好。" class="headerlink" title="整體而言，還是比上面的範例還要好。"></a>整體而言，還是比上面的範例還要好。</h5></li>
-</ul>
-
+<h5 id="整體而言，還是比上面的範例還要好。"><a href="#整體而言，還是比上面的範例還要好。" class="headerlink" title="整體而言，還是比上面的範例還要好。"></a>整體而言，還是比上面的範例還要好。</h5>
       
     </div>
     <footer class="article-footer">

@@ -75,6 +75,82 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-n8n-note" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/06/26/n8n-note/" class="article-date">
+  <time class="dt-published" datetime="2026-06-26T06:28:28.000Z" itemprop="datePublished">2026-06-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/06/26/n8n-note/">n8n note</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="n8n的AI-Agent的Http-Request-Tool要呼叫MCP時，用的是網址是：http-172-22-128-1-5011-api-camera，但一直無法連線。port被擋住的問題，在公司電腦無法任意開放指定port的情況下，經AI給的建議，知道了有鏡像網路-Mirror-Network-這種東西可以解決我目前的問題。"><a href="#n8n的AI-Agent的Http-Request-Tool要呼叫MCP時，用的是網址是：http-172-22-128-1-5011-api-camera，但一直無法連線。port被擋住的問題，在公司電腦無法任意開放指定port的情況下，經AI給的建議，知道了有鏡像網路-Mirror-Network-這種東西可以解決我目前的問題。" class="headerlink" title="n8n的AI Agent的Http Request Tool要呼叫MCP時，用的是網址是：http://172.22.128.1:5011/api/camera，但一直無法連線。port被擋住的問題，在公司電腦無法任意開放指定port的情況下，經AI給的建議，知道了有鏡像網路(Mirror Network)這種東西可以解決我目前的問題。"></a>n8n的AI Agent的Http Request Tool要呼叫MCP時，用的是網址是：<a target="_blank" rel="noopener" href="http://172.22.128.1:5011/api/camera%EF%BC%8C%E4%BD%86%E4%B8%80%E7%9B%B4%E7%84%A1%E6%B3%95%E9%80%A3%E7%B7%9A%E3%80%82port%E8%A2%AB%E6%93%8B%E4%BD%8F%E7%9A%84%E5%95%8F%E9%A1%8C%EF%BC%8C%E5%9C%A8%E5%85%AC%E5%8F%B8%E9%9B%BB%E8%85%A6%E7%84%A1%E6%B3%95%E4%BB%BB%E6%84%8F%E9%96%8B%E6%94%BE%E6%8C%87%E5%AE%9Aport%E7%9A%84%E6%83%85%E6%B3%81%E4%B8%8B%EF%BC%8C%E7%B6%93AI%E7%B5%A6%E7%9A%84%E5%BB%BA%E8%AD%B0%EF%BC%8C%E7%9F%A5%E9%81%93%E4%BA%86%E6%9C%89%E9%8F%A1%E5%83%8F%E7%B6%B2%E8%B7%AF">http://172.22.128.1:5011/api/camera，但一直無法連線。port被擋住的問題，在公司電腦無法任意開放指定port的情況下，經AI給的建議，知道了有鏡像網路</a>(Mirror Network)這種東西可以解決我目前的問題。</h5><p>host：(campera mcp server. )<br>wsl<br>n8n Container</p>
+<h5 id="172-22-128-1為vEthernet網卡的IP"><a href="#172-22-128-1為vEthernet網卡的IP" class="headerlink" title="172.22.128.1為vEthernet網卡的IP"></a>172.22.128.1為vEthernet網卡的IP</h5>
+
+<h5 id="Http-Request-Tool的設定"><a href="#Http-Request-Tool的設定" class="headerlink" title="Http Request Tool的設定"></a>Http Request Tool的設定</h5>
+
+<h5 id="回應失敗"><a href="#回應失敗" class="headerlink" title="回應失敗"></a>回應失敗</h5>
+
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<h3 id="Mirror-Network"><a href="#Mirror-Network" class="headerlink" title="Mirror Network"></a>Mirror Network</h3><h5 id="在-WSL-2（Windows-Subsystem-for-Linux-2）中，鏡像網路模式（Mirrored-Network-Mode）是微軟推出的一項重大網路架構變革。簡單來說，它讓-WSL-2-的-Linux-系統直接「鏡像（複製）」了-Windows-主機的網路介面。開啟這個模式後，Windows-和-WSL-2-之間不再有網路邊界，兩者宛如處在同一個同溫層中。"><a href="#在-WSL-2（Windows-Subsystem-for-Linux-2）中，鏡像網路模式（Mirrored-Network-Mode）是微軟推出的一項重大網路架構變革。簡單來說，它讓-WSL-2-的-Linux-系統直接「鏡像（複製）」了-Windows-主機的網路介面。開啟這個模式後，Windows-和-WSL-2-之間不再有網路邊界，兩者宛如處在同一個同溫層中。" class="headerlink" title="在 WSL 2（Windows Subsystem for Linux 2）中，鏡像網路模式（Mirrored Network Mode）是微軟推出的一項重大網路架構變革。簡單來說，它讓 WSL 2 的 Linux 系統直接「鏡像（複製）」了 Windows 主機的網路介面。開啟這個模式後，Windows 和 WSL 2 之間不再有網路邊界，兩者宛如處在同一個同溫層中。"></a>在 WSL 2（Windows Subsystem for Linux 2）中，鏡像網路模式（Mirrored Network Mode）是微軟推出的一項重大網路架構變革。簡單來說，它讓 WSL 2 的 Linux 系統直接「鏡像（複製）」了 Windows 主機的網路介面。開啟這個模式後，Windows 和 WSL 2 之間不再有網路邊界，兩者宛如處在同一個同溫層中。</h5><h5 id="開啟鏡像網路前：-當你在-n8n-Http-Request-Tool裡輸入MCP-Server-API網址-http-localhost-5011-api-camera-時，n8n-尋找的是「n8n-容器內部」的-localhost：5011，而不是-WSL-或-Windows-Host-的-localhost：5011。"><a href="#開啟鏡像網路前：-當你在-n8n-Http-Request-Tool裡輸入MCP-Server-API網址-http-localhost-5011-api-camera-時，n8n-尋找的是「n8n-容器內部」的-localhost：5011，而不是-WSL-或-Windows-Host-的-localhost：5011。" class="headerlink" title="開啟鏡像網路前： 當你在 n8n Http Request Tool裡輸入MCP Server API網址 http://localhost:5011/api/camera 時，n8n 尋找的是「n8n 容器內部」的 localhost：5011，而不是 WSL 或 Windows Host 的 localhost：5011。"></a>開啟鏡像網路前： 當你在 n8n Http Request Tool裡輸入MCP Server API網址 <a target="_blank" rel="noopener" href="http://localhost:5011/api/camera">http://localhost:5011/api/camera</a> 時，n8n 尋找的是「n8n 容器內部」的 localhost：5011，而不是 WSL 或 Windows Host 的 localhost：5011。</h5><h5 id="開啟鏡像網路後：當你開啟-networkingMode-mirrored-後，網路架構會被完全扁平化。WSL-2-不再擁有獨立的虛擬網卡-vEthernet-，而是直接共享、鏡像-Windows-的所有實體與虛擬網卡。"><a href="#開啟鏡像網路後：當你開啟-networkingMode-mirrored-後，網路架構會被完全扁平化。WSL-2-不再擁有獨立的虛擬網卡-vEthernet-，而是直接共享、鏡像-Windows-的所有實體與虛擬網卡。" class="headerlink" title="開啟鏡像網路後：當你開啟 networkingMode&#x3D;mirrored 後，網路架構會被完全扁平化。WSL 2 不再擁有獨立的虛擬網卡(vEthernet)，而是直接共享、鏡像 Windows 的所有實體與虛擬網卡。"></a>開啟鏡像網路後：當你開啟 networkingMode&#x3D;mirrored 後，網路架構會被完全扁平化。WSL 2 不再擁有獨立的虛擬網卡(vEthernet)，而是直接共享、鏡像 Windows 的所有實體與虛擬網卡。</h5><ul>
+<li><h5 id="開啟鏡像網路-Mirror-Network"><a href="#開啟鏡像網路-Mirror-Network" class="headerlink" title="開啟鏡像網路(Mirror Network)"></a>開啟鏡像網路(Mirror Network)</h5><ul>
+<li><h5 id="進入目錄-C-Users-UserName-’"><a href="#進入目錄-C-Users-UserName-’" class="headerlink" title="進入目錄 C:\Users&#39;{UserName}’\"></a>進入目錄 C:\Users&#39;{UserName}’\</h5></li>
+<li><h5 id="新增設定檔檔案-wslconfig，並貼入下面指令。"><a href="#新增設定檔檔案-wslconfig，並貼入下面指令。" class="headerlink" title="新增設定檔檔案 .wslconfig，並貼入下面指令。"></a>新增設定檔檔案 .wslconfig，並貼入下面指令。</h5></li>
+</ul>
+</li>
+</ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[wsl2]</span><br><span class="line">networkingMode=mirrored</span><br><span class="line">hostAddressLoopback=true</span><br><span class="line">```  </span><br><span class="line"></span><br><span class="line">##### 啟用鏡像網路後，再次呼叫 MCP Server (http://localhost:5011/api/camera) 應該要可行，但結果卻依然連線失敗。原因是：雖然我們在 Windows Host 開啟了鏡像網路（Mirrored Mode），讓 Windows 與 WSL 的 localhost 互通，但 Docker 容器預設仍擁有獨立的網路隔離空間。由於 Docker 方面還沒進行對應的設定（意即尚未配置 network_mode: &quot;host&quot;），導致目前只有單方面開放，n8n 容器內部依然無法穿透到外部的 localhost。</span><br><span class="line">#</span><br><span class="line">#</span><br><span class="line">#</span><br><span class="line">---</span><br><span class="line">### 更新docker-compose.yml內容</span><br><span class="line"></span><br><span class="line">##### (修改前)docker-compose.yml</span><br><span class="line">``` yaml</span><br><span class="line">version: &#x27;3.8&#x27;</span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  n8n:</span><br><span class="line">    image: docker.n8n.io/n8nio/n8n:latest</span><br><span class="line">    container_name: n8n_local</span><br><span class="line">    restart: always</span><br><span class="line">    ports:</span><br><span class="line">      - &quot;5678:5678&quot; # host port-5678 : docker port-5678。</span><br><span class="line">    environment:</span><br><span class="line">      - TZ=Asia/Taipei # 設定你的時區</span><br><span class="line">      - N8N_SECURE_COOKIE=false # 地端測試關閉安全 Cookie 限制</span><br><span class="line">    volumes:</span><br><span class="line">      - ~/n8n_local/n8n_data:/home/node/.n8n</span><br></pre></td></tr></table></figure>
+
+<h5 id="修改後-docker-compose-yml"><a href="#修改後-docker-compose-yml" class="headerlink" title="(修改後)docker-compose.yml"></a>(修改後)docker-compose.yml</h5><figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3.8&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">n8n:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">docker.n8n.io/n8nio/n8n:latest</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">n8n_local</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">always</span></span><br><span class="line">    <span class="attr">network_mode:</span> <span class="string">&quot;host&quot;</span> <span class="comment"># 讓容器直接使用 WSL/Windows 的 localhost    </span></span><br><span class="line">    <span class="comment">#ports: </span></span><br><span class="line">    <span class="comment">#  - &quot;5678:5678&quot;</span></span><br><span class="line">    <span class="attr">environment:</span>    </span><br><span class="line">      <span class="bullet">-</span> <span class="string">TZ=Asia/Taipei</span> <span class="comment"># 設定你的時區</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">N8N_SECURE_COOKIE=false</span> <span class="comment"># 地端測試關閉安全 Cookie 限制</span></span><br><span class="line">      <span class="comment"># n8n預設port為5678，設定network_mode: &quot;host&quot;後，host與docker的port為共用的，不須再特別設定，除非想換別的port`。</span></span><br><span class="line">      <span class="comment"># - N8N_PORT=5678</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">~/n8n_local/n8n_data:/home/node/.n8n</span></span><br></pre></td></tr></table></figure>
+<h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
+<h3 id="測試"><a href="#測試" class="headerlink" title="測試"></a>測試</h3><h5 id="先在WSL裡面用curl進行測試"><a href="#先在WSL裡面用curl進行測試" class="headerlink" title="先在WSL裡面用curl進行測試"></a>先在WSL裡面用curl進行測試</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -X POST http://localhost:5011/api/camera -H <span class="string">&quot;Content-Type: application/json&quot;</span> -d <span class="string">&#x27;&#123;&quot;action&quot;:&quot;capture&quot;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+
+<h5 id="下prompt，請AI-Model幫我開啟相機並拍照。"><a href="#下prompt，請AI-Model幫我開啟相機並拍照。" class="headerlink" title="下prompt，請AI Model幫我開啟相機並拍照。"></a>下prompt，請AI Model幫我開啟相機並拍照。</h5>
+
+<h5 id="成功取得照片的base64"><a href="#成功取得照片的base64" class="headerlink" title="成功取得照片的base64"></a>成功取得照片的base64</h5>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<ul>
+<li><h5 id="REF："><a href="#REF：" class="headerlink" title="REF："></a>REF：</h5><ol>
+<li><h5 id="WSL2-with-n8n"><a href="#WSL2-with-n8n" class="headerlink" title="WSL2 with n8n"></a><a target="_blank" rel="noopener" href="https://19kiko88.github.io/2026/06/24/WSL2-with-n8x/">WSL2 with n8n</a></h5></li>
+</ol>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/06/26/n8n-note/" data-id="cmqupyzqu00002wn1d3zr4pzd" data-title="n8n note" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-WSL2-with-n8x" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/06/24/WSL2-with-n8x/" class="article-date">
@@ -116,53 +192,6 @@
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-node-npx" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2026/06/23/node-npx/" class="article-date">
-  <time class="dt-published" datetime="2026-06-23T09:02:51.000Z" itemprop="datePublished">2026-06-23</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/06/23/node-npx/">node &amp; npx</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h5 id="今天再研究MCP時，遇到了command屬性有時用node，有時又用npx。"><a href="#今天再研究MCP時，遇到了command屬性有時用node，有時又用npx。" class="headerlink" title="今天再研究MCP時，遇到了command屬性有時用node，有時又用npx。"></a>今天再研究MCP時，遇到了command屬性有時用node，有時又用npx。</h5>
-        
-          <p class="article-more-link">
-            <a href="/2026/06/23/node-npx/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2026/06/23/node-npx/" data-id="cmqrpj6sg000130n1b6zw2ths" data-title="node &amp; npx" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
     </footer>
   </div>
   
@@ -558,7 +587,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF/">前端</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
     </div>
   </div>
 
@@ -578,7 +607,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AI/" style="font-size: 15px;">AI</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 15px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 15px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/n8n/" style="font-size: 10px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 10px;">資安</a>
+      <a href="/tags/AI/" style="font-size: 16.67px;">AI</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 13.33px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 13.33px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Ubuntu/" style="font-size: 20px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 20px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 13.33px;">docker</a> <a href="/tags/n8n/" style="font-size: 13.33px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 10px;">資安</a>
     </div>
   </div>
 
@@ -600,11 +629,11 @@
       <ul>
         
           <li>
-            <a href="/2026/06/24/WSL2-with-n8x/">WSL2 with n8n</a>
+            <a href="/2026/06/26/n8n-note/">n8n note</a>
           </li>
         
           <li>
-            <a href="/2026/06/23/node-npx/">node &amp; npx</a>
+            <a href="/2026/06/24/WSL2-with-n8x/">WSL2 with n8n</a>
           </li>
         
           <li>

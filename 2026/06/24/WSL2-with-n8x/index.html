@@ -13,6 +13,8 @@
 <meta property="og:site_name" content="HaoAreYou~">
 <meta property="og:description" content="紀錄透過WSL來啟用n8n docker container。">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2026/06/24/WSL2-with-n8x/n8n_status.jpg">
+<meta property="og:image" content="http://example.com/2026/06/24/WSL2-with-n8x/n8n_status_up.jpg">
 <meta property="article:published_time" content="2026-06-24T05:38:47.000Z">
 <meta property="article:modified_time" content="2026-06-24T07:24:30.975Z">
 <meta property="article:author" content="John Doe">
@@ -20,6 +22,7 @@
 <meta property="article:tag" content="n8n">
 <meta property="article:tag" content="docker">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2026/06/24/WSL2-with-n8x/n8n_status.jpg">
   
     <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
   
@@ -126,7 +129,7 @@
 <h3 id="3-開啟-n8n-網頁介面"><a href="#3-開啟-n8n-網頁介面" class="headerlink" title="3.開啟 n8n 網頁介面"></a>3.開啟 n8n 網頁介面</h3><h5 id="當看到終端機顯示-Started-之後，就可以打開瀏覽器，直接輸入以下網址："><a href="#當看到終端機顯示-Started-之後，就可以打開瀏覽器，直接輸入以下網址：" class="headerlink" title="當看到終端機顯示 Started 之後，就可以打開瀏覽器，直接輸入以下網址："></a>當看到終端機顯示 Started 之後，就可以打開瀏覽器，直接輸入以下網址：</h5><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://localhost:5678</span><br></pre></td></tr></table></figure>
 <h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><hr>
 <h3 id="4-Trouble-Shooting"><a href="#4-Trouble-Shooting" class="headerlink" title="4.Trouble Shooting"></a>4.Trouble Shooting</h3><h5 id="以上都是一切順利的情況，像我就無法正常開啟n8n，先看一下n8n的狀態，可以看到狀態為Restaring。問了一下AI，說是有遇到錯誤，一直嘗試重啟。"><a href="#以上都是一切順利的情況，像我就無法正常開啟n8n，先看一下n8n的狀態，可以看到狀態為Restaring。問了一下AI，說是有遇到錯誤，一直嘗試重啟。" class="headerlink" title="以上都是一切順利的情況，像我就無法正常開啟n8n，先看一下n8n的狀態，可以看到狀態為Restaring。問了一下AI，說是有遇到錯誤，一直嘗試重啟。"></a>以上都是一切順利的情況，像我就無法正常開啟n8n，先看一下n8n的狀態，可以看到狀態為Restaring。問了一下AI，說是有遇到錯誤，一直嘗試重啟。</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps</span><br></pre></td></tr></table></figure>
-
+<img src="/2026/06/24/WSL2-with-n8x/n8n_status.jpg" class="" title="n8n_status">
 <h1 id="-18"><a href="#-18" class="headerlink" title=""></a></h1><h1 id="-19"><a href="#-19" class="headerlink" title=""></a></h1><h1 id="-20"><a href="#-20" class="headerlink" title=""></a></h1><h5 id="再看一下n8n的log"><a href="#再看一下n8n的log" class="headerlink" title="再看一下n8n的log"></a>再看一下n8n的log</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose logs n8n</span><br></pre></td></tr></table></figure>
 <h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><h5 id="發現錯誤：n8n-local-Error-EACCES-permission-denied-open-‘-home-node-n8n-config’。看來是Linux-檔案權限的問題。"><a href="#發現錯誤：n8n-local-Error-EACCES-permission-denied-open-‘-home-node-n8n-config’。看來是Linux-檔案權限的問題。" class="headerlink" title="發現錯誤：n8n_local  | Error: EACCES: permission denied, open ‘&#x2F;home&#x2F;node&#x2F;.n8n&#x2F;config’。看來是Linux 檔案權限的問題。"></a>發現錯誤：n8n_local  | Error: EACCES: permission denied, open ‘&#x2F;home&#x2F;node&#x2F;.n8n&#x2F;config’。看來是Linux 檔案權限的問題。</h5><ul>
 <li><h5 id="先確認一下n8n-data資料夾的權限，顯示：drwxr-xr-x-2-root-root-。表示目前只有root有權限存取。"><a href="#先確認一下n8n-data資料夾的權限，顯示：drwxr-xr-x-2-root-root-。表示目前只有root有權限存取。" class="headerlink" title="先確認一下n8n_data資料夾的權限，顯示：drwxr-xr-x 2 root root 。表示目前只有root有權限存取。"></a>先確認一下n8n_data資料夾的權限，顯示：drwxr-xr-x 2 root root 。表示目前只有root有權限存取。</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 先切換到你的 n8n 工作目錄</span></span><br><span class="line"><span class="built_in">cd</span> ~/n8n_local</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 n8n_data 資料夾的詳細權限</span></span><br><span class="line"><span class="built_in">ls</span> -ld n8n_data</span><br></pre></td></tr></table></figure>
@@ -136,13 +139,13 @@
 <li><h5 id="重新啟動n8n"><a href="#重新啟動n8n" class="headerlink" title="重新啟動n8n"></a>重新啟動n8n</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose down &amp;&amp; docker compose up -d</span><br></pre></td></tr></table></figure>
 </li>
 <li><h5 id="在確認一次n8n狀態，狀態為：Up，就可以透過網址：-http-localhost-5678-進入n8n了"><a href="#在確認一次n8n狀態，狀態為：Up，就可以透過網址：-http-localhost-5678-進入n8n了" class="headerlink" title="在確認一次n8n狀態，狀態為：Up，就可以透過網址：[http://localhost:5678] 進入n8n了~"></a>在確認一次n8n狀態，狀態為：Up，就可以透過網址：[<a href="http://localhost:5678]">http://localhost:5678]</a> 進入n8n了~</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps</span><br></pre></td></tr></table></figure>
-</li>
+<img src="/2026/06/24/WSL2-with-n8x/n8n_status_up.jpg" class="" title="n8n_status_up"></li>
 </ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/06/24/WSL2-with-n8x/" data-id="cmqrpj6sa000030n12wgc8c2m" data-title="WSL2 with n8n" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/06/24/WSL2-with-n8x/" data-id="cmquq71p1000lkon1a1nhfua1" data-title="WSL2 with n8n" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

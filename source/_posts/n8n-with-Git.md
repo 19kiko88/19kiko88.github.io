@@ -182,3 +182,83 @@ bash backup-workflows.sh
    * ##### 重新手動執行腳本，成功把workflow的json檔push到GitHub遠端了!!
   {% asset_image push-success.jpg push-success  %}    
 ---
+### 補充
+##### 後來又想到，如果能把container的/backup/workflows裡面的東西由原本的WSL改掛載到(Win 11)Host，我就能用SourceTree之類的工具看Git歷程了。
+#
+#
+#
+* ##### 先把原本的掛載註解。這樣 container 內寫入 /backup/workflows 的東西，實際上會存到 Windows 的 D:\Homer\Project_MyGit\n8n-smart-mirrow-workflow\，所以 SourceTree（跑在 Windows）就能直接打開這個資料夾看到 git 歷程。
+``` yaml
+version: '3.8'
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n_local
+    restart: always
+    network_mode: "host" # 讓容器直接使用 WSL/Windows 的 localhost
+    #ports:
+    #  - "5678:5678"
+    environment:
+      - TZ=Asia/Taipei # 設定你的時區
+      - N8N_SECURE_COOKIE=false # 地端測試關閉安全 Cookie 限制
+      - NODE_FUNCTION_ALLOW_BUILTIN=fs  # ✅ 開啟 fs 模組
+    volumes:
+      - ~/n8n_local/n8n_data:/home/node/.n8n
+      - /mnt/d/Homer/Project_MyGit/mcp-camera/photos:/photos  # ✅ 掛載照片資料夾
+      #- ./n8n-workflows-backup:/backup/workflows   # WSL路徑 : Container路徑
+      - /mnt/d/Homer/Project_MyGit/n8n-workflows-backup:/backup/workflows   # 改成 Windows D槽路徑
+      - /mnt/c/Users/homer_chen/OneDrive - ASUS/Pictures/Camera Roll:/photos
+```
+#
+#
+#
+* ##### 把原本舊路徑 ~/n8n_local/n8n-workflows-backup 裡已經 commit 過的 .git 資料夾和檔案，搬到新位置（如果你想保留歷史紀錄）：
+``` bash
+cp -r ~/n8n_local/n8n-workflows-backup/. /mnt/d/Homer/Project_MyGit/n8n-workflows-backup/
+```
+  ##### 執行完上面指令後，原本空的Host資料夾多出新的檔案了。
+{% asset_image copy-git.jpg copy-git  %}
+#
+#
+#
+* ##### 改完 docker-compose.yml 後重啟：
+``` bash
+cd ~/n8n_local
+docker compose down
+docker compose up -d
+```
+#
+#
+#
+* ##### 更新 backup-workflows.sh 裡的 BACKUP_DIR_HOST 變數：
+``` bash
+cd ~
+cd ~/n8n_local
+nano backup-workflows.sh
+```
+
+```bash
+#!/bin/bash
+set -e
+
+CONTAINER_NAME="n8n_local"
+#BACKUP_DIR_HOST="$HOME/n8n_local/n8n-workflows-backup"
+BACKUP_DIR_HOST="/mnt/d/Homer/Project_MyGit/n8n-workflows-backup"
+BACKUP_DIR_CONTAINER="/backup/workflows"
+
+# 在 container 內匯出,--separate 讓每個 workflow 變成獨立檔案,方便看 diff
+docker exec -u node "$CONTAINER_NAME" n8n export:workflow --all --separate --output="$BACKUP_DIR_CONT>
+
+cd "$BACKUP_DIR_HOST"
+
+# 只有真的有變化才 commit
+if [[ -n "$(git status --porcelain)" ]]; then
+  git add -A
+  git commit -m "Auto backup: $(date '+%Y-%m-%d %H:%M:%S')"
+  git push origin main
+  echo "Workflows pushed to GitHub."
+else
+  echo "No changes detected."
+fi
+```

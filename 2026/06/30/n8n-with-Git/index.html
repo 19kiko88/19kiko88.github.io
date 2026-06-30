@@ -16,9 +16,11 @@
 <meta property="og:image" content="http://example.com/2026/06/30/n8n-with-Git/check-ssh-exist.jpg">
 <meta property="og:image" content="http://example.com/2026/06/30/n8n-with-Git/gen-ssh-file.jpg">
 <meta property="og:image" content="http://example.com/2026/06/30/n8n-with-Git/ssh-content.jpg">
+<meta property="og:image" content="http://example.com/2026/06/30/n8n-with-Git/connet-to-github.jpg">
 <meta property="og:image" content="http://example.com/2026/06/30/n8n-with-Git/execute-backup-workflows.jpg">
+<meta property="og:image" content="http://example.com/2026/06/30/n8n-with-Git/push-success.jpg">
 <meta property="article:published_time" content="2026-06-30T07:10:53.000Z">
-<meta property="article:modified_time" content="2026-06-30T09:33:04.117Z">
+<meta property="article:modified_time" content="2026-06-30T10:07:39.522Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="AI">
 <meta property="article:tag" content="n8n">
@@ -137,11 +139,13 @@
 <li><h5 id="複製-public-key："><a href="#複製-public-key：" class="headerlink" title="複製 public key："></a>複製 public key：</h5></li>
 </ul>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> ~/.ssh/id_ed25519.pub</span><br></pre></td></tr></table></figure>
-  <img src="/2026/06/30/n8n-with-Git/ssh-content.jpg" class="" title="ssh-content">    
+  <img src="/2026/06/30/n8n-with-Git/ssh-content.jpg" class="" title="ssh-content">
 <h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><ul>
-<li><h5 id="到-GitHub-→-右上角頭像-→-Settings-→-SSH-and-GPG-keys-→-New-SSH-key，把剛剛複製的內容貼進去，存檔。測試連線是否成功："><a href="#到-GitHub-→-右上角頭像-→-Settings-→-SSH-and-GPG-keys-→-New-SSH-key，把剛剛複製的內容貼進去，存檔。測試連線是否成功：" class="headerlink" title="到 GitHub → 右上角頭像 → Settings → SSH and GPG keys → New SSH key，把剛剛複製的內容貼進去，存檔。測試連線是否成功："></a>到 GitHub → 右上角頭像 → Settings → SSH and GPG keys → New SSH key，把剛剛複製的內容貼進去，存檔。測試連線是否成功：</h5></li>
+<li><h5 id="到-GitHub-→-右上角頭像-→-Settings-→-SSH-and-GPG-keys-→-New-SSH-key，把剛剛複製的內容貼進去-ssh-ed25519-KEY-Mail-全部都貼上去-，存檔。測試連線是否成功："><a href="#到-GitHub-→-右上角頭像-→-Settings-→-SSH-and-GPG-keys-→-New-SSH-key，把剛剛複製的內容貼進去-ssh-ed25519-KEY-Mail-全部都貼上去-，存檔。測試連線是否成功：" class="headerlink" title="到 GitHub → 右上角頭像 → Settings → SSH and GPG keys → New SSH key，把剛剛複製的內容貼進去(ssh-ed25519 {KEY} {Mail}全部都貼上去)，存檔。測試連線是否成功："></a>到 GitHub → 右上角頭像 → Settings → SSH and GPG keys → New SSH key，把剛剛複製的內容貼進去(ssh-ed25519 {KEY} {Mail}全部都貼上去)，存檔。測試連線是否成功：</h5></li>
 </ul>
   <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -T git@github.com</span><br></pre></td></tr></table></figure>
+<h5 id="如果一切設定正確（金鑰已經上傳到-GitHub-帳號），會看到："><a href="#如果一切設定正確（金鑰已經上傳到-GitHub-帳號），會看到：" class="headerlink" title="如果一切設定正確（金鑰已經上傳到 GitHub 帳號），會看到："></a>如果一切設定正確（金鑰已經上傳到 GitHub 帳號），會看到：</h5>  <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Hi 你的GitHub帳號名稱! You&#x27;ve successfully authenticated, but GitHub does not provide shell access.</span><br></pre></td></tr></table></figure>
+  <img src="/2026/06/30/n8n-with-Git/connet-to-github.jpg" class="" title="connet-to-github">  
 <h1 id="-24"><a href="#-24" class="headerlink" title=""></a></h1><h1 id="-25"><a href="#-25" class="headerlink" title=""></a></h1><h1 id="-26"><a href="#-26" class="headerlink" title=""></a></h1><ol start="3">
 <li><h5 id="設定-git-身份-只需做一次，全域生效-。可以用任意名字和-email，但建議跟你-GitHub-帳號的-email-一致，方便之後-commit-記錄能對應到你的-GitHub-帳號，這兩行只是設定本地git的身分標籤。"><a href="#設定-git-身份-只需做一次，全域生效-。可以用任意名字和-email，但建議跟你-GitHub-帳號的-email-一致，方便之後-commit-記錄能對應到你的-GitHub-帳號，這兩行只是設定本地git的身分標籤。" class="headerlink" title="設定 git 身份(只需做一次，全域生效)。可以用任意名字和 email，但建議跟你 GitHub 帳號的 email 一致，方便之後 commit 記錄能對應到你的 GitHub 帳號，這兩行只是設定本地git的身分標籤。"></a>設定 git 身份(只需做一次，全域生效)。可以用任意名字和 email，但建議跟你 GitHub 帳號的 email 一致，方便之後 commit 記錄能對應到你的 GitHub 帳號，這兩行只是設定本地git的身分標籤。</h5></li>
 </ol>
@@ -152,7 +156,7 @@
 <ul>
 <li><h5 id="在-WSL-terminal輸入下面指令"><a href="#在-WSL-terminal輸入下面指令" class="headerlink" title="在 WSL terminal輸入下面指令:"></a>在 WSL terminal輸入下面指令:</h5></li>
 </ul>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/n8n_local/n8n-workflows-backup</span><br><span class="line">git init</span><br><span class="line">git remote add origin git@github.com:&#123;你的帳號&#125;/&#123;repo_name&#125;.git</span><br><span class="line"><span class="comment"># 或用 HTTPS + PAT</span></span><br><span class="line"><span class="comment"># git remote add origin &#123;repo URL&#125;</span></span><br><span class="line">git branch -M main</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/n8n_local/n8n-workflows-backup</span><br><span class="line">git init</span><br><span class="line">git remote add origin git@github.com:&#123;你的帳號&#125;/&#123;repo_name&#125;.git</span><br><span class="line">git branch -M main</span><br></pre></td></tr></table></figure>
 <h1 id="-30"><a href="#-30" class="headerlink" title=""></a></h1><h1 id="-31"><a href="#-31" class="headerlink" title=""></a></h1><h1 id="-32"><a href="#-32" class="headerlink" title=""></a></h1><hr>
 <h3 id="3-寫一個匯出-commit-push-腳本"><a href="#3-寫一個匯出-commit-push-腳本" class="headerlink" title="3.寫一個匯出 + commit + push 腳本"></a>3.寫一個匯出 + commit + push 腳本</h3><ol>
 <li><h5 id="建立-n8n-local-backup-workflows-sh"><a href="#建立-n8n-local-backup-workflows-sh" class="headerlink" title="建立 ~&#x2F;n8n_local&#x2F;backup-workflows.sh:"></a>建立 ~&#x2F;n8n_local&#x2F;backup-workflows.sh:</h5></li>
@@ -164,13 +168,20 @@
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> +x ~/n8n_local/backup-workflows.sh</span><br></pre></td></tr></table></figure>
 <h1 id="-39"><a href="#-39" class="headerlink" title=""></a></h1><h1 id="-40"><a href="#-40" class="headerlink" title=""></a></h1><h1 id="-41"><a href="#-41" class="headerlink" title=""></a></h1><ol start="3">
-<li><h5 id="先手動跑一次測試"><a href="#先手動跑一次測試" class="headerlink" title="先手動跑一次測試:"></a>先手動跑一次測試:</h5></li>
+<li><h5 id="手動跑一次測試"><a href="#手動跑一次測試" class="headerlink" title="手動跑一次測試:"></a>手動跑一次測試:</h5></li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./backup-workflows.sh</span><br></pre></td></tr></table></figure>
-
-<h5 id="匯出成功了-2-個-workflow-，但現在卡在-git-還沒設定身份資訊，這是正常的初次設定步驟，跟-n8n-或-Docker-都無關。"><a href="#匯出成功了-2-個-workflow-，但現在卡在-git-還沒設定身份資訊，這是正常的初次設定步驟，跟-n8n-或-Docker-都無關。" class="headerlink" title="匯出成功了(2 個 workflow)，但現在卡在 git 還沒設定身份資訊，這是正常的初次設定步驟，跟 n8n 或 Docker 都無關。"></a>匯出成功了(2 個 workflow)，但現在卡在 git 還沒設定身份資訊，這是正常的初次設定步驟，跟 n8n 或 Docker 都無關。</h5>  <img src="/2026/06/30/n8n-with-Git/execute-backup-workflows.jpg" class="" title="execute-backup-workflows">
-
-<h5 id="執行這兩行設定你的-git-身份-可以用任意名字和-email，但建議跟你-GitHub-帳號的-email-一致，方便之後-commit-記錄能對應到你的-GitHub-帳號-，這兩行只是設定本地git的身分標籤。"><a href="#執行這兩行設定你的-git-身份-可以用任意名字和-email，但建議跟你-GitHub-帳號的-email-一致，方便之後-commit-記錄能對應到你的-GitHub-帳號-，這兩行只是設定本地git的身分標籤。" class="headerlink" title="執行這兩行設定你的 git 身份(可以用任意名字和 email，但建議跟你 GitHub 帳號的 email 一致，方便之後 commit 記錄能對應到你的 GitHub 帳號)，這兩行只是設定本地git的身分標籤。"></a>執行這兩行設定你的 git 身份(可以用任意名字和 email，但建議跟你 GitHub 帳號的 email 一致，方便之後 commit 記錄能對應到你的 GitHub 帳號)，這兩行只是設定本地git的身分標籤。</h5>  <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.email <span class="string">&quot;你的email@example.com&quot;</span></span><br><span class="line">git config --global user.name <span class="string">&quot;Homer Chen&quot;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/</span><br><span class="line"><span class="built_in">cd</span> n8n_local</span><br><span class="line">bash backup-workflows.sh</span><br></pre></td></tr></table></figure>
+<h1 id="-42"><a href="#-42" class="headerlink" title=""></a></h1><h1 id="-43"><a href="#-43" class="headerlink" title=""></a></h1><h1 id="-44"><a href="#-44" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="成功匯出了2-個-workflow"><a href="#成功匯出了2-個-workflow" class="headerlink" title="成功匯出了2 個 workflow"></a>成功匯出了2 個 workflow</h5></li>
+</ul>
+  <img src="/2026/06/30/n8n-with-Git/execute-backup-workflows.jpg" class="" title="execute-backup-workflows">
+<h1 id="-45"><a href="#-45" class="headerlink" title=""></a></h1><h1 id="-46"><a href="#-46" class="headerlink" title=""></a></h1><h1 id="-47"><a href="#-47" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="在n8n-workflow裡面隨便插入一個node。"><a href="#在n8n-workflow裡面隨便插入一個node。" class="headerlink" title="在n8n workflow裡面隨便插入一個node。"></a>在n8n workflow裡面隨便插入一個node。</h5></li>
+</ul>
+<h1 id="-48"><a href="#-48" class="headerlink" title=""></a></h1><h1 id="-49"><a href="#-49" class="headerlink" title=""></a></h1><h1 id="-50"><a href="#-50" class="headerlink" title=""></a></h1><ul>
+<li><h5 id="重新手動執行腳本，成功把workflow的json檔push到GitHub遠端了"><a href="#重新手動執行腳本，成功把workflow的json檔push到GitHub遠端了" class="headerlink" title="重新手動執行腳本，成功把workflow的json檔push到GitHub遠端了!!"></a>重新手動執行腳本，成功把workflow的json檔push到GitHub遠端了!!</h5></li>
+</ul>
+  <img src="/2026/06/30/n8n-with-Git/push-success.jpg" class="" title="push-success">    
 <hr>
 
       

@@ -183,11 +183,14 @@ bash backup-workflows.sh
   {% asset_image push-success.jpg push-success  %}    
 ---
 ### 補充
-##### 後來又想到，如果能把container的/backup/workflows裡面的東西由原本的WSL改掛載到(Win 11)Host，我就能用SourceTree之類的工具看Git歷程了。
+##### 後來又想到，如果能把container的/backup/workflows裡面的workflow json檔由原本的WSL改掛載到(Win 11)Host，我就能直接在Host上用SourceTree之類的工具看Git歷程了。
+##### <span style="color: red;">把原本的 .sh 腳本拆成兩個職責：</span>
+##### n8n container 端：只負責「匯出 workflow JSON」
+##### Windows host 端：只負責「git 版控」(用 SourceTree 操作)
 #
 #
 #
-* ##### 先把原本的掛載註解。這樣 container 內寫入 /backup/workflows 的東西，實際上會存到 Windows 的 D:\Homer\Project_MyGit\n8n-smart-mirrow-workflow\，所以 SourceTree（跑在 Windows）就能直接打開這個資料夾看到 git 歷程。
+* ##### 先把原本的掛載註解，並把掛載路徑改成Host的D槽路徑。這樣 container 內寫入 /backup/workflows 的東西，實際上會存到 Windows 的 D:\Homer\Project_MyGit\n8n-smart-mirrow-workflow\，所以 SourceTree（跑在 Windows）就能直接打開這個資料夾看到 git 歷程。
 ``` yaml
 version: '3.8'
 
@@ -231,7 +234,7 @@ docker compose up -d
 #
 #
 #
-* ##### 更新 backup-workflows.sh 裡的 BACKUP_DIR_HOST 變數：
+* ##### 更新 backup-workflows.sh 內容，把git相關的指令拿掉，讓腳本只負責匯出新的json schema：
 ``` bash
 cd ~
 cd ~/n8n_local
@@ -243,22 +246,26 @@ nano backup-workflows.sh
 set -e
 
 CONTAINER_NAME="n8n_local"
-#BACKUP_DIR_HOST="$HOME/n8n_local/n8n-workflows-backup"
-BACKUP_DIR_HOST="/mnt/d/Homer/Project_MyGit/n8n-workflows-backup"
 BACKUP_DIR_CONTAINER="/backup/workflows"
 
+echo "開始匯出 n8n workflows..."
+
 # 在 container 內匯出,--separate 讓每個 workflow 變成獨立檔案,方便看 diff
-docker exec -u node "$CONTAINER_NAME" n8n export:workflow --all --separate --output="$BACKUP_DIR_CONT>
+docker exec -u node "$CONTAINER_NAME" n8n export:workflow --all --separate --output="$BACKUP_DIR_CONTAINER/"
 
-cd "$BACKUP_DIR_HOST"
-
-# 只有真的有變化才 commit
-if [[ -n "$(git status --porcelain)" ]]; then
-  git add -A
-  git commit -m "Auto backup: $(date '+%Y-%m-%d %H:%M:%S')"
-  git push origin main
-  echo "Workflows pushed to GitHub."
-else
-  echo "No changes detected."
-fi
+echo "✅ 匯出完成！請打開 SourceTree 查看變更並 commit。"
 ```
+#
+#
+#
+* ##### 測試
+  1. ##### 隨便異動workflow，例如移除一個節點。
+  2. ##### 執行腳本來匯出最新的 workflow JSON。
+    ``` bash
+    cd ~/n8n_local
+    bash backup-workflows.sh
+    ```
+  3. ##### 可以看到vs code的已經有了workflow的change異動。
+  {% asset_image git_changed.jpg git_changed  %}
+  4. ##### 比對後可以看到差異!!
+  {% asset_image git_diff.jpg git_diff  %}

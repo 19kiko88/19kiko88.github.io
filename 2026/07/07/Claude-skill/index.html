@@ -13,14 +13,16 @@
 <meta property="og:site_name" content="HaoAreYou~">
 <meta property="og:description" content="最近剛改完弱點掃描。為了避免日後每年都要痛苦一次，除了先前提到的使用CLAUDE.md + SECURITY.md來讓Claude Code在產出程式時，遵守相關的資安規範，另外也透過了Claude Skill來建立相關的弱掃知識庫。">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2026/07/07/Claude-skill/skill_structure.jpg">
 <meta property="article:published_time" content="2026-07-07T07:57:16.037Z">
-<meta property="article:modified_time" content="2026-07-07T08:54:39.462Z">
+<meta property="article:modified_time" content="2026-07-07T08:59:55.899Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="AI">
 <meta property="article:tag" content="資安">
 <meta property="article:tag" content="Claude Skill">
 <meta property="article:tag" content="Claude Code">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2026/07/07/Claude-skill/skill_structure.jpg">
   
     <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
   
@@ -129,6 +131,8 @@
 </li>
 </ul>
 <h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><hr>
+<h3 id="實際範例"><a href="#實際範例" class="headerlink" title="實際範例"></a>實際範例</h3><h5 id="看完上面的範例後，再讓我們來看看實際用在專案上的Skill資料夾結構，這個Skill是關於軟點掃描的相關Skill。"><a href="#看完上面的範例後，再讓我們來看看實際用在專案上的Skill資料夾結構，這個Skill是關於軟點掃描的相關Skill。" class="headerlink" title="看完上面的範例後，再讓我們來看看實際用在專案上的Skill資料夾結構，這個Skill是關於軟點掃描的相關Skill。"></a>看完上面的範例後，再讓我們來看看實際用在專案上的Skill資料夾結構，這個Skill是關於軟點掃描的相關Skill。</h5><img src="/2026/07/07/Claude-skill/skill_structure.jpg" class="" title="skill_structure">
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><hr>
 <h3 id="使用時機"><a href="#使用時機" class="headerlink" title="使用時機"></a>使用時機</h3><h5 id="簡單說，用這個問題來判斷：「這件事每次對話都需要知道，還是只有被要求時才需要？」"><a href="#簡單說，用這個問題來判斷：「這件事每次對話都需要知道，還是只有被要求時才需要？」" class="headerlink" title="簡單說，用這個問題來判斷：「這件事每次對話都需要知道，還是只有被要求時才需要？」"></a>簡單說，用這個問題來判斷：「這件事每次對話都需要知道，還是只有被要求時才需要？」</h5><ol>
 <li><h5 id="每次都需要-→-CLAUDE-md（例如：程式碼風格、專案慣例）"><a href="#每次都需要-→-CLAUDE-md（例如：程式碼風格、專案慣例）" class="headerlink" title="每次都需要 → CLAUDE.md（例如：程式碼風格、專案慣例）"></a>每次都需要 → CLAUDE.md（例如：程式碼風格、專案慣例）</h5></li>
 <li><h5 id="被要求才需要-→-SKILL-md（例如：資安掃描、產生報告）"><a href="#被要求才需要-→-SKILL-md（例如：資安掃描、產生報告）" class="headerlink" title="被要求才需要 → SKILL.md（例如：資安掃描、產生報告）"></a>被要求才需要 → SKILL.md（例如：資安掃描、產生報告）</h5></li>

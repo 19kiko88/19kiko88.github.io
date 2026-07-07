@@ -70,6 +70,7 @@ owershell.exe -ExecutionPolicy Bypass -File "D:\\Homer\\Project_MyGit\\mcp-camer
   ``` bash
   docker run -d -p 8080:80 -v /mnt/d/Homer/Project_MyGit/mcp-camera/www:/usr/share/nginx/html nginx
   ```
+  {% asset_image nginx_run.jpg nginx_run  %}  
   #
   #
 ##### 結果：
@@ -138,6 +139,10 @@ owershell.exe -ExecutionPolicy Bypass -File "D:\\Homer\\Project_MyGit\\mcp-camer
 ```
 #
 #
+##### 問了AI，為什麼使用n8n內建的MCP Server會無法讓MCP Client連線。
+{% asset_image mcp_conn_error1.jpg mcp_conn_error1  %}
+#
+#
 3. ##### 後來改用stdio的方式，另外寫一隻node.js(smart-mirror-mcp.js)程式來呼叫，終於連線成功
 ``` json
   "mcpServers": {
@@ -154,6 +159,10 @@ owershell.exe -ExecutionPolicy Bypass -File "D:\\Homer\\Project_MyGit\\mcp-camer
 #
 ##### MCP Client 測試結果：
 {% asset_image mcp_final_success.jpg mcp_final_success  %}
+#
+#
+##### 問了AI，為什麼使用stdio就可以了。
+{% asset_image mcp_conn_error2.jpg mcp_conn_error2  %}
 #
 #
 #

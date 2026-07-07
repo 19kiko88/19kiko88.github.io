@@ -19,7 +19,7 @@
 <meta property="og:image" content="http://example.com/2026/07/07/Claude-skill/no_skill_run1.jpg">
 <meta property="og:image" content="http://example.com/2026/07/07/Claude-skill/no_skill_run2.jpg">
 <meta property="article:published_time" content="2026-07-07T07:57:16.037Z">
-<meta property="article:modified_time" content="2026-07-07T10:46:43.232Z">
+<meta property="article:modified_time" content="2026-07-07T10:49:10.950Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="AI">
 <meta property="article:tag" content="資安">
@@ -164,7 +164,7 @@
 <li>被要求才需要 → <strong>SKILL.md</strong>（例如：資安掃描、產生報告）</li>
 </ol>
 <p>CLAUDE.md 的內容會在每次對話一開始就全部載入，屬於「常駐」的規範；SKILL.md 則是 Claude 判斷任務相關時才會載入，平常不會占用上下文，適合放不常用、但需要時要很完整的專業流程。</p>
-<p><span style="color:red;">以我這個專案為例，同樣是「主動 vs 被動」的原則，套用到「誰在寫 code」上會變成：AI 寫 code 時會主動遵守規範，人工寫 code 則可能遺漏、只能事後被動抓漏。</p>
+<p><span style="color:red;">以我這個專案為例，同樣是「主動 vs 被動」的原則：AI 寫 code 時會主動遵守規範，人工寫 code 則可能遺漏、只能事後被動抓漏。</p>
 <ol>
 <li><strong>CLAUDE.md</strong> → AI 產出的 code。AI 每次寫 code 時都會主動套用 CLAUDE.md 裡的資安規範，不需要額外要求。</li>
 <li><strong>SKILL.md</strong> → 人工產出的 code。人工開發時有時會忘記套用資安規範，事後才需要「被要求」去掃描、抓出弱點並修正，正好符合 SKILL.md「被動、被要求才執行」的定位。</span></li>

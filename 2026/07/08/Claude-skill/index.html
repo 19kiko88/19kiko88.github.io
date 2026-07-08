@@ -18,7 +18,7 @@
 <meta property="og:image" content="http://example.com/2026/07/08/Claude-skill/no_skill_run1.jpg">
 <meta property="og:image" content="http://example.com/2026/07/08/Claude-skill/no_skill_run2.jpg">
 <meta property="article:published_time" content="2026-07-08T05:49:03.817Z">
-<meta property="article:modified_time" content="2026-07-08T06:34:50.279Z">
+<meta property="article:modified_time" content="2026-07-08T06:38:03.246Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="AI">
 <meta property="article:tag" content="資安">
@@ -187,6 +187,11 @@
 <li><strong>SKILL.md</strong> → 人工產出的 code。人工開發時有時會忘記套用資安規範，事後才需要「被要求」去掃描、抓出弱點並修正，正好符合 SKILL.md「被動、被要求才執行」的定位。</span></li>
 </ol>
 <h1 id="-37"><a href="#-37" class="headerlink" title=""></a></h1><h1 id="-38"><a href="#-38" class="headerlink" title=""></a></h1><h1 id="-39"><a href="#-39" class="headerlink" title=""></a></h1><hr>
+<h3 id="CLAUDE-CODE對這份Skill的分析結果-僅供參考-："><a href="#CLAUDE-CODE對這份Skill的分析結果-僅供參考-：" class="headerlink" title="CLAUDE CODE對這份Skill的分析結果(僅供參考)："></a>CLAUDE CODE對這份Skill的分析結果(僅供參考)：</h3><p>Good — everything is intact and 14 fix reports remain. Let me do a final verification pass on cross-references and frontmatter before writing the analysis.</p>
+<p>Ran a command, read a file<br>整體架構現在相當完整、乾淨，符合 Claude Skill 的標準與精神。逐項比對如下：</p>
+<p>目錄架構<br>.claude&#x2F;skills&#x2F;<br>├── SKILL_SAMPLE.md              ← 撰寫範本，非實際 skill（正確，未被誤判）<br>└── security-scan&#x2F;<br>    ├── SKILL.md                 ← 模型讀的執行指令<br>    ├── README.md                ← 人類讀的架構說明（不會被載入 context）<br>    └── references&#x2F;<br>        ├── dast-guide.md        ← 偵測層：AppScan DAST 偵測原理、快速參照表<br>        ├── report_sample.md     ← 修正報告輸出範本<br>        └── VULN_REF&#x2F;            ← 修正層：依弱點類型分類，14 種弱點的 Fix_Report.md<br>✅ 標準位置：.claude&#x2F;skills&#x2F;security-scan&#x2F;，Claude Code 會自動掃描索引，不需手動指路——這是本次最關鍵的修正（原本在專案根目錄的 Skills&#x2F; 不會被自動發現）。</p>
+<p>Frontmatter<br>name: security-scan<br>description: 適用於 PCBRepairNavi（ASP.NET MVC 5）專案。當使用者提供 AppScan DAST…<br>version: 1.0.0<br>author: Homer Chen<br>name 與資料夾名稱一致，小寫＋dash 格式正確。<br>description（389 bytes，遠低於 1024 字元上限）已同時涵蓋 what（做什麼）＋ when（何時觸發）＋ 專案限定詞＋排除範圍（不適用 SAST），是這類 description 該有的寫法。<br>version／author 非官方標準欄位，但不影響解析，純粹多餘資訊，可留可不留。<br>架構設計（漸進式揭露 + 關注點分離）<br>SKILL.md 精簡：只放步驟指令、輸入輸出格式、禁止事項，131 行，沒有把細節塞進去。<br>偵測層／修正層分離：dast-guide.md（偵測手法）與 VULN_REF&#x2F;（依弱點類型分類的修正樣板）職責清楚分開，修正樣板不綁定偵測方式，為未來 SAST 預留了不重複維護的擴充路徑——這是比官方範例更講究的設計。<br>人機文件分離：README.md 給人看架構，SKILL.md 給模型看指令，互不干擾 context 用量，這點做得比很多公開範例還到位。<br>自成一體程度<br>三個原本的外部依賴（SECURITY.md、CLAUDE.md、report_sample.md）現在只剩兩個留在專案根目錄，而且都有明確理由（多方共用文件，不是 skill 私有資料）；單一消費者的 report_sample.md 已收進 references&#x2F;，判斷標準（是否有其他消費者）清楚且一致。<br>已掃描全專案，確認沒有殘留的 DAST_REF、Skills&#x2F;security-scan、舊路徑 report_sample.md 引用。<br>殘留的小提醒（非缺陷，供你參考）<br>version／author 是非標準欄位，若要更貼近官方 schema，可以拿掉或移到未來若支援的 metadata: 底下，但不動也無妨。<br>目前沒有 sast-guide.md（正確——刻意不建空占位檔），等真的要支援 SAST 時記得同步更新 description 加入 SAST 觸發情境，README.md 裡已經寫好操作備忘。<br>結論<br>跟最初分析比，三個原本標記的問題（description 缺使用情境、非標準路徑、外部依賴耦合）都已解決，目前的 security-scan skill 是一個結構完整、符合 Agent Skills 漸進式揭露精神、且有清楚人機文件分工的專案級技能，沒有發現需要修正的地方。</p>
+<hr>
 <h3 id="REF："><a href="#REF：" class="headerlink" title="REF："></a>REF：</h3><ol>
 <li><a target="_blank" rel="noopener" href="https://www.bnext.com.tw/article/90058/agent-skills-free-course-deeplearning-ai-anthropic-latest-partnership">Agent skill 是什麼？Agent skill教學，6步驟打造你的第一個Skill</a> </li>
 <li><a target="_blank" rel="noopener" href="https://19kiko88.github.io/2026/06/17/%E6%87%89%E7%94%A8claude-code%E9%80%B2%E8%A1%8C%E5%BC%B1%E9%BB%9E%E6%8E%83%E6%8F%8F%E4%BF%AE%E6%94%B9/">應用Claude Code進行弱點掃描修改</a></li>

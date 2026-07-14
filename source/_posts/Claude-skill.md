@@ -16,8 +16,23 @@ tags:
 #
 ---
 ### 什麼是 Claude Skill
-##### 傳統的AI Agent使用方式為：每次下prompt給Agent，請它依照prompt的描述內容開始執行任務。如果有個任務是週期性的執行，那我們就要每次的重複執行prompt給Agent。
-##### 有了 Claude Skill 後，我們可以把常重複使用的工作流程，包裝成一個獨立的 Skill 資料夾，裡面包含任務說明（SKILL.md）、使用方式、相關參考資料、甚至可執行的腳本等。使用時我們只需要下簡單的 prompt，Claude 會依照任務內容自動比對、載入對應的 Skill，再透過裡面的說明與參考資料，完成我們需要的任務——而且 Claude 只會在需要時才載入 Skill 的詳細內容，不會一次把所有 Skill 都塞進上下文，因此即使建立很多 Skill，也不會拖累回應效率。
+傳統的 AI Agent 使用方式是：每次下 prompt 給 Agent，請它依照描述內容執行任務。如果某個任務需要週期性重複執行，我們就得每次重新輸入相同的 prompt。
+
+有了 Claude Skill 後，我們可以把常重複使用的工作流程，包裝成一個獨立的 Skill 資料夾，裡面包含任務說明（SKILL.md）、使用方式、相關參考資料、甚至可執行的腳本等。使用時只需要下簡單的 prompt，Claude 就會自動比對、載入對應的 Skill，再透過裡面的說明與參考資料完成任務。而且 Claude 只會在需要時才載入 Skill 的詳細內容，不會一次把所有 Skill 都塞進上下文，因此即使建立很多 Skill，也不會拖累回應效率。
+
+Claude Skill 採用<span style="color:red;">分層載入</span>的方式讀取參考資料：SKILL.md 是第一層（摘要、導覽），reference 檔案是第二層（詳細知識），Claude 依任務需求逐層深入讀取，而不是一次把所有內容都載入。可以把它簡單理解為參考資料的<span style="color:red;">「索引化」</span>——透過一層一層的目錄索引，找到對應的知識內容，再回應給使用者。
+
+**把工作流程「Skill 化」主要有這幾個優點：**
+1. 不用重複下 prompt
+把常用的工作流程包成 Skill 後，之後只要簡單說一句需求，Claude 自動觸發，不用每次複製貼上一大段指令。
+2. 輸出品質穩定
+因為流程、規範、參考資料都已經定義好放在 Skill 裡，每次執行的結果會一致，不會因為你當下 prompt 寫得好不好而影響品質。
+3. 節省上下文
+Claude 只在需要時才載入 Skill 的詳細內容，平常只記住「這個 Skill 存在」這件事，所以就算你建了很多 Skill，也不會互相干擾或拖慢回應。
+4. 知識可以索引化
+透過分層載入的設計，可以把大量的參考資料、SOP、規範都收進 Skill 裡，Claude 需要時才讀取對應的那份，不會一次全塞進去。
+5. 可重複使用、團隊共享
+Skill 建立一次，所有對話都能用，甚至可以讓整個團隊共用同一套 Skill，確保大家執行流程一致。
 #
 #
 #
@@ -199,6 +214,10 @@ prompt：
 {% asset_image skill_analyze2.jpg skill_analyze2 %}
 #
 #
+---
+### 補充
+今天把之前改的弱掃提交副測，又多了一個弱點，透過Skill輕鬆修復。
+{% asset_image example1.jpg example1 %}
 ---
 ### REF：
 1. [Agent skill 是什麼？Agent skill教學，6步驟打造你的第一個Skill](https://www.bnext.com.tw/article/90058/agent-skills-free-course-deeplearning-ai-anthropic-latest-partnership) 

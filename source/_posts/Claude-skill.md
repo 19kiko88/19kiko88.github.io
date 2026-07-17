@@ -216,8 +216,70 @@ prompt：
 #
 ---
 ### 補充
+
+1. skill使用範例
 今天把之前改的弱掃提交副測，又多了一個弱點，透過Skill輕鬆修復。
 {% asset_image example1.jpg example1 %}
+
+2. 完整版prompt(md格式)
+``` text
+# 弱點修正作業流程
+
+根據弱點掃描報告，依序執行以下步驟。
+
+**參考報告：**
+`.claude\skills\security-scan\references\VULN_REF\Missing_HSTS_Header\Missing_HSTS_Header.pdf`
+
+---
+
+## 1. 進行弱點修正
+
+依據報告內容，針對該弱點進行程式碼修正。
+
+## 2. 產出修正報告
+
+修正完成後，於**相同目錄**下產出一份修正報告。
+
+- **報告範本參考：**
+  `.claude\skills\security-scan\references\report_sample.md`
+
+## 3. 更新對應指南文件
+
+依弱點類型，更新對應的參考文件：
+
+| 弱點類型 | 需更新文件 |
+|---------|-----------|
+| 白箱弱點 | `.claude\skills\security-scan\references\sast-guide.md` |
+| 黑箱弱點 | `.claude\skills\security-scan\references\dast-guide.md` |
+
+## 4. 更新 SKILL.md
+
+更新以下文件：
+
+`.claude\skills\security-scan\SKILL.md`
+
+## 5. 更新 SECURITY.md
+
+依據修正報告內容，更新專案根目錄下的：
+
+`.\SECURITY.md`
+
+---
+
+### 執行順序總覽
+
+1. 弱點修正
+      ↓
+2. 產出修正報告（同目錄）
+      ↓
+3. 更新 sast-guide.md 或 dast-guide.md
+      ↓
+4. 更新 SKILL.md
+      ↓
+5. 更新 SECURITY.md
+
+```
+
 ---
 ### REF：
 1. [Agent skill 是什麼？Agent skill教學，6步驟打造你的第一個Skill](https://www.bnext.com.tw/article/90058/agent-skills-free-course-deeplearning-ai-anthropic-latest-partnership) 

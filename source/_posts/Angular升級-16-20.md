@@ -1,7 +1,10 @@
 ---
 title: Angular升級(16 => 20)注意事項
 date: 2026-04-22 09:44:54
+categories:
+ - 前端開發
 tags:
+ - Angular
 ---
 ##### 近期幫專案的前端升級，由原本的Angular16升級到Angular20，把一些比較重大的變化記錄下來。
 <!-- more -->

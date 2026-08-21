@@ -5,8 +5,10 @@ categories:
  - 前端開發
 tags:
  - Angular
+ - AI產出
 ---
-<!-- # Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式 -->
+Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式
+<span style="color:red;">文章內容透過ai整理產出</span>
 <!-- more -->
 
 在 Angular 專案中，經常會看到以下指令：
@@ -625,6 +627,4 @@ npx eslint
 因此可以用一句話總結：
 
 > **`ng` 是 Angular CLI；`npm` 是 Node.js 的套件管理工具，也能執行 `package.json` scripts；`npx` 則主要用來直接執行 npm 套件提供的 CLI。**
-
-<span style="color:red;">文章內容透過ai整理產出</span>
 

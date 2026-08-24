@@ -14,7 +14,7 @@
 <meta property="og:description" content="Angular Component 設計檢討 —— 從 app.component.ts 學到的教訓文章內容透過ai整理產出">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-08-21T09:57:24.000Z">
-<meta property="article:modified_time" content="2026-08-24T02:52:48.807Z">
+<meta property="article:modified_time" content="2026-08-24T10:04:18.641Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Angular">
 <meta property="article:tag" content="AI產出">
@@ -284,6 +284,16 @@
 <li>如果團隊已經發現某類 service 有循環依賴的傾向（就像本專案的 <code>CommonService</code> 存在的理由），<strong>把這個決策原因寫成註解留下來</strong>，避免未來的人（包含未來的自己）不知道背景就把邏輯搬回去、重新製造循環。</li>
 <li>專案裡也可以看到另一種應對模式：<code>NavBarService</code>、<code>SvgService</code> 用 <code>Injector.get(X)</code> 做成 lazy getter，並註明「改為 lazy getter，避免循環依賴」。這是當兩個 service <strong>真的需要互相知道對方</strong>時的合理退路，但屬於「不得已才用」的手段，不該是預設做法——優先設計成單向依賴，只有在真的無法避免雙向關係時才用 lazy getter 打斷循環。</li>
 </ul>
+<h3 id="反面教材：循環依賴安全，不代表放的位置是對的"><a href="#反面教材：循環依賴安全，不代表放的位置是對的" class="headerlink" title="反面教材：循環依賴安全，不代表放的位置是對的"></a>反面教材：循環依賴安全，不代表放的位置是對的</h3><p>上面提到「<code>StatusBarService</code> 零依賴，是結構上最安全的搬移起點」——這句話本身沒錯，但實際操作時只顧到這一個條件，忽略了另一個同樣重要的問題：<strong>這段邏輯放進目標 service 之後，是否符合目標 service 的職責範圍？</strong></p>
+<p>實際發生的狀況：為了讓 <code>AppComponent</code> 少一個建構子依賴，把 <code>toggleRemindNoticeIfAny()</code>（判斷要不要顯示 status bar 提醒公告）搬進了 <code>SvgService</code>。這個搬移<strong>沒有任何循環依賴風險</strong>（<code>StatusBarService</code> 零依賴），但「顯示提醒公告」跟 <code>SvgService</code> 的職責（SVG 繪圖）完全無關——結果是把 <code>AppComponent</code> 的 SRP（單一職責）問題，換了個地方、換小一號規模再犯一次，而不是真正解決它。</p>
+<p>正確的做法：這段邏輯理應收在 <code>StatusBarService</code> 自己身上（「要不要顯示」的判斷跟「怎麼顯示」的機制本來就該在一起），即使這代表 <code>AppComponent</code> 的建構子依賴數量沒有真的減少：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// StatusBarService —— 判斷跟顯示機制收在一起，呼叫端不用重複寫防呆判斷</span></span><br><span class="line"><span class="title function_">toggleRemindNoticeIfAny</span>(<span class="attr">remindNotice</span>: <span class="built_in">string</span>): <span class="built_in">void</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">if</span> (remindNotice &amp;&amp; remindNotice.<span class="property">length</span> &gt; <span class="number">0</span>)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">toggleRemindNotice</span>(remindNotice);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>新專案該怎麼做（補充）</strong>：</p>
+<ul>
+<li>搬移一段邏輯前，至少要問兩個獨立的問題：(1) 會不會造成循環依賴？(2) 目標位置在職責上說得通嗎？<strong>兩個都要成立，缺一不可</strong>——第一個只是「不會炸」的必要條件，不是「放得對」的充分條件。</li>
+<li>如果為了降低某個元件的依賴數量，唯一能找到的「安全」去處是一個職責不相關的 service，這通常代表<strong>這段邏輯本來就該留在原地</strong>，或是該去建立一個新的、職責名稱對得上的 service&#x2F;orchestrator，而不是硬塞進湊巧安全的既有 service。減少依賴數量不是目的，只是「職責分配正確」帶來的自然結果——反過來為了湊數字而犧牲職責邊界，是本末倒置。</li>
+</ul>
 <hr>
 <h2 id="8-測試覆蓋率與可測試性要從第一天就顧到，不要事後補"><a href="#8-測試覆蓋率與可測試性要從第一天就顧到，不要事後補" class="headerlink" title="8. 測試覆蓋率與可測試性要從第一天就顧到，不要事後補"></a>8. 測試覆蓋率與可測試性要從第一天就顧到，不要事後補</h2><h3 id="本專案的真實情況"><a href="#本專案的真實情況" class="headerlink" title="本專案的真實情況"></a>本專案的真實情況</h3><p>在檢視這個專案時，101 個既有的 spec 檔案裡，<strong>除了新補的商業邏輯測試外，其餘全部都只是 Angular CLI 產生的樣板</strong>（<code>expect(service).toBeTruthy()</code>），而且大部分連編譯都通不過——因為 <code>tsconfig.spec.json</code> 的 <code>exclude</code> 設定跟主專案衝突，加上一堆 service&#x2F;component 升級到 Angular standalone 後，樣板測試也沒有跟著更新（<code>declarations</code> 該改成 <code>imports</code>、建構子多了新參數但測試沒補參數）。等到真正要讓測試「能跑」，得先建一整套 <code>BASE_TEST_PROVIDERS</code>（模擬 <code>MvcService</code>、<code>TranslateService</code>、<code>HttpClient</code>、<code>ToastrService</code>、動畫 provider）才能讓最基本的「元件能不能被建立」測試通過。</p>
 <p>這個狀態本身就是「元件設計違反可測試性」的直接證據：如果一個 service&#x2F;component 光是要被建立起來，就需要一整套跨系統的假資料，代表它的依賴設計本來就有問題。</p>
@@ -311,7 +321,7 @@
 <li><input disabled="" type="checkbox"> 新抽出的邏輯，是該放進 <code>*.util.ts</code>（無狀態、不需要 DI），還是該是某個 <code>*.service.ts</code> 的方法（需要跟其他 service 互動、需要記住狀態、需要在測試裡被 mock）？</li>
 <li><input disabled="" type="checkbox"> 有沒有「決策」跟「副作用」混在同一段程式碼裡？能不能拆成「純函數回傳決策」+「呼叫端執行副作用」兩層？</li>
 <li><input disabled="" type="checkbox"> 元件裡有沒有直接操作原生 DOM（<code>document.querySelector</code>、<code>addEventListener</code>、<code>setAttribute</code>）？能不能改用 <code>Renderer2</code>、<code>HostListener</code>、或抽成 Directive？</li>
-<li><input disabled="" type="checkbox"> 新增&#x2F;搬移一個 service 依賴之前，有沒有檢查過目標位置的完整依賴鏈，確認不會造成循環注入？</li>
+<li><input disabled="" type="checkbox"> 新增&#x2F;搬移一個 service 依賴之前，有沒有檢查過目標位置的完整依賴鏈，確認不會造成循環注入？<strong>而且</strong>目標位置的職責範圍跟這段邏輯對得上（循環安全跟放對地方是兩個獨立條件，都要成立）？</li>
 <li><input disabled="" type="checkbox"> 每個 service&#x2F;component 產生時，是否同時補上「有實際驗證價值」的測試，而不是留一個空的 <code>toBeTruthy()</code> 樣板？</li>
 <li><input disabled="" type="checkbox"> 有沒有依賴建構子注入值的 class field 初始化寫法？是否該搬進建構子主體讓順序明確？</li>
 <li><input disabled="" type="checkbox"> 有沒有大段被註解掉、確定不會再用的程式碼該清掉？</li>
@@ -363,13 +373,13 @@
 <td>8 個測試案例</td>
 </tr>
 <tr>
-<td>StatusBarService 依賴移除</td>
-<td><code>app.component.ts</code> 建構子</td>
-<td>搬進 <code>core/services/svg.service.ts</code>（<code>toggleRemindNoticeIfAny</code>）</td>
+<td>Remind Notice 顯示判斷（<code>toggleRemindNoticeIfAny</code>）</td>
+<td><code>app.component.ts</code> <code>init()</code></td>
+<td><code>core/services/status-bar.service.ts</code>（原本誤搬進 <code>svg.service.ts</code>，後修正，見第 7 節「反面教材」）</td>
 <td>2 個測試案例</td>
 </tr>
 </tbody></table>
-<p>這些都是實際落地的重構，可以直接參考程式碼與對應的 <code>.spec.ts</code> 當作範例。</p>
+<p>這些都是實際落地的重構，可以直接參考程式碼與對應的 <code>.spec.ts</code> 當作範例。<strong>其中 Remind Notice 那一列本身就是一個真實的反例：第一次搬移只檢查了循環依賴風險，沒檢查職責歸屬，後來被抓出來修正——保留這段記錄，比只呈現「成功」的重構更有參考價值。</strong></p>
 
       
     </div>

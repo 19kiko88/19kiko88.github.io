@@ -14,7 +14,7 @@
 <meta property="og:description" content="從 .NET Core 轉來寫 Angular 時,最容易卡住的地方就是依賴注入(Dependency Injection, DI)的設定方式。這篇整理幾個常見疑問,把兩邊的機制做個對照。文章內容透過ai整理產出">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-08-24T08:09:50.000Z">
-<meta property="article:modified_time" content="2026-08-24T08:57:04.868Z">
+<meta property="article:modified_time" content="2026-08-24T09:13:51.889Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Angular">
 <meta property="article:tag" content="AI產出">
@@ -249,6 +249,29 @@
 <p><strong>什麼時候才真的值得用 Interface + DI?</strong></p>
 <p>值得用的情境反而比較單一:寫給第三方用的 library &#x2F; SDK,不想暴露具體實作;或明確知道未來一定要做多環境切換(例如瀏覽器 storage vs. server-side storage 這種平台差異)。Angular 官方自己的套件(Material、CDK)在需要「使用者可自訂實作」的地方,也確實會用 <code>InjectionToken</code>,但那是刻意設計給外部消費者擴充用的,不是預設的服務注入模式。</p>
 <p>簡單說:Angular 選擇「直接注入具體 class」不是因為做不到 interface + DI,而是因為在 TypeScript 的執行環境下,這層抽象幾乎不會多換來任何實際好處,卻要多付語法跟維護成本——這跟 C# 的情境剛好相反。</p>
+<h2 id="判斷標準是「abstract-class」還是「有沒有明確的替換點」"><a href="#判斷標準是「abstract-class」還是「有沒有明確的替換點」" class="headerlink" title="判斷標準是「abstract class」還是「有沒有明確的替換點」?"></a>判斷標準是「abstract class」還是「有沒有明確的替換點」?</h2><p>一個常見的誤解是:「Service 可能有多個實例就做成 abstract class 方便切換,只有一個實例就用預設的 <code>providedIn: &#39;root&#39;</code>」。這個方向大致正確,但有兩個細節需要修正。</p>
+<p><strong>「能不能切換」不是 abstract class 才有的特權</strong></p>
+<p>一個具體 class 就算沒有做成 abstract,一樣可以在 provider 設定裡被替換:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; <span class="attr">provide</span>: <span class="title class_">RealLayerService</span>, <span class="attr">useClass</span>: <span class="title class_">MockLayerService</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>所以嚴格來說,「能不能切換實例」這件事,concrete class 本身就具備,不是 abstract class 才有的特權。</p>
+<p><strong>真正該用「是否只有一種實作」判斷的,其實是這樣:</strong></p>
+<ul>
+<li><strong>只會有一種實作,而且不預期要替換</strong> → 用具體 class + <code>providedIn: &#39;root&#39;</code>,零設定、最省事。</li>
+<li><strong>確定會有多種實作</strong>(測試用 mock、多環境切換、給第三方擴充)→ 做成 abstract class(或 <code>InjectionToken</code>)有意義,但重點不是「因此才能替換」,而是:<ol>
+<li><strong>強制所有消費者只依賴共同契約</strong>,不會有人不小心呼叫到某個具體實作獨有、契約外的方法,導致換掉實作時某處爆炸。</li>
+<li><strong>文件效果</strong>:一看到 <code>abstract class LayerService</code>,就知道這個 token 天生設計成會有多個實作,不用另外寫註解說明。</li>
+</ol>
+</li>
+</ul>
+<p><strong>abstract class 沒有 <code>providedIn: &#39;root&#39;</code> 這個選項可用</strong></p>
+<p>因為 abstract class 不能被實例化,Angular 沒辦法「預設自動建立它自己」當 provider,所以一旦做成 abstract class,就<strong>必須</strong>在某處(<code>app.config.ts</code> 或元件 <code>providers</code>)明確寫 <code>useClass</code> 指定要用哪個具體實作,否則會拿到 <code>NullInjectorError</code>。這反而是個天然的強制機制:一旦選擇 abstract class,就等於承諾「這裡一定會有人手動決定用哪個實作」。</p>
+<p><strong>修正後的判斷準則:</strong></p>
+<blockquote>
+<p>只會有一種實作、不預期替換 → 具體 class + <code>providedIn: &#39;root&#39;</code>,省事。<br>預期會有多種實作、需要明確要求所有消費者只依賴共同契約 → 做成 abstract class(或 InjectionToken),並在組裝層明確指定用哪個實作。</p>
+</blockquote>
+<p><strong>abstract class 跟 InjectionToken 怎麼選?</strong></p>
+<p>如果多個實作之間本來就適合用 OOP 繼承(<code>extends</code>)表達,abstract class 比較自然;如果注入的東西不是 class 形式(設定值、字串、原始型別),或不想用繼承綁死結構,<code>InjectionToken</code> 比較合適。</p>
 <h2 id="小結-兩邊的心智模型對照"><a href="#小結-兩邊的心智模型對照" class="headerlink" title="小結:兩邊的心智模型對照"></a>小結:兩邊的心智模型對照</h2><table>
 <thead>
 <tr>

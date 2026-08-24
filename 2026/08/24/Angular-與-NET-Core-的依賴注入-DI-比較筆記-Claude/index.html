@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="從 .NET Core 轉來寫 Angular 時,最容易卡住的地方就是依賴注入(Dependency Injection, DI)的設定方式。這篇整理幾個常見疑問,把兩邊的機制做個對照。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude">
+<meta property="og:url" content="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="從 .NET Core 轉來寫 Angular 時,最容易卡住的地方就是依賴注入(Dependency Injection, DI)的設定方式。這篇整理幾個常見疑問,把兩邊的機制做個對照。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-08-24T08:09:50.000Z">
+<meta property="article:modified_time" content="2026-08-24T08:17:45.503Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Angular">
+<meta property="article:tag" content="AI產出">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Angular-與-NET-Core-的依賴注入-DI-比較筆記-Claude" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/" class="article-date">
+  <time class="dt-published" datetime="2026-08-24T08:09:50.000Z" itemprop="datePublished">2026-08-24</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <!-- # Angular 與 .NET Core 的依賴注入(DI)比較筆記 -->
+
+<p>從 .NET Core 轉來寫 Angular 時,最容易卡住的地方就是依賴注入(Dependency Injection, DI)的設定方式。這篇整理幾個常見疑問,把兩邊的機制做個對照。</p>
+<span id="more"></span>
+<hr>
+<h2 id="NET-Core-DI-容器設定在哪裡"><a href="#NET-Core-DI-容器設定在哪裡" class="headerlink" title=".NET Core:DI 容器設定在哪裡?"></a>.NET Core:DI 容器設定在哪裡?</h2><p>要看版本:</p>
+<ul>
+<li><p><strong>.NET 6 以後</strong>(minimal hosting model,目前預設模板):直接寫在 <code>Program.cs</code>,用 <code>builder.Services</code> 註冊服務。</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> builder = WebApplication.CreateBuilder(<span class="keyword">args</span>);</span><br><span class="line"></span><br><span class="line">builder.Services.AddControllers();</span><br><span class="line">builder.Services.AddScoped&lt;IMyService, MyService&gt;();</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> app = builder.Build();</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>.NET Core 3.1 &#x2F; .NET 5</strong>(舊版模板):寫在 <code>Startup.cs</code> 的 <code>ConfigureServices(IServiceCollection services)</code>,<code>Program.cs</code> 只負責呼叫 <code>CreateHostBuilder</code> 啟動,不會直接看到服務註冊。</p>
+</li>
+</ul>
+<h2 id="Angular-DI-設定在哪裡"><a href="#Angular-DI-設定在哪裡" class="headerlink" title="Angular:DI 設定在哪裡?"></a>Angular:DI 設定在哪裡?</h2><p>Angular 的設定位置比較分散,依範圍大小分幾層:</p>
+<table>
+<thead>
+<tr>
+<th>範圍</th>
+<th>設定位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全域(standalone 架構,Angular 14+ &#x2F; 17 之後預設)</td>
+<td><code>app.config.ts</code> 的 <code>ApplicationConfig.providers</code></td>
+</tr>
+<tr>
+<td>全域(傳統 NgModule 架構)</td>
+<td><code>app.module.ts</code> 的 <code>@NgModule(&#123; providers: [...] &#125;)</code></td>
+</tr>
+<tr>
+<td>服務自身宣告全域單例</td>
+<td><code>@Injectable(&#123; providedIn: &#39;root&#39; &#125;)</code></td>
+</tr>
+<tr>
+<td>元件子樹範圍</td>
+<td><code>@Component(&#123; providers: [...] &#125;)</code></td>
+</tr>
+</tbody></table>
+<p>範例(standalone):</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="attr">appConfig</span>: <span class="title class_">ApplicationConfig</span> = &#123;</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    <span class="title function_">provideRouter</span>(routes),</span><br><span class="line">    &#123; <span class="attr">provide</span>: <span class="title class_">MyService</span>, <span class="attr">useClass</span>: <span class="title class_">MyServiceImpl</span> &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="為什麼沒在-app-config-ts-設定-直接在-constructor-注入也能用"><a href="#為什麼沒在-app-config-ts-設定-直接在-constructor-注入也能用" class="headerlink" title="為什麼沒在 app.config.ts 設定,直接在 constructor 注入也能用?"></a>為什麼沒在 <code>app.config.ts</code> 設定,直接在 constructor 注入也能用?</h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">constructor</span>(<span class="params"><span class="keyword">private</span> <span class="attr">_layerService</span>: <span class="title class_">LayerService</span></span>) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果這樣寫也能正常運作,代表 <code>LayerService</code> 這個 class 上面本身就有:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Injectable</span>(&#123;</span><br><span class="line">  <span class="attr">providedIn</span>: <span class="string">&#x27;root&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">LayerService</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<p>這是 Angular 的 <strong>tree-shakable providers</strong> 機制:服務只要在自己的 <code>@Injectable</code> decorator 上宣告 <code>providedIn: &#39;root&#39;</code>,Angular 就會自動把它註冊到 root injector,不需要額外寫進任何 <code>providers</code> 陣列。好處是如果這個服務完全沒被用到,打包時會被 tree-shaking 移除。</p>
+<p>反過來說,如果服務沒有 <code>providedIn</code>,又沒有在任何地方手動註冊,直接注入會在執行時拋出:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">NullInjectorError: No provider for LayerService!</span><br></pre></td></tr></table></figure>
+
+<h2 id="如何替換掉實例"><a href="#如何替換掉實例" class="headerlink" title="如何替換掉實例?"></a>如何替換掉實例?</h2><p>DI 的核心是「token 對應到實際提供的東西」,替換就是改變這個對應關係。常見寫法:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 換成另一個 class 實作</span></span><br><span class="line">&#123; <span class="attr">provide</span>: <span class="title class_">MyService</span>, <span class="attr">useClass</span>: <span class="title class_">MockMyService</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接給一個現成物件/值</span></span><br><span class="line">&#123; <span class="attr">provide</span>: <span class="title class_">MyService</span>, <span class="attr">useValue</span>: &#123; <span class="attr">getData</span>: <span class="function">() =&gt;</span> <span class="string">&#x27;fake data&#x27;</span> &#125; &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 用工廠函式動態決定</span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">provide</span>: <span class="title class_">MyService</span>,</span><br><span class="line">  <span class="attr">useFactory</span>: <span class="function">(<span class="params"><span class="attr">http</span>: <span class="title class_">HttpClient</span></span>) =&gt;</span> environment.<span class="property">production</span></span><br><span class="line">    ? <span class="keyword">new</span> <span class="title class_">RealService</span>(http)</span><br><span class="line">    : <span class="keyword">new</span> <span class="title class_">FakeService</span>(),</span><br><span class="line">  <span class="attr">deps</span>: [<span class="title class_">HttpClient</span>]</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 別名到另一個已存在的 token</span></span><br><span class="line">&#123; <span class="attr">provide</span>: <span class="title class_">OldService</span>, <span class="attr">useExisting</span>: <span class="title class_">NewService</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>設定放的位置決定「覆蓋範圍」:放在 <code>app.config.ts</code> &#x2F; root module 是全域替換;放在某個元件的 <code>providers</code> 只影響該元件子樹;測試時則建議放在 <code>TestBed.configureTestingModule</code> 裡,避免動到正式程式碼。</p>
+<h2 id="集中管理替換設定-比逐個修改-Service-檔案好嗎"><a href="#集中管理替換設定-比逐個修改-Service-檔案好嗎" class="headerlink" title="集中管理替換設定,比逐個修改 Service 檔案好嗎?"></a>集中管理替換設定,比逐個修改 Service 檔案好嗎?</h2><p>是的,通常建議把「該用哪個實作」的決策集中在 <code>app.config.ts</code>(或啟動設定),而不是每次去改 service 檔案本身,理由:</p>
+<ul>
+<li><strong>單一真相來源</strong>:所有環境&#x2F;情境的替換決策都在一個地方,方便追蹤與 code review。</li>
+<li><strong>service 保持乾淨</strong>:service 本身不該知道「誰會替換它」,這種決策屬於組裝(composition)層級,符合依賴反轉原則。</li>
+</ul>
+<p>實務作法是先定義抽象契約(見下一節),再依環境決定實作:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">LayerService</span> &#123;</span><br><span class="line">  <span class="keyword">abstract</span> <span class="title function_">getLayers</span>(): <span class="title class_">Layer</span>[];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">RealLayerService</span> <span class="keyword">extends</span> <span class="title class_ inherited__">LayerService</span> &#123; ... &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">MockLayerService</span> <span class="keyword">extends</span> <span class="title class_ inherited__">LayerService</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="attr">appConfig</span>: <span class="title class_">ApplicationConfig</span> = &#123;</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    &#123; <span class="attr">provide</span>: <span class="title class_">LayerService</span>, <span class="attr">useClass</span>: environment.<span class="property">useMock</span> ? <span class="title class_">MockLayerService</span> : <span class="title class_">RealLayerService</span> &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>例外:如果只是某個元件子樹需要不同實作,放在該元件的 <code>providers</code> 反而更清楚,因為影響範圍本來就侷限在那裡。</p>
+<h2 id="為什麼-NET-Core-用-interface-當-DI-契約-Angular-卻不能直接用-interface"><a href="#為什麼-NET-Core-用-interface-當-DI-契約-Angular-卻不能直接用-interface" class="headerlink" title="為什麼 .NET Core 用 interface 當 DI 契約,Angular 卻不能直接用 interface?"></a>為什麼 .NET Core 用 interface 當 DI 契約,Angular 卻不能直接用 interface?</h2><p>關鍵差異在於「執行時期是否存在」:</p>
+<ul>
+<li><strong>C# 的 interface</strong>:編譯成 IL 後仍是 CLR 型別系統裡真實存在的型別,可以用 reflection 或 <code>typeof(IMyService)</code> 當 key,所以 DI 容器能拿它做查表。</li>
+<li><strong>TypeScript 的 interface</strong>:純粹是編譯期的型別檢查工具,轉譯成 JavaScript 後會被完全抹除,執行時期根本不存在這個東西。</li>
+</ul>
+<p>如果寫:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; <span class="attr">provide</span>: <span class="title class_">ILayerService</span>, <span class="attr">useClass</span>: <span class="title class_">LayerServiceImpl</span> &#125; <span class="comment">// ❌ 編譯錯誤</span></span><br></pre></td></tr></table></figure>
+
+<p>TypeScript 會直接報錯:<code>&#39;ILayerService&#39; only refers to a type, but is being used as a value here</code>,因為 DI 容器在執行時期需要一個「真實存在的值」當 token,interface 不符合這個要求。</p>
+<p>Angular 的替代方案是找「編譯期是型別、執行期也真實存在的東西」:</p>
+<ol>
+<li><strong>abstract class</strong>:編譯後仍是真實的 JS function&#x2F;物件,可以同時當 token 又當型別。</li>
+<li><strong>InjectionToken</strong> 搭配 interface 只做編譯期型別檢查(見下一節)。</li>
+</ol>
+<h2 id="Angular-的-interface-實際用在哪裡"><a href="#Angular-的-interface-實際用在哪裡" class="headerlink" title="Angular 的 interface 實際用在哪裡?"></a>Angular 的 interface 實際用在哪裡?</h2><p>TypeScript 是結構型別系統(structural typing),不是像 C# 的名義型別系統(nominal typing),天生比較適合描述「資料形狀」而不是「可替換的行為」。常見用途:</p>
+<ol>
+<li><p><strong>定義資料模型</strong>(最常見)</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">Layer</span> &#123;</span><br><span class="line">  <span class="attr">id</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">visible</span>: <span class="built_in">boolean</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>元件的 <code>@Input</code> &#x2F; <code>@Output</code> 型別</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Input</span>() <span class="attr">layer</span>: <span class="title class_">Layer</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>實作 Angular 生命週期介面</strong>(接近行為契約的用法)</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">MyComponent</span> <span class="keyword">implements</span> <span class="title class_">OnInit</span>, <span class="title class_">OnDestroy</span> &#123;</span><br><span class="line">  <span class="title function_">ngOnInit</span>(): <span class="built_in">void</span> &#123; ... &#125;</span><br><span class="line">  <span class="title function_">ngOnDestroy</span>(): <span class="built_in">void</span> &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意:Angular 執行時期不是靠檢查 <code>implements OnInit</code> 來呼叫 <code>ngOnInit</code>,而是單純檢查 class 上有沒有這個名字的方法(慣例呼叫)。<code>implements OnInit</code> 純粹是給開發者在編譯期防呆用。</p>
+</li>
+<li><p><strong>function 參數&#x2F;回傳值型別、泛型限制</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span> renderLayers&lt;T <span class="keyword">extends</span> <span class="title class_">Layer</span>&gt;(<span class="attr">layers</span>: T[]): <span class="built_in">void</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>描述設定&#x2F;選項物件</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">HttpOptions</span> &#123;</span><br><span class="line">  <span class="attr">headers</span>?: <span class="title class_">Record</span>&lt;<span class="built_in">string</span>, <span class="built_in">string</span>&gt;;</span><br><span class="line">  <span class="attr">timeout</span>?: <span class="built_in">number</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="Angular-也能做到「Interface-DI」-完整範例"><a href="#Angular-也能做到「Interface-DI」-完整範例" class="headerlink" title="Angular 也能做到「Interface + DI」:完整範例"></a>Angular 也能做到「Interface + DI」:完整範例</h2><p>只要搭配 <code>InjectionToken</code>,Angular 也能做到跟 C# <code>IMyService</code> 注入一樣的解耦效果。實務上會拆成多個檔案,不會全部塞在一起:</p>
+<p><strong><code>layer.model.ts</code>(資料模型)</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">Layer</span> &#123;</span><br><span class="line">  <span class="attr">id</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">visible</span>: <span class="built_in">boolean</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>layer.service.interface.ts</code>(契約 + token,習慣放同一個檔案)</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">InjectionToken</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Layer</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./layer.model&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">ILayerService</span> &#123;</span><br><span class="line">  <span class="title function_">getLayers</span>(): <span class="title class_">Layer</span>[];</span><br><span class="line">  <span class="title function_">addLayer</span>(<span class="attr">layer</span>: <span class="title class_">Layer</span>): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="variable constant_">LAYER_SERVICE</span> = <span class="keyword">new</span> <span class="title class_">InjectionToken</span>&lt;<span class="title class_">ILayerService</span>&gt;(<span class="string">&#x27;LayerService&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>real-layer.service.ts</code>(正式實作)</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Injectable</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">HttpClient</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/common/http&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">ILayerService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./layer.service.interface&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Layer</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./layer.model&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">RealLayerService</span> <span class="keyword">implements</span> <span class="title class_">ILayerService</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"><span class="keyword">private</span> <span class="attr">http</span>: <span class="title class_">HttpClient</span></span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">getLayers</span>(): <span class="title class_">Layer</span>[] &#123;</span><br><span class="line">    <span class="keyword">return</span> [];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">addLayer</span>(<span class="attr">layer</span>: <span class="title class_">Layer</span>): <span class="built_in">void</span> &#123; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>mock-layer.service.ts</code>(測試&#x2F;假資料實作)</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Injectable</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">ILayerService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./layer.service.interface&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Layer</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./layer.model&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">MockLayerService</span> <span class="keyword">implements</span> <span class="title class_">ILayerService</span> &#123;</span><br><span class="line">  <span class="title function_">getLayers</span>(): <span class="title class_">Layer</span>[] &#123;</span><br><span class="line">    <span class="keyword">return</span> [&#123; <span class="attr">id</span>: <span class="string">&#x27;1&#x27;</span>, <span class="attr">name</span>: <span class="string">&#x27;Fake Layer&#x27;</span>, <span class="attr">visible</span>: <span class="literal">true</span> &#125;];</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">addLayer</span>(<span class="attr">layer</span>: <span class="title class_">Layer</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;mock add&#x27;</span>, layer);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>app.config.ts</code>(組裝,決定注入哪個實作)</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">ApplicationConfig</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="variable constant_">LAYER_SERVICE</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./layer.service.interface&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">RealLayerService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./real-layer.service&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">MockLayerService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./mock-layer.service&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; environment &#125; <span class="keyword">from</span> <span class="string">&#x27;../environments/environment&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="attr">appConfig</span>: <span class="title class_">ApplicationConfig</span> = &#123;</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">provide</span>: <span class="variable constant_">LAYER_SERVICE</span>,</span><br><span class="line">      <span class="attr">useClass</span>: environment.<span class="property">useMock</span> ? <span class="title class_">MockLayerService</span> : <span class="title class_">RealLayerService</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><strong>元件內注入使用</strong></p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Component</span>, <span class="title class_">Inject</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="variable constant_">LAYER_SERVICE</span>, <span class="title class_">ILayerService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./layer.service.interface&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span>(&#123; ... &#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">MapComponent</span> &#123;</span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"><span class="meta">@Inject</span>(LAYER_SERVICE) <span class="keyword">private</span> <span class="attr">layerService</span>: <span class="title class_">ILayerService</span></span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">ngOnInit</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> layers = <span class="variable language_">this</span>.<span class="property">layerService</span>.<span class="title function_">getLayers</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這裡 <code>layerService</code> 的型別是 <code>ILayerService</code>(interface),元件只能呼叫 interface 定義的方法,也完全不需要 import 任何具體 class(<code>RealLayerService</code> &#x2F; <code>MockLayerService</code>),真正做到跟實作解耦——這是比 abstract class 更貼近 C# interface 精神的寫法,因為 abstract class 畢竟還是一個 class,元件多少會 import 到它;用 interface + token 時,元件只 import 一個純型別的 interface(編譯後消失)跟一個 token。</p>
+<h2 id="那實務上為什麼還是以-class-直接注入為主-很少真的用-Interface-DI"><a href="#那實務上為什麼還是以-class-直接注入為主-很少真的用-Interface-DI" class="headerlink" title="那實務上為什麼還是以 class 直接注入為主,很少真的用 Interface + DI?"></a>那實務上為什麼還是以 class 直接注入為主,很少真的用 Interface + DI?</h2><p>雖然上面證明 Angular 做得到,但實務上大多數 Angular 專案很少這樣寫,主流仍是直接注入具體的 class。原因如下:</p>
+<p><strong>1. 具體 class 本身就已經是「可替換的 token」了</strong></p>
+<p>這是最核心的一點。C# 需要 interface 才能做到「注入時可替換」,是因為 C# 對一個具體 class 的依賴通常代表緊耦合、甚至有 sealed 的限制。但在 Angular&#x2F;TypeScript 裡,一個具體的 class(例如 <code>RealLayerService</code>)本身在執行時期就是真實存在的值,完全可以直接拿來當 provider token:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123; <span class="attr">provide</span>: <span class="title class_">RealLayerService</span>, <span class="attr">useClass</span>: <span class="title class_">MockLayerService</span> &#125;</span><br></pre></td></tr></table></figure>
+
+<p>只要 <code>MockLayerService</code> extends 或至少結構相容 <code>RealLayerService</code>,一樣可以替換成功。也就是說,多加一層 <code>interface + InjectionToken</code> 並沒有換來額外的替換能力——具體 class 已經免費具備這個能力了,額外那層只是多維護一份程式碼。</p>
+<p><strong>2. 測試時不需要靠 interface 就能 mock</strong></p>
+<p>在 .NET 裡,mock 一個 concrete class 有時會有限制(沒有 virtual 方法就 mock 不了),所以養成「一定要 interface」的習慣。但在 TypeScript 生態,<code>jasmine.createSpyObj</code>、Jest 的 <code>jest.mock()</code>,或 Angular 的：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">TestBed</span>.<span class="title function_">overrideProvider</span>(<span class="title class_">RealLayerService</span>, &#123; <span class="attr">useValue</span>: mockObj &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>都可以直接針對具體 class 做替換或建立假物件,不需要先抽出 interface 才能測試。</p>
+<p><strong>3. 少了 <code>@Inject()</code> 的額外語法負擔</strong></p>
+<p>用具體 class 當 token,注入語法最乾淨:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">constructor</span>(<span class="params"><span class="keyword">private</span> <span class="attr">layerService</span>: <span class="title class_">LayerService</span></span>) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>用 <code>InjectionToken</code> 則一定要加 <code>@Inject()</code>:</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">constructor</span>(<span class="params"><span class="meta">@Inject</span>(LAYER_SERVICE) <span class="keyword">private</span> <span class="attr">layerService</span>: <span class="title class_">ILayerService</span></span>) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>多一道語法,團隊協作時大家很自然會選省事的那條路。</p>
+<p><strong>4. <code>providedIn: &#39;root&#39;</code> 這種 tree-shakable 寫法只有 class 才能享有</strong></p>
+<p><code>InjectionToken</code> 沒有這種零設定的便利性,一定要手動在某個 <code>providers</code> 裡註冊,等於多了一道維護成本。</p>
+<p><strong>5. YAGNI——大多數服務一輩子只有一種實作</strong></p>
+<p>企業級 .NET 後端常見 Repository Pattern、多資料庫切換、分層架構,「多實作」是常態需求。但前端的 Angular service 大多數情況下(呼叫某個 API、管理某塊 UI 狀態)這輩子就只會有一種實作,不會有第二個版本要替換。既然沒有「未來會替換」的實際需求,先做 interface + token 這層抽象就是過度設計,平白增加檔案數跟認知負擔。</p>
+<p><strong>什麼時候才真的值得用 Interface + DI?</strong></p>
+<p>值得用的情境反而比較單一:寫給第三方用的 library &#x2F; SDK,不想暴露具體實作;或明確知道未來一定要做多環境切換(例如瀏覽器 storage vs. server-side storage 這種平台差異)。Angular 官方自己的套件(Material、CDK)在需要「使用者可自訂實作」的地方,也確實會用 <code>InjectionToken</code>,但那是刻意設計給外部消費者擴充用的,不是預設的服務注入模式。</p>
+<p>簡單說:Angular 選擇「直接注入具體 class」不是因為做不到 interface + DI,而是因為在 TypeScript 的執行環境下,這層抽象幾乎不會多換來任何實際好處,卻要多付語法跟維護成本——這跟 C# 的情境剛好相反。</p>
+<h2 id="小結-兩邊的心智模型對照"><a href="#小結-兩邊的心智模型對照" class="headerlink" title="小結:兩邊的心智模型對照"></a>小結:兩邊的心智模型對照</h2><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>.NET Core</th>
+<th>Angular</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>服務註冊位置</td>
+<td><code>Program.cs</code>(新版)&#x2F; <code>Startup.cs</code>(舊版)</td>
+<td><code>app.config.ts</code> &#x2F; <code>NgModule</code> &#x2F; <code>@Injectable(&#123;providedIn:&#39;root&#39;&#125;)</code> &#x2F; 元件 <code>providers</code></td>
+</tr>
+<tr>
+<td>契約型別</td>
+<td>interface(執行時期真實存在)</td>
+<td>interface 只在編譯期存在,需搭配 abstract class 或 <code>InjectionToken</code> 才能當 DI token</td>
+</tr>
+<tr>
+<td>替換實作</td>
+<td><code>AddScoped&lt;IMyService, Impl&gt;()</code></td>
+<td><code>&#123; provide: Token, useClass/useValue/useFactory/useExisting: ... &#125;</code></td>
+</tr>
+<tr>
+<td>interface 的定位</td>
+<td>行為契約 + 執行時期多型</td>
+<td>主要是資料形狀的編譯期規格書</td>
+</tr>
+</tbody></table>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/" data-id="cmt6yrg8p000a9kn1a3j75wa1" data-title="Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Angular Component 設計檢討</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 15px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 17.5px;">Angular</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12.5px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 12.5px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 17.5px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 17.5px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 17.5px;">docker</a> <a href="/tags/n8n/" style="font-size: 17.5px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12.5px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/">Angular Component 設計檢討</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/">Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/08/Claude-skill/">Claude Skill</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

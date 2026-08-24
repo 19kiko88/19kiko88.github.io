@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="這篇筆記以熟悉 .NET Core DI 的開發者角度，整理 Angular Dependency Injection（DI）、Interface、InjectionToken，以及實際如何替換 Service 實作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT">
+<meta property="og:url" content="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="這篇筆記以熟悉 .NET Core DI 的開發者角度，整理 Angular Dependency Injection（DI）、Interface、InjectionToken，以及實際如何替換 Service 實作。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-08-24T08:15:39.000Z">
+<meta property="article:modified_time" content="2026-08-24T08:17:39.659Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Angular-與-NET-Core-的依賴注入-DI-比較筆記-ChatGPT" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/" class="article-date">
+  <time class="dt-published" datetime="2026-08-24T08:15:39.000Z" itemprop="datePublished">2026-08-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <!-- # Angular DI、Interface 與 InjectionToken 實務整理 -->
+<p>這篇筆記以熟悉 .NET Core DI 的開發者角度，整理 Angular Dependency Injection（DI）、Interface、InjectionToken，以及實際如何替換 Service 實作。</p>
+<span id="more"></span>
+<hr>
+<h2 id="1-Angular-也有-Dependency-Injection（DI）"><a href="#1-Angular-也有-Dependency-Injection（DI）" class="headerlink" title="1. Angular 也有 Dependency Injection（DI）"></a>1. Angular 也有 Dependency Injection（DI）</h2><p>Dependency Injection（依賴注入）的核心概念是：</p>
+<blockquote>
+<p>類別需要使用其他物件時，不自己 <code>new</code> 該物件，而是交由 DI Container 建立並注入。</p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">UserComponent</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span></span><br><span class="line"><span class="params">    <span class="keyword">private</span> <span class="attr">userService</span>: <span class="title class_">UserService</span></span></span><br><span class="line"><span class="params">  </span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Component 不需要：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> service = <span class="keyword">new</span> <span class="title class_">UserService</span>();</span><br></pre></td></tr></table></figure>
+
+<p>而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">UserComponent</span><br><span class="line">      ↓</span><br><span class="line">「我需要 UserService」</span><br><span class="line">      ↓</span><br><span class="line">Angular DI Container</span><br><span class="line">      ↓</span><br><span class="line">建立 / 取得 UserService</span><br><span class="line">      ↓</span><br><span class="line">注入 UserComponent</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="2-Angular-DI-通常在哪裡設定？"><a href="#2-Angular-DI-通常在哪裡設定？" class="headerlink" title="2. Angular DI 通常在哪裡設定？"></a>2. Angular DI 通常在哪裡設定？</h1><p>Angular 常見的 Provider 設定方式包括：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Injectable</span>(&#123;</span><br><span class="line">  <span class="attr">providedIn</span>: <span class="string">&#x27;root&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>也可以在 Component：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span>(&#123;</span><br><span class="line">  <span class="attr">selector</span>: <span class="string">&#x27;app-user&#x27;</span>,</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    <span class="title class_">UserService</span></span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">UserComponent</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Unit Test 則常透過 <code>TestBed</code> 設定：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">TestBed</span>.<span class="title function_">configureTestingModule</span>(&#123;</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    ...</span><br><span class="line">  ]</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>因此 Angular 的 DI 設定不像 .NET Core 主要集中在 <code>Program.cs</code>，而是會依照 Injector scope 與使用情境分散在不同位置。</p>
+<hr>
+<h1 id="3-NET-Core-與-Angular-DI-的差異"><a href="#3-NET-Core-與-Angular-DI-的差異" class="headerlink" title="3. .NET Core 與 Angular DI 的差異"></a>3. .NET Core 與 Angular DI 的差異</h1><p>.NET Core 很常使用：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title">IUserService</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function">User <span class="title">GetUser</span>()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">UserService</span> : <span class="title">IUserService</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">GetUser</span>()</span></span><br><span class="line">    &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然後：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">builder.Services.AddScoped&lt;IUserService, UserService&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>Controller：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">UserController</span>(<span class="params">IUserService userService</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    _userService = userService;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>概念：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">IUserService</span><br><span class="line">      ↓</span><br><span class="line">.NET DI Container</span><br><span class="line">      ↓</span><br><span class="line">UserService</span><br><span class="line">      ↓</span><br><span class="line">UserController</span><br></pre></td></tr></table></figure>
+
+<p>因此 .NET Core 很常見：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Interface</span><br><span class="line">    ↓</span><br><span class="line">Implementation</span><br><span class="line">    ↓</span><br><span class="line">DI</span><br></pre></td></tr></table></figure>
+
+<p>Angular 也能做到類似設計，但有一個重要差異：</p>
+<blockquote>
+<p><strong>TypeScript 的 Interface 在編譯成 JavaScript 後會消失。</strong></p>
+</blockquote>
+<hr>
+<h1 id="4-為什麼-Angular-不能直接使用-Interface-做-DI？"><a href="#4-為什麼-Angular-不能直接使用-Interface-做-DI？" class="headerlink" title="4. 為什麼 Angular 不能直接使用 Interface 做 DI？"></a>4. 為什麼 Angular 不能直接使用 Interface 做 DI？</h1><p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">IUserService</span> &#123;</span><br><span class="line">  <span class="title function_">getUser</span>(): <span class="title class_">User</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這個 Interface 主要是給 TypeScript 在編譯階段做型別檢查。</p>
+<p>編譯後概念上：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">IUserService</span> &#123;</span><br><span class="line">  <span class="title function_">getUser</span>(): <span class="title class_">User</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">UserService</span> <span class="keyword">implements</span> <span class="title class_">IUserService</span> &#123;</span><br><span class="line">  <span class="title function_">getUser</span>(<span class="params"></span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>會變成類似：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">  <span class="title function_">getUser</span>(<span class="params"></span>) &#123;</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>IUserService</code> 本身不存在於 JavaScript Runtime。</p>
+<p>因此 Angular 無法直接：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Inject</span>(<span class="title class_">IUserService</span>)</span><br></pre></td></tr></table></figure>
+
+<p>因為 Runtime 根本沒有 <code>IUserService</code> 這個物件可以拿來辨識。</p>
+<hr>
+<h1 id="5-Angular-的-DI-Token"><a href="#5-Angular-的-DI-Token" class="headerlink" title="5. Angular 的 DI Token"></a>5. Angular 的 DI Token</h1><p>Angular DI 需要一個 Runtime 中仍然存在的東西，作為「識別某個依賴」的 Token。</p>
+<p>如果直接使用 Class：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Injectable</span>(&#123;</span><br><span class="line">  <span class="attr">providedIn</span>: <span class="string">&#x27;root&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那麼：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">constructor</span>(<span class="params"></span></span><br><span class="line"><span class="params">  <span class="keyword">private</span> <span class="attr">userService</span>: <span class="title class_">UserService</span></span></span><br><span class="line"><span class="params"></span>) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Angular 可以直接使用 <code>UserService</code> 這個 Class 作為 DI Token。</p>
+<p>但是如果希望使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Interface</span><br><span class="line">    ↓</span><br><span class="line">Implementation</span><br></pre></td></tr></table></figure>
+
+<p>就可以搭配 <code>InjectionToken</code>。</p>
+<hr>
+<h1 id="6-Interface-InjectionToken-DI"><a href="#6-Interface-InjectionToken-DI" class="headerlink" title="6. Interface + InjectionToken + DI"></a>6. Interface + InjectionToken + DI</h1><p>下面用一個 Storage Service 作為完整範例。</p>
+<p>需求：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">UserComponent</span><br><span class="line">      ↓</span><br><span class="line">需要 Storage Service</span><br></pre></td></tr></table></figure>
+
+<p>但希望未來可以替換：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">LocalStorageService</span><br><span class="line">SessionStorageService</span><br><span class="line">MockStorageService</span><br></pre></td></tr></table></figure>
+
+<p>而 <code>UserComponent</code> 不需要知道底層實作。</p>
+<hr>
+<h1 id="7-第一步：建立-Interface"><a href="#7-第一步：建立-Interface" class="headerlink" title="7. 第一步：建立 Interface"></a>7. 第一步：建立 Interface</h1><p>建立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">storage.service.interface.ts</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">StorageService</span> &#123;</span><br><span class="line">  <span class="title function_">get</span>(<span class="attr">key</span>: <span class="built_in">string</span>): <span class="built_in">string</span> | <span class="literal">null</span>;</span><br><span class="line">  <span class="title function_">set</span>(<span class="attr">key</span>: <span class="built_in">string</span>, <span class="attr">value</span>: <span class="built_in">string</span>): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這份 Interface 就是一份「契約」。</p>
+<p>它規定：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">StorageService 必須提供：</span><br><span class="line"></span><br><span class="line">get(string) → string | null</span><br><span class="line"></span><br><span class="line">set(string, string) → void</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-1-get-的意思"><a href="#7-1-get-的意思" class="headerlink" title="7.1 get() 的意思"></a>7.1 <code>get()</code> 的意思</h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">get</span>(<span class="attr">key</span>: <span class="built_in">string</span>): <span class="built_in">string</span> | <span class="literal">null</span>;</span><br></pre></td></tr></table></figure>
+
+<p>代表：</p>
+<ul>
+<li>方法名稱：<code>get</code></li>
+<li><code>key</code> 必須是 <code>string</code></li>
+<li>回傳值可以是 <code>string</code></li>
+<li>也可以是 <code>null</code></li>
+</ul>
+<p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">storage.<span class="title function_">get</span>(<span class="string">&#x27;username&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>可能得到：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WeiHao</span><br></pre></td></tr></table></figure>
+
+<p>或：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">null</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="7-2-set-的意思"><a href="#7-2-set-的意思" class="headerlink" title="7.2 set() 的意思"></a>7.2 <code>set()</code> 的意思</h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">set</span>(<span class="attr">key</span>: <span class="built_in">string</span>, <span class="attr">value</span>: <span class="built_in">string</span>): <span class="built_in">void</span>;</span><br></pre></td></tr></table></figure>
+
+<p>代表：</p>
+<ul>
+<li>方法名稱：<code>set</code></li>
+<li><code>key</code> 必須是 <code>string</code></li>
+<li><code>value</code> 必須是 <code>string</code></li>
+<li><code>void</code> 表示不回傳資料</li>
+</ul>
+<p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">storage.<span class="title function_">set</span>(<span class="string">&#x27;username&#x27;</span>, <span class="string">&#x27;WeiHao&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="8-第二步：建立-LocalStorageService"><a href="#8-第二步：建立-LocalStorageService" class="headerlink" title="8. 第二步：建立 LocalStorageService"></a>8. 第二步：建立 LocalStorageService</h1><p>建立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">local-storage.service.ts</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Injectable</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StorageService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./storage.service.interface&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">LocalStorageService</span> <span class="keyword">implements</span> <span class="title class_">StorageService</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">get</span>(<span class="attr">key</span>: <span class="built_in">string</span>): <span class="built_in">string</span> | <span class="literal">null</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">localStorage</span>.<span class="title function_">getItem</span>(key);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">set</span>(<span class="attr">key</span>: <span class="built_in">string</span>, <span class="attr">value</span>: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">localStorage</span>.<span class="title function_">setItem</span>(key, value);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這裡：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">implements</span> <span class="title class_">StorageService</span></span><br></pre></td></tr></table></figure>
+
+<p>代表：</p>
+<blockquote>
+<p><code>LocalStorageService</code> 必須符合 <code>StorageService</code> 的規格。</p>
+</blockquote>
+<p>例如如果漏掉：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">set</span>(...)</span><br></pre></td></tr></table></figure>
+
+<p>TypeScript 就會報錯。</p>
+<hr>
+<h1 id="9-第三步：建立另一個實作"><a href="#9-第三步：建立另一個實作" class="headerlink" title="9. 第三步：建立另一個實作"></a>9. 第三步：建立另一個實作</h1><p>建立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">session-storage.service.ts</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Injectable</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StorageService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./storage.service.interface&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Injectable</span>()</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">SessionStorageService</span> <span class="keyword">implements</span> <span class="title class_">StorageService</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">get</span>(<span class="attr">key</span>: <span class="built_in">string</span>): <span class="built_in">string</span> | <span class="literal">null</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">sessionStorage</span>.<span class="title function_">getItem</span>(key);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">set</span>(<span class="attr">key</span>: <span class="built_in">string</span>, <span class="attr">value</span>: <span class="built_in">string</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">sessionStorage</span>.<span class="title function_">setItem</span>(key, value);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>現在有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">              StorageService</span><br><span class="line">                 Interface</span><br><span class="line">                    │</span><br><span class="line">           ┌────────┴────────┐</span><br><span class="line">           ↓                 ↓</span><br><span class="line">LocalStorageService   SessionStorageService</span><br></pre></td></tr></table></figure>
+
+<p>兩個 Service 都遵守同一份 Interface。</p>
+<hr>
+<h1 id="10-第四步：建立-storage-token-ts"><a href="#10-第四步：建立-storage-token-ts" class="headerlink" title="10. 第四步：建立 storage.token.ts"></a>10. 第四步：建立 <code>storage.token.ts</code></h1><p>建立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">storage.token.ts</span><br></pre></td></tr></table></figure>
+
+<p>內容只有：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">InjectionToken</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StorageService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./storage.service.interface&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="variable constant_">STORAGE_SERVICE</span> =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">InjectionToken</span>&lt;<span class="title class_">StorageService</span>&gt;(<span class="string">&#x27;STORAGE_SERVICE&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>這個檔案只有這幾行是正常的。</p>
+<p>因為它的工作非常單純：</p>
+<blockquote>
+<p><strong>建立一個 Angular DI 使用的 Token。</strong></p>
+</blockquote>
+<p>它不是 Service，也不是 Interface，所以不需要寫 Service 的實作邏輯。</p>
+<hr>
+<h1 id="11-為什麼-storage-token-ts-只有一個-Token？"><a href="#11-為什麼-storage-token-ts-只有一個-Token？" class="headerlink" title="11. 為什麼 storage.token.ts 只有一個 Token？"></a>11. 為什麼 <code>storage.token.ts</code> 只有一個 Token？</h1><p>這一行：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="variable constant_">STORAGE_SERVICE</span> =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">InjectionToken</span>&lt;<span class="title class_">StorageService</span>&gt;(<span class="string">&#x27;STORAGE_SERVICE&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>可以拆成三個概念。</p>
+<h3 id="①-new-InjectionToken"><a href="#①-new-InjectionToken" class="headerlink" title="① new InjectionToken&lt;StorageService&gt;"></a>① <code>new InjectionToken&lt;StorageService&gt;</code></h3><p>建立 Angular 的 DI Token。</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">InjectionToken</span><br><span class="line">      ↓</span><br><span class="line">Angular DI 使用的識別物</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="②"><a href="#②" class="headerlink" title="② &lt;StorageService&gt;"></a>② <code>&lt;StorageService&gt;</code></h3><p>這是 TypeScript 的型別資訊。</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">InjectionToken</span>&lt;<span class="title class_">StorageService</span>&gt;</span><br></pre></td></tr></table></figure>
+
+<p>主要是告訴 TypeScript：</p>
+<blockquote>
+<p>這個 Token 對應的型別是 <code>StorageService</code>。</p>
+</blockquote>
+<p>它不是告訴 Angular「我要建立哪個 Service」。</p>
+<hr>
+<h3 id="③-STORAGE-SERVICE"><a href="#③-STORAGE-SERVICE" class="headerlink" title="③ &#39;STORAGE_SERVICE&#39;"></a>③ <code>&#39;STORAGE_SERVICE&#39;</code></h3><p>這是 Token 的名稱：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;STORAGE_SERVICE&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>主要是方便辨識與除錯。</p>
+<p>真正決定實際使用哪一個 Service 的，是後面的 Provider：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">  <span class="attr">useClass</span>: <span class="title class_">LocalStorageService</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="12-Interface-與-InjectionToken-的差別"><a href="#12-Interface-與-InjectionToken-的差別" class="headerlink" title="12. Interface 與 InjectionToken 的差別"></a>12. Interface 與 InjectionToken 的差別</h1><p>這兩個非常容易混淆。</p>
+<h2 id="Interface"><a href="#Interface" class="headerlink" title="Interface"></a>Interface</h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">StorageService</span> &#123;</span><br><span class="line">  <span class="title function_">get</span>(<span class="attr">key</span>: <span class="built_in">string</span>): <span class="built_in">string</span> | <span class="literal">null</span>;</span><br><span class="line">  <span class="title function_">set</span>(<span class="attr">key</span>: <span class="built_in">string</span>, <span class="attr">value</span>: <span class="built_in">string</span>): <span class="built_in">void</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>用途：</p>
+<blockquote>
+<p>定義「規格」。</p>
+</blockquote>
+<p>它告訴 TypeScript：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">StorageService</span><br><span class="line">├── get()</span><br><span class="line">└── set()</span><br></pre></td></tr></table></figure>
+
+<p>而且編譯成 JavaScript 後會消失。</p>
+<hr>
+<h2 id="InjectionToken"><a href="#InjectionToken" class="headerlink" title="InjectionToken"></a>InjectionToken</h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="variable constant_">STORAGE_SERVICE</span> =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">InjectionToken</span>&lt;<span class="title class_">StorageService</span>&gt;(<span class="string">&#x27;STORAGE_SERVICE&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>用途：</p>
+<blockquote>
+<p>提供 Angular Runtime 一個 DI 可以辨識的「鑰匙」。</p>
+</blockquote>
+<p>它在 Runtime 中存在。</p>
+<p>因此可以理解成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">StorageService</span><br><span class="line">    ↓</span><br><span class="line">Interface</span><br><span class="line">    ↓</span><br><span class="line">「規格」</span><br><span class="line"></span><br><span class="line">STORAGE_SERVICE</span><br><span class="line">    ↓</span><br><span class="line">InjectionToken</span><br><span class="line">    ↓</span><br><span class="line">「Angular DI 的鑰匙」</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="13-第五步：在-Provider-指定實作"><a href="#13-第五步：在-Provider-指定實作" class="headerlink" title="13. 第五步：在 Provider 指定實作"></a>13. 第五步：在 Provider 指定實作</h1><p>例如正式環境希望使用：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LocalStorageService</span><br></pre></td></tr></table></figure>
+
+<p>可以：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">providers</span>: [</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">    <span class="attr">useClass</span>: <span class="title class_">LocalStorageService</span></span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>意思是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">STORAGE_SERVICE</span><br><span class="line">       ↓</span><br><span class="line">Angular DI 找到這個 Token</span><br><span class="line">       ↓</span><br><span class="line">使用 LocalStorageService</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="14-Component-如何注入？"><a href="#14-Component-如何注入？" class="headerlink" title="14. Component 如何注入？"></a>14. Component 如何注入？</h1><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">Component</span>, <span class="title class_">Inject</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;@angular/core&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="variable constant_">STORAGE_SERVICE</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./storage.token&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; <span class="title class_">StorageService</span> &#125; <span class="keyword">from</span> <span class="string">&#x27;./storage.service.interface&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span>(&#123;</span><br><span class="line">  <span class="attr">selector</span>: <span class="string">&#x27;app-user&#x27;</span>,</span><br><span class="line">  <span class="attr">templateUrl</span>: <span class="string">&#x27;./user.component.html&#x27;</span>,</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">      <span class="attr">useClass</span>: <span class="title class_">LocalStorageService</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">UserComponent</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">constructor</span>(<span class="params"></span></span><br><span class="line"><span class="params">    <span class="meta">@Inject</span>(STORAGE_SERVICE)</span></span><br><span class="line"><span class="params">    <span class="keyword">private</span> <span class="attr">storageService</span>: <span class="title class_">StorageService</span></span></span><br><span class="line"><span class="params">  </span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">saveUser</span>(): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">storageService</span>.<span class="title function_">set</span>(<span class="string">&#x27;username&#x27;</span>, <span class="string">&#x27;WeiHao&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="title function_">getUser</span>(): <span class="built_in">string</span> | <span class="literal">null</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">storageService</span>.<span class="title function_">get</span>(<span class="string">&#x27;username&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這裡其實同時使用了兩種不同的東西。</p>
+<h3 id="StorageService"><a href="#StorageService" class="headerlink" title="StorageService"></a><code>StorageService</code></h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="attr">storageService</span>: <span class="title class_">StorageService</span></span><br></pre></td></tr></table></figure>
+
+<p>是：</p>
+<blockquote>
+<p>TypeScript 型別。</p>
+</blockquote>
+<h3 id="STORAGE-SERVICE"><a href="#STORAGE-SERVICE" class="headerlink" title="STORAGE_SERVICE"></a><code>STORAGE_SERVICE</code></h3><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Inject</span>(<span class="variable constant_">STORAGE_SERVICE</span>)</span><br></pre></td></tr></table></figure>
+
+<p>是：</p>
+<blockquote>
+<p>Angular DI Runtime 使用的 Token。</p>
+</blockquote>
+<hr>
+<h1 id="15-完整流程"><a href="#15-完整流程" class="headerlink" title="15. 完整流程"></a>15. 完整流程</h1><p>整個關係可以畫成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">StorageService</span><br><span class="line">      │</span><br><span class="line">      │ Interface</span><br><span class="line">      │ 定義規格</span><br><span class="line">      ↓</span><br><span class="line">STORAGE_SERVICE</span><br><span class="line">      │</span><br><span class="line">      │ InjectionToken</span><br><span class="line">      │ Angular Runtime 的 DI Token</span><br><span class="line">      ↓</span><br><span class="line">Provider</span><br><span class="line">      │</span><br><span class="line">      │ provide: STORAGE_SERVICE</span><br><span class="line">      │ useClass: LocalStorageService</span><br><span class="line">      ↓</span><br><span class="line">LocalStorageService</span><br><span class="line">      │</span><br><span class="line">      ↓</span><br><span class="line">Angular DI Container</span><br><span class="line">      │</span><br><span class="line">      ↓</span><br><span class="line">UserComponent</span><br></pre></td></tr></table></figure>
+
+<p>因此：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">constructor</span>(<span class="params"></span></span><br><span class="line"><span class="params">  <span class="meta">@Inject</span>(STORAGE_SERVICE)</span></span><br><span class="line"><span class="params">  <span class="keyword">private</span> <span class="attr">storageService</span>: <span class="title class_">StorageService</span></span></span><br><span class="line"><span class="params"></span>)</span><br></pre></td></tr></table></figure>
+
+<p>實際拿到的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LocalStorageService instance</span><br></pre></td></tr></table></figure>
+
+<p>而不是 Interface。</p>
+<p>Interface 只負責定義型別契約。</p>
+<hr>
+<h1 id="16-如果要換成-SessionStorageService"><a href="#16-如果要換成-SessionStorageService" class="headerlink" title="16. 如果要換成 SessionStorageService"></a>16. 如果要換成 SessionStorageService</h1><p>只需要改 Provider：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">providers</span>: [</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">    <span class="attr">useClass</span>: <span class="title class_">SessionStorageService</span></span><br><span class="line">  &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>Component 完全不需要修改。</p>
+<p>原本：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">UserComponent</span><br><span class="line">      ↓</span><br><span class="line">STORAGE_SERVICE</span><br><span class="line">      ↓</span><br><span class="line">LocalStorageService</span><br></pre></td></tr></table></figure>
+
+<p>改成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">UserComponent</span><br><span class="line">      ↓</span><br><span class="line">STORAGE_SERVICE</span><br><span class="line">      ↓</span><br><span class="line">SessionStorageService</span><br></pre></td></tr></table></figure>
+
+<p>這就是 Interface + DI 的實際價值。</p>
+<hr>
+<h1 id="17-Unit-Test-如何替換-Service？"><a href="#17-Unit-Test-如何替換-Service？" class="headerlink" title="17. Unit Test 如何替換 Service？"></a>17. Unit Test 如何替換 Service？</h1><p>正式環境：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">STORAGE_SERVICE</span><br><span class="line">       ↓</span><br><span class="line">LocalStorageService</span><br></pre></td></tr></table></figure>
+
+<p>Unit Test 可能不希望真的操作 Browser LocalStorage。</p>
+<p>可以建立 Mock：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="attr">mockStorageService</span>: <span class="title class_">StorageService</span> = &#123;</span><br><span class="line">  <span class="attr">get</span>: jasmine.<span class="title function_">createSpy</span>(<span class="string">&#x27;get&#x27;</span>),</span><br><span class="line">  <span class="attr">set</span>: jasmine.<span class="title function_">createSpy</span>(<span class="string">&#x27;set&#x27;</span>)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>然後：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">TestBed</span>.<span class="title function_">configureTestingModule</span>(&#123;</span><br><span class="line">  <span class="attr">providers</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">      <span class="attr">useValue</span>: mockStorageService</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>測試環境變成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">STORAGE_SERVICE</span><br><span class="line">       ↓</span><br><span class="line">mockStorageService</span><br><span class="line">       ↓</span><br><span class="line">Jasmine Spy</span><br></pre></td></tr></table></figure>
+
+<p>Component 不需要修改。</p>
+<p>這就是 DI 在 Unit Test 中非常重要的用途：</p>
+<blockquote>
+<p><strong>讓測試環境可以替換正式環境的依賴。</strong></p>
+</blockquote>
+<hr>
+<h1 id="18-useClass、useValue、useFactory"><a href="#18-useClass、useValue、useFactory" class="headerlink" title="18. useClass、useValue、useFactory"></a>18. <code>useClass</code>、<code>useValue</code>、<code>useFactory</code></h1><p>Angular Provider 常見的幾種方式：</p>
+<h2 id="useClass"><a href="#useClass" class="headerlink" title="useClass"></a><code>useClass</code></h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">  <span class="attr">useClass</span>: <span class="title class_">LocalStorageService</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>表示：</p>
+<blockquote>
+<p>使用指定的 Class 建立實例。</p>
+</blockquote>
+<hr>
+<h2 id="useValue"><a href="#useValue" class="headerlink" title="useValue"></a><code>useValue</code></h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">  <span class="attr">useValue</span>: mockStorageService</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>表示：</p>
+<blockquote>
+<p>直接提供一個已經存在的物件。</p>
+</blockquote>
+<p>Unit Test 很常使用。</p>
+<hr>
+<h2 id="useFactory"><a href="#useFactory" class="headerlink" title="useFactory"></a><code>useFactory</code></h2><figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">  <span class="attr">useFactory</span>: <span class="function">() =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LocalStorageService</span>();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>表示：</p>
+<blockquote>
+<p>透過 Factory 建立要注入的物件。</p>
+</blockquote>
+<p>適合建立邏輯比較複雜的情況。</p>
+<hr>
+<h1 id="19-這些東西一定要全部寫在同一個-ts-嗎？"><a href="#19-這些東西一定要全部寫在同一個-ts-嗎？" class="headerlink" title="19. 這些東西一定要全部寫在同一個 .ts 嗎？"></a>19. 這些東西一定要全部寫在同一個 <code>.ts</code> 嗎？</h1><p>不需要。</p>
+<p>技術上可以全部寫在同一個檔案，但正式專案通常會按照職責拆開。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">services/</span><br><span class="line">│</span><br><span class="line">├── storage.service.interface.ts</span><br><span class="line">├── storage.token.ts</span><br><span class="line">├── local-storage.service.ts</span><br><span class="line">└── session-storage.service.ts</span><br><span class="line"></span><br><span class="line">components/</span><br><span class="line">│</span><br><span class="line">└── user.component.ts</span><br></pre></td></tr></table></figure>
+
+<p>各檔案的責任：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">storage.service.interface.ts</span><br><span class="line">        ↓</span><br><span class="line">定義 Service 規格</span><br><span class="line"></span><br><span class="line">storage.token.ts</span><br><span class="line">        ↓</span><br><span class="line">定義 Angular DI Token</span><br><span class="line"></span><br><span class="line">local-storage.service.ts</span><br><span class="line">        ↓</span><br><span class="line">LocalStorage 實作</span><br><span class="line"></span><br><span class="line">session-storage.service.ts</span><br><span class="line">        ↓</span><br><span class="line">SessionStorage 實作</span><br><span class="line"></span><br><span class="line">user.component.ts</span><br><span class="line">        ↓</span><br><span class="line">使用 StorageService</span><br></pre></td></tr></table></figure>
+
+<p>這樣比全部塞在 Component 裡容易維護。</p>
+<hr>
+<h1 id="20-為什麼-storage-token-ts-可以單獨存在？"><a href="#20-為什麼-storage-token-ts-可以單獨存在？" class="headerlink" title="20. 為什麼 storage.token.ts 可以單獨存在？"></a>20. 為什麼 <code>storage.token.ts</code> 可以單獨存在？</h1><p>因為 Token 本身就是一個獨立的 DI 設定概念。</p>
+<p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> <span class="variable constant_">STORAGE_SERVICE</span> =</span><br><span class="line">  <span class="keyword">new</span> <span class="title class_">InjectionToken</span>&lt;<span class="title class_">StorageService</span>&gt;(<span class="string">&#x27;STORAGE_SERVICE&#x27;</span>);</span><br></pre></td></tr></table></figure>
+
+<p>它不需要知道：</p>
+<ul>
+<li>LocalStorage 怎麼實作</li>
+<li>SessionStorage 怎麼實作</li>
+<li>Component 怎麼使用</li>
+<li>Unit Test 怎麼 Mock</li>
+</ul>
+<p>它只負責：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">「StorageService 這個依賴，在 Angular Runtime 中叫做什麼 Token？」</span><br></pre></td></tr></table></figure>
+
+<p>真正的實作由 Provider 決定。</p>
+<p>因此可以有：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">storage.token.ts</span><br><span class="line">        ↓</span><br><span class="line">STORAGE_SERVICE</span><br><span class="line">        ↓</span><br><span class="line">┌───────────────┬────────────────┐</span><br><span class="line">↓               ↓                ↓</span><br><span class="line">LocalStorage    SessionStorage   Mock</span><br></pre></td></tr></table></figure>
+
+<p>同一個 Token 可以在不同環境對應不同實作。</p>
+<hr>
+<h1 id="21-Angular-Interface-更常見的用途"><a href="#21-Angular-Interface-更常見的用途" class="headerlink" title="21. Angular Interface 更常見的用途"></a>21. Angular Interface 更常見的用途</h1><p>雖然 Angular 可以使用 Interface + DI，但實務上 Angular 的 Interface 更常拿來描述「資料」。</p>
+<p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">User</span> &#123;</span><br><span class="line">  <span class="attr">id</span>: <span class="built_in">number</span>;</span><br><span class="line">  <span class="attr">name</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">email</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Service：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">getUser</span>(): <span class="title class_">Observable</span>&lt;<span class="title class_">User</span>&gt; &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="variable language_">this</span>.<span class="property">http</span>.<span class="property">get</span>&lt;<span class="title class_">User</span>&gt;(<span class="string">&#x27;/api/user&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這時 Interface 的作用是：</p>
+<blockquote>
+<p>告訴 TypeScript <code>User</code> 這筆資料應該長什麼樣子。</p>
+</blockquote>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">User</span><br><span class="line">├── id: number</span><br><span class="line">├── name: string</span><br><span class="line">└── email: string</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="22-Angular-常見的-Interface"><a href="#22-Angular-常見的-Interface" class="headerlink" title="22. Angular 常見的 Interface"></a>22. Angular 常見的 Interface</h1><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">User</span><br><span class="line">Product</span><br><span class="line">ApiResponse</span><br><span class="line">LoginRequest</span><br><span class="line">LoginResponse</span><br><span class="line">AppConfig</span><br><span class="line">MenuItem</span><br><span class="line">TableColumn</span><br><span class="line">FormData</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">LoginRequest</span> &#123;</span><br><span class="line">  <span class="attr">username</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">password</span>: <span class="built_in">string</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">LoginResponse</span> &#123;</span><br><span class="line">  <span class="attr">token</span>: <span class="built_in">string</span>;</span><br><span class="line">  <span class="attr">expires</span>: <span class="built_in">number</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>這種用法在 Angular &#x2F; TypeScript 中非常常見。</p>
+<hr>
+<h1 id="23-為什麼-Angular-Interface-沒有-NET-Core-那麼常拿來做-Service？"><a href="#23-為什麼-Angular-Interface-沒有-NET-Core-那麼常拿來做-Service？" class="headerlink" title="23. 為什麼 Angular Interface 沒有 .NET Core 那麼常拿來做 Service？"></a>23. 為什麼 Angular Interface 沒有 .NET Core 那麼常拿來做 Service？</h1><p>主要是因為 TypeScript Interface 的特性不同。</p>
+<p>.NET Core：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">IUserService</span><br><span class="line">      ↓</span><br><span class="line">DI</span><br><span class="line">      ↓</span><br><span class="line">UserService</span><br></pre></td></tr></table></figure>
+
+<p>Interface 很常用於：</p>
+<ul>
+<li>Service 抽象</li>
+<li>DI</li>
+<li>替換實作</li>
+<li>Unit Test Mock</li>
+</ul>
+<p>Angular &#x2F; TypeScript：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">User</span><br><span class="line">Product</span><br><span class="line">ApiResponse</span><br><span class="line">LoginRequest</span><br></pre></td></tr></table></figure>
+
+<p>Interface 更常用於：</p>
+<ul>
+<li>描述 API 資料</li>
+<li>描述 Component 資料</li>
+<li>描述表單資料</li>
+<li>描述設定物件</li>
+<li>提供 TypeScript 型別檢查</li>
+</ul>
+<p>所以：</p>
+<blockquote>
+<p><strong>不要因為 .NET Core 很常使用 Interface + DI，就認為 Angular 每一個 Service 都應該建立 Interface。</strong></p>
+</blockquote>
+<hr>
+<h1 id="24-什麼時候值得使用-Interface-InjectionToken？"><a href="#24-什麼時候值得使用-Interface-InjectionToken？" class="headerlink" title="24. 什麼時候值得使用 Interface + InjectionToken？"></a>24. 什麼時候值得使用 Interface + InjectionToken？</h1><p>比較適合：</p>
+<h3 id="①-同一個契約有多個實作"><a href="#①-同一個契約有多個實作" class="headerlink" title="① 同一個契約有多個實作"></a>① 同一個契約有多個實作</h3><p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">StorageService</span><br><span class="line">├── LocalStorageService</span><br><span class="line">├── SessionStorageService</span><br><span class="line">└── MemoryStorageService</span><br></pre></td></tr></table></figure>
+
+<p>需要根據不同環境切換實作。</p>
+<h3 id="②-希望-Component-與底層實作解耦"><a href="#②-希望-Component-與底層實作解耦" class="headerlink" title="② 希望 Component 與底層實作解耦"></a>② 希望 Component 與底層實作解耦</h3><p>Component 只知道：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">StorageService</span><br></pre></td></tr></table></figure>
+
+<p>不需要知道底層是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">LocalStorage</span><br><span class="line">SessionStorage</span><br><span class="line">IndexedDB</span><br><span class="line">Memory</span><br></pre></td></tr></table></figure>
+
+<h3 id="③-Unit-Test-需要替換依賴"><a href="#③-Unit-Test-需要替換依賴" class="headerlink" title="③ Unit Test 需要替換依賴"></a>③ Unit Test 需要替換依賴</h3><p>正式環境：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">STORAGE_SERVICE</span><br><span class="line">      ↓</span><br><span class="line">LocalStorageService</span><br></pre></td></tr></table></figure>
+
+<p>測試環境：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">STORAGE_SERVICE</span><br><span class="line">      ↓</span><br><span class="line">MockStorageService</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="25-什麼時候不需要-Interface-InjectionToken？"><a href="#25-什麼時候不需要-Interface-InjectionToken？" class="headerlink" title="25. 什麼時候不需要 Interface + InjectionToken？"></a>25. 什麼時候不需要 Interface + InjectionToken？</h1><p>如果只有單一 Service：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Injectable</span>(&#123;</span><br><span class="line">  <span class="attr">providedIn</span>: <span class="string">&#x27;root&#x27;</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">UserService</span> &#123;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而且：</p>
+<ul>
+<li>沒有多個實作</li>
+<li>不需要特別抽象化</li>
+<li>直接使用 Class 就很清楚</li>
+</ul>
+<p>那麼直接：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">constructor</span>(<span class="params"></span></span><br><span class="line"><span class="params">  <span class="keyword">private</span> <span class="attr">userService</span>: <span class="title class_">UserService</span></span></span><br><span class="line"><span class="params"></span>) &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通常就足夠。</p>
+<p>不需要為了模仿 .NET Core 而額外建立：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">IUserService</span><br><span class="line">USER_SERVICE</span><br><span class="line">UserService</span><br></pre></td></tr></table></figure>
+
+<p>三層結構。</p>
+<hr>
+<h1 id="26-Angular-DI-與-NET-Core-DI-對照"><a href="#26-Angular-DI-與-NET-Core-DI-對照" class="headerlink" title="26. Angular DI 與 .NET Core DI 對照"></a>26. Angular DI 與 .NET Core DI 對照</h1><table>
+<thead>
+<tr>
+<th></th>
+<th>.NET Core</th>
+<th>Angular</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DI Container</td>
+<td>.NET DI</td>
+<td>Angular DI</td>
+</tr>
+<tr>
+<td>常見 DI Token</td>
+<td>Interface &#x2F; Class</td>
+<td>Class &#x2F; InjectionToken</td>
+</tr>
+<tr>
+<td>Interface</td>
+<td>常用於 Service 抽象</td>
+<td>常用於資料結構</td>
+</tr>
+<tr>
+<td>Interface Runtime 存在</td>
+<td>可以作為 Runtime Type</td>
+<td>TypeScript Interface 會消失</td>
+</tr>
+<tr>
+<td>替換實作</td>
+<td><code>IService → Implementation</code></td>
+<td><code>provide → useClass/useValue/useFactory</code></td>
+</tr>
+<tr>
+<td>Unit Test</td>
+<td>DI 替換 Implementation</td>
+<td>TestBed Provider 替換實例</td>
+</tr>
+<tr>
+<td>一般 Service</td>
+<td>Interface + Class 很常見</td>
+<td>直接使用 Class 很常見</td>
+</tr>
+</tbody></table>
+<hr>
+<h1 id="27-最重要的四個觀念"><a href="#27-最重要的四個觀念" class="headerlink" title="27. 最重要的四個觀念"></a>27. 最重要的四個觀念</h1><h3 id="①-Angular-也有-DI"><a href="#①-Angular-也有-DI" class="headerlink" title="① Angular 也有 DI"></a>① Angular 也有 DI</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Component</span><br><span class="line">   ↓</span><br><span class="line">Angular DI</span><br><span class="line">   ↓</span><br><span class="line">Service</span><br></pre></td></tr></table></figure>
+
+<h3 id="②-TypeScript-Interface-不能直接當-Angular-DI-Token"><a href="#②-TypeScript-Interface-不能直接當-Angular-DI-Token" class="headerlink" title="② TypeScript Interface 不能直接當 Angular DI Token"></a>② TypeScript Interface 不能直接當 Angular DI Token</h3><p>因為：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">interface</span> <span class="title class_">IUserService</span> &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>編譯成 JavaScript 後會消失。</p>
+<hr>
+<h3 id="③-Interface-與-InjectionToken-是不同東西"><a href="#③-Interface-與-InjectionToken-是不同東西" class="headerlink" title="③ Interface 與 InjectionToken 是不同東西"></a>③ Interface 與 InjectionToken 是不同東西</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">StorageService</span><br><span class="line">    ↓</span><br><span class="line">Interface</span><br><span class="line">    ↓</span><br><span class="line">定義「規格」</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">STORAGE_SERVICE</span><br><span class="line">    ↓</span><br><span class="line">InjectionToken</span><br><span class="line">    ↓</span><br><span class="line">Angular Runtime 的 DI「鑰匙」</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="④-Provider-決定實際使用哪個實作"><a href="#④-Provider-決定實際使用哪個實作" class="headerlink" title="④ Provider 決定實際使用哪個實作"></a>④ Provider 決定實際使用哪個實作</h3><p>例如：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">provide</span>: <span class="variable constant_">STORAGE_SERVICE</span>,</span><br><span class="line">  <span class="attr">useClass</span>: <span class="title class_">LocalStorageService</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代表：</p>
+<blockquote>
+<p>當 Angular 發現有人要求 <code>STORAGE_SERVICE</code> 時，就提供 <code>LocalStorageService</code>。</p>
+</blockquote>
+<hr>
+<h1 id="28-一句話總結"><a href="#28-一句話總結" class="headerlink" title="28. 一句話總結"></a>28. 一句話總結</h1><blockquote>
+<p><strong>.NET Core 常使用「Interface → Implementation → DI」建立 Service 抽象；Angular 也可以做到，但因為 TypeScript Interface 在 Runtime 會消失，所以需要透過 <code>InjectionToken</code> 作為 Angular DI 的識別依據。實務上 Angular 的 Interface 更多是拿來定義資料結構，而不是每個 Service 都建立一個 Interface。</strong></p>
+</blockquote>
+<hr>
+<h1 id="29-最簡單的記憶方式"><a href="#29-最簡單的記憶方式" class="headerlink" title="29. 最簡單的記憶方式"></a>29. 最簡單的記憶方式</h1><p>可以把整個 Angular Interface + DI 想成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Interface</span><br><span class="line">    ↓</span><br><span class="line">「規格是什麼？」</span><br><span class="line"></span><br><span class="line">InjectionToken</span><br><span class="line">    ↓</span><br><span class="line">「Angular DI 要找哪個依賴？」</span><br><span class="line"></span><br><span class="line">Provider</span><br><span class="line">    ↓</span><br><span class="line">「這個依賴實際使用哪個實作？」</span><br><span class="line"></span><br><span class="line">Component</span><br><span class="line">    ↓</span><br><span class="line">「我只管使用，不管實際是哪個實作。」</span><br></pre></td></tr></table></figure>
+
+<p>也就是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">StorageService</span><br><span class="line">      ↓</span><br><span class="line">規格</span><br><span class="line"></span><br><span class="line">STORAGE_SERVICE</span><br><span class="line">      ↓</span><br><span class="line">DI Token</span><br><span class="line"></span><br><span class="line">provide + useClass / useValue</span><br><span class="line">      ↓</span><br><span class="line">實際實作</span><br><span class="line"></span><br><span class="line">UserComponent</span><br><span class="line">      ↓</span><br><span class="line">使用依賴</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/" data-id="cmt6yrg8h00049kn12mqb5bzg" data-title="Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 15px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 17.5px;">Angular</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12.5px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 12.5px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 17.5px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 17.5px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 17.5px;">docker</a> <a href="/tags/n8n/" style="font-size: 17.5px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12.5px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/">Angular Component 設計檢討</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/">Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式</a>
+          </li>
+        
+          <li>
+            <a href="/2026/07/08/Claude-skill/">Claude Skill</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

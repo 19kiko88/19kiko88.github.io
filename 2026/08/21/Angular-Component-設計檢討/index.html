@@ -14,7 +14,7 @@
 <meta property="og:description" content="Angular Component 設計檢討 —— 從 app.component.ts 學到的教訓文章內容透過ai整理產出">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-08-21T09:57:24.000Z">
-<meta property="article:modified_time" content="2026-08-24T10:04:18.641Z">
+<meta property="article:modified_time" content="2026-08-24T10:10:14.897Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Angular">
 <meta property="article:tag" content="AI產出">
@@ -231,7 +231,7 @@
 </tbody></table>
 <h3 id="本專案的對照"><a href="#本專案的對照" class="headerlink" title="本專案的對照"></a>本專案的對照</h3><ul>
 <li><code>getVgaAlertBomNo(bomNumber: string)</code> 是 util，因為它純粹是「給一個字串，回傳另一個字串或 undefined」，沒有任何依賴、沒有記憶、不需要被 mock。</li>
-<li><code>SvgService.toggleRemindNoticeIfAny(remindNotice)</code> 做成 Service 的方法而不是 util，因為它<strong>需要呼叫另一個被注入的 <code>StatusBarService</code></strong>（<code>this._statusBarService.toggleRemindNotice(...)</code>）——邏輯只要開始「跟外面的世界互動」（呼叫別的 service、發 HTTP、寫 DOM、emit 事件通知別的元件），就不再是純函數，天生就該是 Service 的職責。</li>
+<li><code>SvgService.toggleRemindNoticeIfAny(remindNotice)</code> <span style="color: red;">做成 Service 的方法而不是 util，因為它<strong>需要呼叫另一個被注入的 <code>StatusBarService</code></strong>（<code>this._statusBarService.toggleRemindNotice(...)</code>）——邏輯只要開始「跟外面的世界互動」（呼叫別的 service、發 HTTP、寫 DOM、emit 事件通知別的元件），就不再是純函數，天生就該是 Service 的職責。</span></li>
 <li><code>ChipsetRepairService.chipsetRepairOpenlogs</code>（<code>string[]</code>）也只能活在 Service 裡，因為它要<strong>跨多次滑鼠事件記住「這個 partNumber 已經顯示過提示了」</strong>——util 函數每次呼叫都是獨立的，沒有地方能存這種跨呼叫的狀態。</li>
 </ul>
 <h3 id="判斷準則"><a href="#判斷準則" class="headerlink" title="判斷準則"></a>判斷準則</h3><ol>

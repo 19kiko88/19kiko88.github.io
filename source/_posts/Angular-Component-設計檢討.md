@@ -49,7 +49,7 @@ Angular Component 設計檢討 —— 從 app.component.ts 學到的教訓
 
 - **App 根元件應該儘量「薄」**：只負責畫面骨架（`<router-outlet>`、全域 layout）與少量、明確的啟動觸發點，不該是全 app 商業邏輯的匯集點。
 - **把「初始化流程」本身封裝成一個專門的 Bootstrap/Orchestrator Service**，例如 `AppInitializerService`，讓它去注入需要協調的各種 service，根元件只呼叫 `appInitializerService.init()` 一個方法。這樣元件的建構子依賴數量會大幅下降，而且這個 orchestrator service 更容易單獨測試（因為它不用處理 Angular 元件生命週期、`ViewChild`、DOM 等問題）。
-- 如果某個 service 只在元件裡被使用一次、且用途單一，優先考慮這個依賴是否該屬於另一個「已經被注入」的 service，而不是讓元件直接持有它（詳見第 6 節「移除依賴前要檢查循環風險」）。
+- 如果某個 service 只在元件裡被使用一次、且用途單一，優先考慮這個依賴是否該屬於另一個「已經被注入」的 service，而不是讓元件直接持有它（詳見第 7 節「移除依賴前要檢查循環風險」）。
 
 ---
 
@@ -135,7 +135,38 @@ if (vgaAlertBomNo) {
 
 ---
 
-## 3. 決策邏輯與副作用要分開（尤其是牽涉到共享可變狀態時）
+## 3. `*.util.ts`（純函數）跟 `*.service.ts`（Angular Service）的界線
+
+抽邏輯出來時，另一個常見的疑問是：這段邏輯該放進 `*.util.ts` 還是變成某個 `*.service.ts` 的方法？兩者最核心的差異是「**有沒有狀態、要不要跟 Angular DI 系統打交道**」。
+
+### 核心差異
+
+|  | `*.util.ts`（純函數） | `*.service.ts`（Angular Service） |
+|---|---|---|
+| 有沒有 `@Injectable()` | 沒有，就是普通 TS 模組 | 有，才能被 Angular DI 容器管理 |
+| 呼叫方式 | 直接 `import` 函數來用 | 要透過建構子注入或 `inject()` |
+| 有沒有狀態 | **沒有**，每次呼叫都是全新計算，不記得上次呼叫發生過什麼 | **可以有**，而且通常就是為了「記住東西」才存在 |
+| 有沒有副作用 | **不該有**（不呼叫 HTTP、不寫 DOM、不 emit 事件） | 通常就是負責副作用（API 呼叫、RxJS Subject、寫 localStorage） |
+| 能不能在測試裡替換掉 | 不能，永遠是那個實作 | 能，靠 DI 的 `{ provide: X, useValue: mock }` 覆蓋——這也是本專案能把 `MvcService`、`TranslateService` 換成假物件的原因 |
+| 生命週期 | 沒有，呼叫完就結束 | `providedIn: 'root'` 是整個 app 唯一一個實例（singleton），活得跟 app 一樣久 |
+
+### 本專案的對照
+
+- `getVgaAlertBomNo(bomNumber: string)` 是 util，因為它純粹是「給一個字串，回傳另一個字串或 undefined」，沒有任何依賴、沒有記憶、不需要被 mock。
+- `SvgService.toggleRemindNoticeIfAny(remindNotice)` 做成 Service 的方法而不是 util，因為它**需要呼叫另一個被注入的 `StatusBarService`**（`this._statusBarService.toggleRemindNotice(...)`）——邏輯只要開始「跟外面的世界互動」（呼叫別的 service、發 HTTP、寫 DOM、emit 事件通知別的元件），就不再是純函數，天生就該是 Service 的職責。
+- `ChipsetRepairService.chipsetRepairOpenlogs`（`string[]`）也只能活在 Service 裡，因為它要**跨多次滑鼠事件記住「這個 partNumber 已經顯示過提示了」**——util 函數每次呼叫都是獨立的，沒有地方能存這種跨呼叫的狀態。
+
+### 判斷準則
+
+1. 這段邏輯要不要跟其他 service/API/DOM 互動？要 → Service。不要，純輸入輸出 → util。
+2. 這段邏輯要不要記住上次呼叫的結果？要記住 → Service（狀態要有地方住）。不需要 → util。
+3. 測試時需不需要把這段邏輯本身換成假的？如果連它都要被別人 mock 掉，它就該是能被 DI 覆蓋的 Service，不是 import 進來就跑死的 util 函數。
+
+純函數不是一輩子都是純函數——如果之後某個 util 函數開始需要讀取某個 service 的內部狀態，而不是單純接收參數，這就是它該「升級」變成某個 Service 方法的訊號，不該硬留在 util 裡強迫呼叫端多傳一堆參數進去。
+
+---
+
+## 4. 決策邏輯與副作用要分開（尤其是牽涉到共享可變狀態時）
 
 ### 本專案的案例
 
@@ -182,7 +213,7 @@ export function decideChipsetRepairMouseoverAction(
 
 ---
 
-## 4. Component 內直接操作原生 DOM
+## 5. Component 內直接操作原生 DOM
 
 ### 症狀
 
@@ -202,7 +233,7 @@ export function decideChipsetRepairMouseoverAction(
 
 ---
 
-## 5. 龐大的非同步 Orchestration 邏輯塞進 `ngOnInit`
+## 6. 龐大的非同步 Orchestration 邏輯塞進 `ngOnInit`
 
 ### 症狀
 
@@ -215,7 +246,7 @@ export function decideChipsetRepairMouseoverAction(
 
 ---
 
-## 6. 移除/搬移建構子依賴前，一定要檢查循環依賴風險
+## 7. 移除/搬移建構子依賴前，一定要檢查循環依賴風險
 
 ### 本專案的真實教訓
 
@@ -246,7 +277,7 @@ NavBarService → CommonService → VirtualGroupService → NavBarService
 
 ---
 
-## 7. 測試覆蓋率與可測試性要從第一天就顧到，不要事後補
+## 8. 測試覆蓋率與可測試性要從第一天就顧到，不要事後補
 
 ### 本專案的真實情況
 
@@ -257,13 +288,13 @@ NavBarService → CommonService → VirtualGroupService → NavBarService
 ### 新專案該怎麼做
 
 - **CLI 產生的樣板測試（`expect(x).toBeTruthy()`）沒有實際驗證價值，不要讓它長期停留在專案裡當作「測試覆蓋率」的假象。** 要麼補上真正的行為斷言，要麼在確認沒有維護價值時直接刪除——樣板測試如果長期沒人維護，遲早會變成升級時的阻礙（本專案就是活生生的例子）。
-- **優先把「決策邏輯」抽成純函數並補測試**（見第 2、3 節），這是投入最少、回報最高的測試策略：不需要 `TestBed`、不需要 mock 任何東西。
+- **優先把「決策邏輯」抽成純函數並補測試**（見第 2、4 節），這是投入最少、回報最高的測試策略：不需要 `TestBed`、不需要 mock 任何東西。
 - 如果元件/服務必須依賴一堆共同的底層服務（例如本專案的 `MvcService` 讀取 `window.mvcViewModel`），考慮從專案初期就建立一組共用的測試 provider/stub（類似本專案後來補的 `src/testing/service-stubs.ts`），不要等到要修測試時才發現每個 spec 都要各自兜一套。
 - 升級 Angular 版本、把元件改成 standalone 時，**同步檢查並更新對應的 spec 檔案**，不要讓測試因為版本升級而默默失效。
 
 ---
 
-## 8. 避免在 class field 初始化時就依賴建構子注入的值
+## 9. 避免在 class field 初始化時就依賴建構子注入的值
 
 ### 症狀
 
@@ -280,7 +311,7 @@ ucsSn = this._mvcService.indexViewModel.UcsInfo?.sn;
 
 ---
 
-## 9. 不要在檔案裡留存大段被註解掉的程式碼
+## 10. 不要在檔案裡留存大段被註解掉的程式碼
 
 `app.component.ts` 的 `ngOnInit()` 尾端留有一整段被註解掉的 `MutationObserver` 邏輯（約 20 行）。這類「以防以後要用」的死程式碼，實務上幾乎不會有人重新啟用，只會造成閱讀干擾與誤判風險（新人可能誤以為這段邏輯還在運作，或花時間去理解一段根本不會執行的程式）。
 
@@ -294,6 +325,7 @@ ucsSn = this._mvcService.indexViewModel.UcsInfo?.sn;
 
 - [ ] 這個元件的建構子依賴數量，是不是明顯超出「這個元件實際要做的事」所需？如果超過 8-10 個，該考慮拆出一個 orchestrator/bootstrap service 了。
 - [ ] 元件方法裡有沒有超過一行、沒有副作用的 `if`/`switch` 判斷？有的話，能不能抽成純函數？
+- [ ] 新抽出的邏輯，是該放進 `*.util.ts`（無狀態、不需要 DI），還是該是某個 `*.service.ts` 的方法（需要跟其他 service 互動、需要記住狀態、需要在測試裡被 mock）？
 - [ ] 有沒有「決策」跟「副作用」混在同一段程式碼裡？能不能拆成「純函數回傳決策」+「呼叫端執行副作用」兩層？
 - [ ] 元件裡有沒有直接操作原生 DOM（`document.querySelector`、`addEventListener`、`setAttribute`）？能不能改用 `Renderer2`、`HostListener`、或抽成 Directive？
 - [ ] 新增/搬移一個 service 依賴之前，有沒有檢查過目標位置的完整依賴鏈，確認不會造成循環注入？

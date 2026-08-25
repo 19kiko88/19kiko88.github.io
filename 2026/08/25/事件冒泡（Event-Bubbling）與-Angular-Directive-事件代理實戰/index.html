@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰 | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰這篇整理兩件事：  瀏覽器的事件冒泡機制是什麼、哪些事件會冒泡。 在 Angular 專案裡，如何利用冒泡機制，把「大量同類型元素各自綁定事件」的做法，改成「套一個 Directive 在共同的父層元素上」，並用一個真實案例（PCB 圖上動態繪製的 &lt;circle&gt; 元素）完整走一遍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰">
+<meta property="og:url" content="http://example.com/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰這篇整理兩件事：  瀏覽器的事件冒泡機制是什麼、哪些事件會冒泡。 在 Angular 專案裡，如何利用冒泡機制，把「大量同類型元素各自綁定事件」的做法，改成「套一個 Directive 在共同的父層元素上」，並用一個真實案例（PCB 圖上動態繪製的 &lt;circle&gt; 元素）完整走一遍。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-08-25T06:57:41.000Z">
+<meta property="article:modified_time" content="2026-08-25T06:59:31.983Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Angular">
+<meta property="article:tag" content="AI產出">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-事件冒泡（Event-Bubbling）與-Angular-Directive-事件代理實戰" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/" class="article-date">
+  <time class="dt-published" datetime="2026-08-25T06:57:41.000Z" itemprop="datePublished">2026-08-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="事件冒泡（Event-Bubbling）與-Angular-Directive-事件代理實戰"><a href="#事件冒泡（Event-Bubbling）與-Angular-Directive-事件代理實戰" class="headerlink" title="事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰"></a>事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</h1><p>這篇整理兩件事：</p>
+<ol>
+<li>瀏覽器的事件冒泡機制是什麼、哪些事件會冒泡。</li>
+<li>在 Angular 專案裡，如何利用冒泡機制，把「大量同類型元素各自綁定事件」的做法，改成「套一個 Directive 在共同的父層元素上」，並用一個真實案例（PCB 圖上動態繪製的 <code>&lt;circle&gt;</code> 元素）完整走一遍。</li>
+</ol>
+<span id="more"></span>
+<hr>
+<h2 id="一、什麼是事件冒泡"><a href="#一、什麼是事件冒泡" class="headerlink" title="一、什麼是事件冒泡"></a>一、什麼是事件冒泡</h2><p>當使用者在某個 DOM 元素上觸發一個事件（例如點擊），瀏覽器預設會讓這個事件<strong>沿著 DOM 樹，從觸發的元素開始，一路往上傳遞給它的每一層祖先元素</strong>，直到 <code>document</code>。這個「往上傳遞」的過程就叫做<strong>冒泡（bubbling）</strong>。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;grandparent&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;parent&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">id</span>=<span class="string">&quot;child&quot;</span>&gt;</span>點我<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;grandparent&#x27;</span>).<span class="title function_">addEventListener</span>(<span class="string">&#x27;click&#x27;</span>, <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;grandparent 收到了&#x27;</span>));</span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;parent&#x27;</span>).<span class="title function_">addEventListener</span>(<span class="string">&#x27;click&#x27;</span>, <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;parent 收到了&#x27;</span>));</span><br><span class="line"><span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;child&#x27;</span>).<span class="title function_">addEventListener</span>(<span class="string">&#x27;click&#x27;</span>, <span class="function">() =&gt;</span> <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;child 收到了&#x27;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>點擊 <code>#child</code> 按鈕，執行順序會是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">child 收到了</span><br><span class="line">parent 收到了</span><br><span class="line">grandparent 收到了</span><br></pre></td></tr></table></figure>
+
+<p><code>child</code> 自己先收到事件，事件接著「冒泡」往上傳給 <code>parent</code>，再傳給 <code>grandparent</code>——即使 <code>parent</code>、<code>grandparent</code> 本身完全沒有被點擊，它們一樣收到了通知。</p>
+<p>DOM 事件的完整生命週期實際上有三個階段：<strong>捕獲（capturing，從最外層往下傳到目標元素）→ 目標（target，事件實際發生的元素）→ 冒泡（bubbling，從目標元素往上傳回外層）</strong>。預設情況下 <code>addEventListener</code> 監聽的是冒泡階段，這也是本篇要討論的重點。</p>
+<h3 id="哪些事件會冒泡，哪些不會"><a href="#哪些事件會冒泡，哪些不會" class="headerlink" title="哪些事件會冒泡，哪些不會"></a>哪些事件會冒泡，哪些不會</h3><table>
+<thead>
+<tr>
+<th>事件</th>
+<th>會不會冒泡</th>
+<th>備註</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>click</code></td>
+<td>會</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mouseover</code> &#x2F; <code>mouseout</code></td>
+<td>會</td>
+<td></td>
+</tr>
+<tr>
+<td><code>contextmenu</code></td>
+<td>會</td>
+<td>瀏覽器的右鍵選單事件，本篇案例會用到</td>
+</tr>
+<tr>
+<td><code>mousedown</code> &#x2F; <code>mouseup</code></td>
+<td>會</td>
+<td></td>
+</tr>
+<tr>
+<td><code>keydown</code> &#x2F; <code>keyup</code></td>
+<td>會</td>
+<td></td>
+</tr>
+<tr>
+<td><code>mouseenter</code> &#x2F; <code>mouseleave</code></td>
+<td><strong>不會</strong></td>
+<td>只在滑鼠真正進入&#x2F;離開該元素本身時觸發一次，不理會子元素邊界</td>
+</tr>
+<tr>
+<td><code>focus</code> &#x2F; <code>blur</code></td>
+<td><strong>不會</strong></td>
+<td>有對應會冒泡的版本：<code>focusin</code> &#x2F; <code>focusout</code></td>
+</tr>
+</tbody></table>
+<p><strong>這件事很重要</strong>：如果原本用的是 <code>mouseenter</code>&#x2F;<code>mouseleave</code>&#x2F;<code>focus</code>&#x2F;<code>blur</code> 這類不冒泡的事件，「套在父層監聽」這個技巧完全不成立，父層永遠收不到子元素觸發的事件。使用這個技巧前，一定要先確認手上的事件種類。</p>
+<hr>
+<h2 id="二、為什麼冒泡機制重要：事件代理（Event-Delegation）"><a href="#二、為什麼冒泡機制重要：事件代理（Event-Delegation）" class="headerlink" title="二、為什麼冒泡機制重要：事件代理（Event Delegation）"></a>二、為什麼冒泡機制重要：事件代理（Event Delegation）</h2><p>假設一個頁面上有 1000 個同類型的元素（例如 1000 個 <code>&lt;circle&gt;</code>），每個都需要 <code>mouseover</code> 事件處理邏輯。</p>
+<p><strong>傳統做法</strong>：對每個元素各自呼叫 <code>addEventListener</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">querySelectorAll</span>(<span class="string">&#x27;circle&#x27;</span>).<span class="title function_">forEach</span>(<span class="function"><span class="params">circle</span> =&gt;</span> &#123;</span><br><span class="line">  circle.<span class="title function_">addEventListener</span>(<span class="string">&#x27;mouseover&#x27;</span>, handleMouseOver);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>這樣會建立 1000 個監聽器，而且如果之後又動態新增了新的 <code>circle</code>，新元素不會自動套用這個監聽器，需要重新跑一次這段程式碼。</p>
+<p><strong>事件代理做法</strong>：利用冒泡機制，只在一個<strong>共同的祖先元素</strong>上掛一個監聽器，事件發生時透過 <code>event.target</code> 判斷實際是哪個元素觸發的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">&#x27;container&#x27;</span>).<span class="title function_">addEventListener</span>(<span class="string">&#x27;mouseover&#x27;</span>, <span class="function">(<span class="params">event</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> target = event.<span class="property">target</span>;</span><br><span class="line">  <span class="keyword">if</span> (target.<span class="property">tagName</span>.<span class="title function_">toLowerCase</span>() !== <span class="string">&#x27;circle&#x27;</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span>; <span class="comment">// 不是點在 circle 上，忽略</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="title function_">handleMouseOver</span>(target);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p>好處：</p>
+<ul>
+<li><strong>監聽器數量從 O(n) 降到 O(1)</strong>——不管畫面上有 10 個還是 10000 個 <code>circle</code>，永遠只有 1 個監聽器。</li>
+<li><strong>動態新增的元素自動生效</strong>——因為監聽器根本不是掛在個別元素上，新增的 <code>circle</code> 只要還在這個容器裡面，冒泡事件自然會傳到容器上，不需要重新綁定。</li>
+</ul>
+<hr>
+<h2 id="三、Angular-裡怎麼用：Directive-事件代理"><a href="#三、Angular-裡怎麼用：Directive-事件代理" class="headerlink" title="三、Angular 裡怎麼用：Directive + 事件代理"></a>三、Angular 裡怎麼用：Directive + 事件代理</h2><p>Angular 提供 <code>@Directive</code> + <code>@HostListener</code> 來取代手動的 <code>addEventListener</code>&#x2F;<code>removeEventListener</code>，讓框架自動管理監聽器的掛載跟解除。但這裡有一個容易搞混的地方，值得特別拆開來看。</p>
+<h3 id="selector-比對跟事件冒泡是兩個完全獨立的機制"><a href="#selector-比對跟事件冒泡是兩個完全獨立的機制" class="headerlink" title="selector 比對跟事件冒泡是兩個完全獨立的機制"></a><code>selector</code> 比對跟事件冒泡是兩個完全獨立的機制</h3><ul>
+<li><strong><code>@Directive(&#123; selector: ... &#125;)</code> 的比對</strong>，是 Angular <strong>編譯模板檔案的時候</strong>，靜態分析 <code>.html</code> 原始碼裡有沒有符合這個 selector 的標籤，然後在渲染這個模板時把 Directive 實例接上去。<strong>只有 Angular 自己編譯、自己渲染出來的元素</strong>才會被比對到——如果一個 DOM 節點是用 <code>document.createElement</code>&#x2F;<code>appendChild</code> 這種瀏覽器原生 API 在執行期手動插入的，不管它的 tag&#x2F;class&#x2F;id 多麼符合某個 selector 語法，Angular 都不會幫它套用任何 Directive，因為 Angular 從一開始就不知道這個節點存在。</li>
+<li><strong>事件冒泡</strong>是瀏覽器的 DOM 樹層級行為，跟一個節點是不是 Angular 建立的<strong>完全無關</strong>。只要事件本身會冒泡（見上表），子元素觸發的事件就會一路往上傳到任何一層祖先——不管這個子元素是誰建立的。</li>
+</ul>
+<p>這代表：<strong>Directive「能不能掛上去」取決於目標元素是不是 Angular 渲染的；但 Directive 掛上去之後，「能收到什麼事件」取決於瀏覽器的冒泡機制，跟 Angular 完全無關。</strong> 只要把 Directive 套在一個 Angular 認得、且是目標元素們的共同祖先的節點上，就能同時滿足這兩個條件。</p>
+<hr>
+<h2 id="四、實戰案例：PCB-圖上-circle-元素的事件代理"><a href="#四、實戰案例：PCB-圖上-circle-元素的事件代理" class="headerlink" title="四、實戰案例：PCB 圖上 circle 元素的事件代理"></a>四、實戰案例：PCB 圖上 circle 元素的事件代理</h2><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>專案裡有一頁會畫出整張 PCB 電路圖的 SVG，圖上大量的 <code>&lt;circle&gt;</code> 元素（可能上千個）代表元件的接腳，需要處理右鍵選單（<code>contextmenu</code>）、滑鼠移過（<code>mouseover</code>）、滑鼠移開（<code>mouseout</code>）三種事件（顯示 tooltip、chipset repair 提示、VG 高亮等功能）。</p>
+<p>這些 <code>&lt;circle&gt;</code> 元素<strong>不是寫在任何 Angular 模板（<code>.html</code>）裡的</strong>，而是由 Web Worker 畫完 PCB 圖後，透過一個繪圖 service 用 <code>document.createElementNS(...)</code> + <code>appendChild(...)</code> 手動插入到頁面的 SVG 結構裡，插入的目標容器是一個 Angular 元件模板裡靜態寫著的 <code>&lt;div id=&quot;viz&quot;&gt;&lt;/div&gt;</code>。</p>
+<h3 id="第一直覺（錯誤）：selector-circle"><a href="#第一直覺（錯誤）：selector-circle" class="headerlink" title="第一直覺（錯誤）：selector: &#39;circle&#39;"></a>第一直覺（錯誤）：<code>selector: &#39;circle&#39;</code></h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Directive</span>(&#123;</span><br><span class="line">  <span class="attr">selector</span>: <span class="string">&#x27;circle&#x27;</span>, <span class="comment">// ❌ 永遠不會生效</span></span><br><span class="line">  <span class="attr">standalone</span>: <span class="literal">true</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">CircleInteractionDirective</span> &#123; ... &#125;</span><br></pre></td></tr></table></figure>
+
+<p>因為 <code>circle</code> 元素不是 Angular 渲染出來的，Angular 編譯期根本沒看過這個標籤出現在任何模板裡，這個 Directive 永遠不會被實例化——是一段死程式碼。</p>
+<h3 id="正確做法：套在-viz-上，用事件代理判斷-event-target"><a href="#正確做法：套在-viz-上，用事件代理判斷-event-target" class="headerlink" title="正確做法：套在 #viz 上，用事件代理判斷 event.target"></a>正確做法：套在 <code>#viz</code> 上，用事件代理判斷 <code>event.target</code></h3><figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">interface</span> <span class="title class_">CircleContextMenuEvent</span> &#123;</span><br><span class="line">  <span class="attr">event</span>: <span class="title class_">MouseEvent</span>;</span><br><span class="line">  <span class="attr">element</span>: <span class="title class_">SVGCircleElement</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Directive</span>(&#123;</span><br><span class="line">  <span class="attr">selector</span>: <span class="string">&#x27;[appCircleInteraction]&#x27;</span>, <span class="comment">// ✅ 套用在 Angular 認得的 #viz 容器上</span></span><br><span class="line">  <span class="attr">standalone</span>: <span class="literal">true</span></span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">CircleInteractionDirective</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Output</span>() circleContextMenu = <span class="keyword">new</span> <span class="title class_">EventEmitter</span>&lt;<span class="title class_">CircleContextMenuEvent</span>&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="meta">@HostListener</span>(<span class="string">&#x27;contextmenu&#x27;</span>, [<span class="string">&#x27;$event&#x27;</span>])</span><br><span class="line">  <span class="title function_">onContextMenu</span>(<span class="attr">event</span>: <span class="title class_">MouseEvent</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> element = event.<span class="property">target</span> <span class="keyword">as</span> <span class="title class_">SVGCircleElement</span>;</span><br><span class="line">    <span class="keyword">if</span> (element.<span class="property">tagName</span>?.<span class="title function_">toLowerCase</span>() !== <span class="string">&#x27;circle&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>; <span class="comment">// 事件冒泡上來，但不是點在 circle 上，忽略</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    event.<span class="title function_">preventDefault</span>(); <span class="comment">// 擋掉瀏覽器原生右鍵選單</span></span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">circleContextMenu</span>.<span class="title function_">emit</span>(&#123; event, element &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@HostListener</span>(<span class="string">&#x27;mouseover&#x27;</span>, [<span class="string">&#x27;$event&#x27;</span>])</span><br><span class="line">  <span class="title function_">onMouseOver</span>(<span class="attr">event</span>: <span class="title class_">MouseEvent</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> element = event.<span class="property">target</span> <span class="keyword">as</span> <span class="title class_">SVGCircleElement</span>;</span><br><span class="line">    <span class="keyword">if</span> (element.<span class="property">tagName</span>?.<span class="title function_">toLowerCase</span>() !== <span class="string">&#x27;circle&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...顯示 tooltip、chipset repair 判斷等邏輯</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="meta">@HostListener</span>(<span class="string">&#x27;mouseout&#x27;</span>, [<span class="string">&#x27;$event&#x27;</span>])</span><br><span class="line">  <span class="title function_">onMouseOut</span>(<span class="attr">event</span>: <span class="title class_">MouseEvent</span>): <span class="built_in">void</span> &#123;</span><br><span class="line">    <span class="keyword">const</span> element = event.<span class="property">target</span> <span class="keyword">as</span> <span class="title class_">SVGCircleElement</span>;</span><br><span class="line">    <span class="keyword">if</span> (element.<span class="property">tagName</span>?.<span class="title function_">toLowerCase</span>() !== <span class="string">&#x27;circle&#x27;</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// ...隱藏 tooltip</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>套用在模板上：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- pcb-svg.component.html --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;viz&quot;</span> <span class="attr">appCircleInteraction</span> (<span class="attr">circleContextMenu</span>)=<span class="string">&quot;circleContextMenu.emit($event)&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>#viz</code> 是模板裡寫死的 <code>&lt;div&gt;</code>，Angular 編譯期認得它，所以 <code>[appCircleInteraction]</code> 這個 Directive 可以正常套用；而使用者在動態插入的 <code>circle</code> 上按右鍵&#x2F;移過&#x2F;移開時，<code>contextmenu</code>&#x2F;<code>mouseover</code>&#x2F;<code>mouseout</code> 這三個事件會冒泡到 <code>#viz</code>，被 Directive 的 <code>@HostListener</code> 收到，再用 <code>event.target</code> 判斷「這次事件真正發生在哪個元素上」。</p>
+<h3 id="一個額外要處理的細節：顯示右鍵選單的-UI-在另一個元件裡"><a href="#一個額外要處理的細節：顯示右鍵選單的-UI-在另一個元件裡" class="headerlink" title="一個額外要處理的細節：顯示右鍵選單的 UI 在另一個元件裡"></a>一個額外要處理的細節：顯示右鍵選單的 UI 在另一個元件裡</h3><p>實際顯示右鍵選單的 PrimeNG <code>&lt;p-contextMenu&gt;</code> 元件，宣告在 <code>AppComponent</code> 的模板裡，不是持有 <code>#viz</code> 的 <code>PcbSvgComponent</code>。Directive 沒辦法直接碰到別的元件模板裡的東西，所以做法是：Directive 只負責「確認是 circle + 組裝資料」，透過 <code>@Output() circleContextMenu</code> 把事件送出去；持有 <code>#viz</code> 的元件把這個事件原封不動往外轉發；最外層的 <code>AppComponent</code> 監聽這個轉發後的事件，在那裡才真正呼叫顯示選單的邏輯。這是 Angular 常見的「子元件事件逐層往上轉發」模式，跟事件冒泡是兩個不同層級的機制（一個是瀏覽器 DOM 事件冒泡，一個是 Angular 元件之間的 <code>@Output</code>&#x2F;<code>@Input</code> 通訊），只是恰好都在解決類似的問題：「這個資訊在 A 產生，但要在 B 使用」。</p>
+<h3 id="這次修正額外帶來的好處"><a href="#這次修正額外帶來的好處" class="headerlink" title="這次修正額外帶來的好處"></a>這次修正額外帶來的好處</h3><ol>
+<li><strong>監聽器數量從 O(n) 降到 O(1)</strong>：原本是幫每一個 <code>circle</code>（可能上千個）各自掛 3 個監聽器，現在整張圖只有 3 個監聽器（掛在 <code>#viz</code> 上）。</li>
+<li><strong>修好了一個隱藏的既有缺陷</strong>：原本的寫法只在初始化那一刻幫「當時存在」的 circle 掛監聽器，如果之後切換層別重新繪圖，新畫出來的 circle 不會被重新綁定，這三個事件就永久失效了。改成事件代理後，新插入的 circle 不需要任何額外動作就能自動生效。</li>
+<li><strong>元件的建構子依賴變少了</strong>：因為這三個事件處理邏輯需要用到的幾個 service（tooltip、VG 高亮、chipset repair 相關）原本注入在根元件裡，現在整段邏輯搬進 Directive 之後，根元件完全不再需要這幾個依賴。</li>
+</ol>
+<hr>
+<h2 id="五、總結"><a href="#五、總結" class="headerlink" title="五、總結"></a>五、總結</h2><ul>
+<li><strong>事件冒泡</strong>：子元素觸發的事件會沿 DOM 樹往上傳給每一層祖先，前提是這個事件本身會冒泡（多數滑鼠&#x2F;鍵盤事件會，<code>mouseenter</code>&#x2F;<code>mouseleave</code>&#x2F;<code>focus</code>&#x2F;<code>blur</code> 不會）。</li>
+<li><strong>事件代理</strong>：利用冒泡機制，把監聽器集中掛在共同的祖先元素上，靠 <code>event.target</code> 判斷實際觸發來源，取代對每個元素各自綁定監聽器。</li>
+<li><strong>Angular Directive 的 <code>selector</code> 比對，只認 Angular 自己渲染出來的元素</strong>；跟事件冒泡是完全獨立的兩套機制——<code>selector</code> 決定 Directive 能不能被放上去，冒泡決定放上去之後能收到哪些事件。</li>
+<li>當要處理「一大群同類型元素的事件」時，先確認這些元素是不是 Angular 渲染的：<ul>
+<li>是 → 可以直接把 <code>selector</code> 設成該元素，也可以視效能需求選擇用事件代理套在共同祖先上。</li>
+<li>不是（例如由第三方繪圖函式庫、Web Worker 動態插入的原生 DOM）→ <strong>必須</strong>用事件代理，套在一個 Angular 認得、且包含這些元素的穩定祖先節點上，這是唯一還能用宣告式 Directive 反應到這些事件的辦法。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/" data-id="cmt8bew2v003eucn183i6evz8" data-title="事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/GCP/">GCP</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%87%AA%E5%8B%95%E5%8C%96/">自動化</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GAS/" rel="tag">GAS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 17.5px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 20px;">Angular</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12.5px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 12.5px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 15px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 15px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 15px;">docker</a> <a href="/tags/n8n/" style="font-size: 15px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12.5px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/">事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/">Angular Component 設計檢討</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/">Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

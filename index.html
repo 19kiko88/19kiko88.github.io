@@ -75,6 +75,59 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-事件冒泡（Event-Bubbling）與-Angular-Directive-事件代理實戰" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/" class="article-date">
+  <time class="dt-published" datetime="2026-08-25T06:57:41.000Z" itemprop="datePublished">2026-08-25</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/">事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="事件冒泡（Event-Bubbling）與-Angular-Directive-事件代理實戰"><a href="#事件冒泡（Event-Bubbling）與-Angular-Directive-事件代理實戰" class="headerlink" title="事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰"></a>事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</h1><p>這篇整理兩件事：</p>
+<ol>
+<li>瀏覽器的事件冒泡機制是什麼、哪些事件會冒泡。</li>
+<li>在 Angular 專案裡，如何利用冒泡機制，把「大量同類型元素各自綁定事件」的做法，改成「套一個 Directive 在共同的父層元素上」，並用一個真實案例（PCB 圖上動態繪製的 <code>&lt;circle&gt;</code> 元素）完整走一遍。</li>
+</ol>
+        
+          <p class="article-more-link">
+            <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/" data-id="cmt8bew2v003eucn183i6evz8" data-title="事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Angular-與-NET-Core-的依賴注入-DI-比較筆記-ChatGPT" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/" class="article-date">
@@ -111,7 +164,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/" data-id="cmt6yrg8h00049kn12mqb5bzg" data-title="Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/" data-id="cmt8bew200008ucn1cewahcla" data-title="Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -162,7 +215,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/" data-id="cmt6yrg8p000a9kn1a3j75wa1" data-title="Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/" data-id="cmt8bew1x0004ucn1bkzmg7n3" data-title="Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -211,7 +264,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/" data-id="cmt6yrg8l00059kn1dnef5pye" data-title="Angular Component 設計檢討" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/" data-id="cmt8bew1y0005ucn1c4pga1lw" data-title="Angular Component 設計檢討" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -260,7 +313,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/" data-id="cmt6yrg94001m9kn1as8khvw4" data-title="Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/" data-id="cmt8bew2j001mucn1flm1cfd3" data-title="Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -309,7 +362,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/07/08/Claude-skill/" data-id="cmt6yrg8o00099kn164d2bg0y" data-title="Claude Skill" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/07/08/Claude-skill/" data-id="cmt8bew2e0015ucn1eo4o0t76" data-title="Claude Skill" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -358,7 +411,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/07/03/n8n-workflow%E5%8C%85%E8%A3%9D%E6%88%90MCP-Server/" data-id="cmt6yrg91001c9kn19oxbf5ox" data-title="n8n workflow包裝成MCP Service" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/07/03/n8n-workflow%E5%8C%85%E8%A3%9D%E6%88%90MCP-Server/" data-id="cmt8bew30003uucn1ghqkaqe3" data-title="n8n workflow包裝成MCP Service" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -407,7 +460,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/06/30/n8n-with-Git/" data-id="cmt6yrg92001e9kn1c9tz81jp" data-title="n8n with Git" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/06/30/n8n-with-Git/" data-id="cmt8bew2i001iucn19sjeg6mp" data-title="n8n with Git" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -456,7 +509,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/06/26/%E9%80%8F%E9%81%8E%E9%8F%A1%E5%83%8F%E7%B6%B2%E8%B7%AF(Mirror%20Network)%E8%AE%93Host%E7%B6%B2%E8%B7%AF%E8%A8%AD%E5%AE%9A%E8%88%87Docker%E5%90%8C%E6%AD%A5/" data-id="cmt6yrg9e003j9kn10m2112uc" data-title="透過鏡像網路(Mirror Network)讓Host網路設定與Docker同步!" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/06/26/%E9%80%8F%E9%81%8E%E9%8F%A1%E5%83%8F%E7%B6%B2%E8%B7%AF(Mirror%20Network)%E8%AE%93Host%E7%B6%B2%E8%B7%AF%E8%A8%AD%E5%AE%9A%E8%88%87Docker%E5%90%8C%E6%AD%A5/" data-id="cmt8bew2x003hucn11viy7n8u" data-title="透過鏡像網路(Mirror Network)讓Host網路設定與Docker同步!" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -505,60 +558,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/06/24/WSL2-with-n8n/" data-id="cmt6yrg8y000y9kn17eapb3ai" data-title="WSL2 with n8n" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/06/24/WSL2-with-n8n/" data-id="cmt8bew2f0019ucn19bhw544m" data-title="WSL2 with n8n" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-應用claude-code進行弱點掃描修改" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2026/06/17/%E6%87%89%E7%94%A8claude-code%E9%80%B2%E8%A1%8C%E5%BC%B1%E9%BB%9E%E6%8E%83%E6%8F%8F%E4%BF%AE%E6%94%B9/" class="article-date">
-  <time class="dt-published" datetime="2026-06-17T08:14:45.000Z" itemprop="datePublished">2026-06-17</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/06/17/%E6%87%89%E7%94%A8claude-code%E9%80%B2%E8%A1%8C%E5%BC%B1%E9%BB%9E%E6%8E%83%E6%8F%8F%E4%BF%AE%E6%94%B9/">應用Claude Code進行弱點掃描修改</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h5 id="弱點掃描修正一直是件痛苦的事情，但現在有了AI讓這件事情變簡單了許多。"><a href="#弱點掃描修正一直是件痛苦的事情，但現在有了AI讓這件事情變簡單了許多。" class="headerlink" title="弱點掃描修正一直是件痛苦的事情，但現在有了AI讓這件事情變簡單了許多。"></a>弱點掃描修正一直是件痛苦的事情，但現在有了AI讓這件事情變簡單了許多。</h5>
-        
-          <p class="article-more-link">
-            <a href="/2026/06/17/%E6%87%89%E7%94%A8claude-code%E9%80%B2%E8%A1%8C%E5%BC%B1%E9%BB%9E%E6%8E%83%E6%8F%8F%E4%BF%AE%E6%94%B9/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2026/06/17/%E6%87%89%E7%94%A8claude-code%E9%80%B2%E8%A1%8C%E5%BC%B1%E9%BB%9E%E6%8E%83%E6%8F%8F%E4%BF%AE%E6%94%B9/" data-id="cmt6yrg93001i9kn1enr20s7n" data-title="應用Claude Code進行弱點掃描修改" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
 
     </footer>
   </div>
@@ -603,7 +607,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 15px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 17.5px;">Angular</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12.5px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 12.5px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 15px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 15px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 15px;">docker</a> <a href="/tags/n8n/" style="font-size: 15px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12.5px;">資安</a>
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 17.5px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 20px;">Angular</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12.5px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/GAS/" style="font-size: 12.5px;">GAS</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 15px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 15px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 15px;">docker</a> <a href="/tags/n8n/" style="font-size: 15px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12.5px;">資安</a>
     </div>
   </div>
 
@@ -625,6 +629,10 @@
       <ul>
         
           <li>
+            <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/">事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</a>
+          </li>
+        
+          <li>
             <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT</a>
           </li>
         
@@ -638,10 +646,6 @@
         
           <li>
             <a href="/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/">Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式</a>
-          </li>
-        
-          <li>
-            <a href="/2026/07/08/Claude-skill/">Claude Skill</a>
           </li>
         
       </ul>

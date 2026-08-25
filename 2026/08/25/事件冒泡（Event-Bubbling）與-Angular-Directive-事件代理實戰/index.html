@@ -14,7 +14,7 @@
 <meta property="og:description" content="這篇整理兩件事：  瀏覽器的事件冒泡機制是什麼、哪些事件會冒泡。 在 Angular 專案裡，如何利用冒泡機制，把「大量同類型元素各自綁定事件」的做法，改成「套一個 Directive 在共同的父層元素上」，並用一個真實案例（PCB 圖上動態繪製的 &lt;circle&gt; 元素）完整走一遍。  文章內容透過ai整理產出">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-08-25T06:57:41.000Z">
-<meta property="article:modified_time" content="2026-08-25T07:06:43.043Z">
+<meta property="article:modified_time" content="2026-08-25T07:12:08.864Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Angular">
 <meta property="article:tag" content="AI產出">
@@ -204,6 +204,20 @@
 
 <p><code>#viz</code> 是模板裡寫死的 <code>&lt;div&gt;</code>，Angular 編譯期認得它，所以 <code>[appCircleInteraction]</code> 這個 Directive 可以正常套用；而使用者在動態插入的 <code>circle</code> 上按右鍵&#x2F;移過&#x2F;移開時，<code>contextmenu</code>&#x2F;<code>mouseover</code>&#x2F;<code>mouseout</code> 這三個事件會冒泡到 <code>#viz</code>，被 Directive 的 <code>@HostListener</code> 收到，再用 <code>event.target</code> 判斷「這次事件真正發生在哪個元素上」。</p>
 <h3 id="一個額外要處理的細節：顯示右鍵選單的-UI-在另一個元件裡"><a href="#一個額外要處理的細節：顯示右鍵選單的-UI-在另一個元件裡" class="headerlink" title="一個額外要處理的細節：顯示右鍵選單的 UI 在另一個元件裡"></a>一個額外要處理的細節：顯示右鍵選單的 UI 在另一個元件裡</h3><p>實際顯示右鍵選單的 PrimeNG <code>&lt;p-contextMenu&gt;</code> 元件，宣告在 <code>AppComponent</code> 的模板裡，不是持有 <code>#viz</code> 的 <code>PcbSvgComponent</code>。Directive 沒辦法直接碰到別的元件模板裡的東西，所以做法是：Directive 只負責「確認是 circle + 組裝資料」，<span style="color: red;">透過 <code>@Output() circleContextMenu</code> 把事件送出去；持有 <code>#viz</code> 的元件把這個事件原封不動往外轉發；最外層的 <code>AppComponent</code> 監聽這個轉發後的事件，在那裡才真正呼叫顯示選單的邏輯。這是 Angular 常見的「子元件事件逐層往上轉發」模式，跟事件冒泡是兩個不同層級的機制（一個是瀏覽器 DOM 事件冒泡，一個是 Angular 元件之間的 <code>@Output</code>&#x2F;<code>@Input</code> 通訊），只是恰好都在解決類似的問題：「這個資訊在 A 產生，但要在 B 使用」。</span></p>
+<h4 id="Output-的基本用法"><a href="#Output-的基本用法" class="headerlink" title="@Output() 的基本用法"></a><code>@Output()</code> 的基本用法</h4><p><code>@Output()</code> 是 Angular 讓子層（元件或 Directive）「主動通知外層發生了什麼事、並附帶資料」的機制，一定要搭配 <code>EventEmitter</code> 使用：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 子層（元件或 Directive）</span></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">class</span> <span class="title class_">ChildThing</span> &#123;</span><br><span class="line">  <span class="meta">@Output</span>() somethingHappened = <span class="keyword">new</span> <span class="title class_">EventEmitter</span>&lt;<span class="title class_">SomeType</span>&gt;();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="title function_">notifyParent</span>(<span class="params"><span class="attr">payload</span>: <span class="title class_">SomeType</span></span>) &#123;</span><br><span class="line">    <span class="variable language_">this</span>.<span class="property">somethingHappened</span>.<span class="title function_">emit</span>(payload); <span class="comment">// 送出事件跟資料</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>外層模板監聽（圓括號 <code>()</code> 是 Angular 綁定「事件」的語法，對應方括號 <code>[]</code> 綁定「屬性」）：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">app-child-thing</span> (<span class="attr">somethingHappened</span>)=<span class="string">&quot;onSomethingHappened($event)&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">app-child-thing</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><code>$event</code> 在這裡就是 <code>emit(payload)</code> 傳進去的那個 <code>payload</code>。</p>
+<p><strong>跟 DOM 事件冒泡最大的不同</strong>：<code>@Output()</code> 完全是 Angular 自己的機制，只在模板裡有寫父子關係綁定的元件&#x2F;Directive 之間才會生效，<strong>不會</strong>像<br>瀏覽器原生事件那樣自動沿著元件樹一路往上傳——每一層都要自己手動用 <code>(eventName)=&quot;...&quot;</code> 接住，再自己決定要不要往上再轉發一次。對照本篇案例的<br>完整鏈路：</p>
+<ol>
+<li><code>CircleInteractionDirective</code>（套在 <code>#viz</code> 上）：<code>this.circleContextMenu.emit(&#123; event, element &#125;)</code></li>
+<li><code>PcbSvgComponent</code>（持有 <code>#viz</code> 的元件）模板：<code>(circleContextMenu)=&quot;circleContextMenu.emit($event)&quot;</code> —— 接住 Directive 的事件，透過自己*<br><em>同名的</em>* <code>@Output()</code> 原封不動再送出去一次</li>
+<li><code>AppComponent</code> 模板：<code>&lt;app-pcb-svg (circleContextMenu)=&quot;onCircleContextMenu($event)&quot;&gt;&lt;/app-pcb-svg&gt;</code> —— 接住 <code>PcbSvgComponent</code> 轉發的事<br>件，在對應方法裡才真正呼叫 <code>this.cm?.show(event)</code> 顯</li>
+</ol>
+<p>三層缺一個綁定，事件就傳不過去——這跟冒泡「不用手動接、自動往上跑」是完全相反的心智模型，這也是為什麼这篇特別把兩者放在一起比較。</p>
 <h3 id="這次修正額外帶來的好處"><a href="#這次修正額外帶來的好處" class="headerlink" title="這次修正額外帶來的好處"></a>這次修正額外帶來的好處</h3><ol>
 <li><strong>監聽器數量從 O(n) 降到 O(1)</strong>：原本是幫每一個 <code>circle</code>（可能上千個）各自掛 3 個監聽器，現在整張圖只有 3 個監聽器（掛在 <code>#viz</code> 上）。</li>
 <li><strong>修好了一個隱藏的既有缺陷</strong>：原本的寫法只在初始化那一刻幫「當時存在」的 circle 掛監聽器，如果之後切換層別重新繪圖，新畫出來的 circle 不會被重新綁定，這三個事件就永久失效了。改成事件代理後，新插入的 circle 不需要任何額外動作就能自動生效。</li>

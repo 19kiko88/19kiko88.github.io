@@ -14,7 +14,7 @@
 <meta property="og:description" content="Angular Component 設計檢討 —— 從 app.component.ts 學到的教訓文章內容透過ai整理產出">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-08-21T09:57:24.000Z">
-<meta property="article:modified_time" content="2026-08-24T10:47:42.988Z">
+<meta property="article:modified_time" content="2026-08-27T08:56:08.036Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="Angular">
 <meta property="article:tag" content="AI產出">
@@ -287,6 +287,14 @@
 <li>現在的寫法是幫<strong>每一個</strong> <code>circle</code>（PCB 圖可能有成千上萬個）各自掛 3 個監聽器；改成外層容器上只掛 3 個監聽器、靠事件冒泡判斷 target，數量從 O(n) 降到 O(1)，效能更好。</li>
 <li>現在的寫法只在 <code>init()</code> 執行的那一刻幫「當時存在」的 circle 掛監聽器——如果之後切換 layer 重新繪圖，新畫出來的 circle <strong>不會</strong>被重新掛上這三個事件（這是現有程式碼一個隱藏的潛在缺陷）。改成容器層級的事件代理後，新插入的 circle 自動就能被監聽到，不需要重新執行任何綁定邏輯。</li>
 </ol>
+<p><strong>這個修正已經真正落地，並經過一輪重新檢視再調整過</strong>：新增 <code>CircleInteractionDirective</code>（<code>selector: &#39;[appCircleInteraction]&#39;</code>），套用在 <code>pcb-svg.component.html</code> 的 <code>&lt;div id=&quot;viz&quot;&gt;</code> 上，負責 <code>mouseover</code>&#x2F;<code>mouseout</code>，都先用共用的 <code>isCircleElement()</code> type guard 檢查 <code>event.target</code>，不是 <code>circle</code> 就直接 <code>return</code>。</p>
+<p><strong><code>contextmenu</code> 一開始也放進了同一個 Directive</strong>，判斷完是不是 circle 後透過 <code>@Output() circleContextMenu</code> 一路轉發（Directive → <code>PcbSvgComponent</code> 轉發一次 → <code>AppComponent</code> 才真正處理），理由是「顯示選單的 <code>&lt;p-contextMenu&gt;</code> 元件宣告在 <code>AppComponent</code> 模板裡，Directive 碰不到」。但重新檢視後發現這個理由不成立：<code>contextmenu</code> 需要的東西（<code>ContextMenuService</code>、<code>cm</code>、<code>menuItems</code>）本來就已經是 <code>AppComponent</code> 既有的東西，而 <code>&lt;app-pcb-svg&gt;</code> 這個標籤本身就寫在 <code>app.component.html</code> 裡、範圍剛好完整包住 <code>#viz</code>——直接在這個標籤上用 <code>(contextmenu)=&quot;onCircleContextMenu($event)&quot;</code> 接原生事件即可，完全不需要 <code>@Output</code> 或元件轉發。最後拆成：</p>
+<ul>
+<li><code>CircleInteractionDirective</code>（在 <code>#viz</code> 上）：只保留 <code>mouseover</code>&#x2F;<code>mouseout</code>，另外保留一個很小的 <code>contextmenu</code> 監聽，只做「隱藏 tooltip」這一件事（因為這是 hover 生命週期的一部分，<code>ToolTipService</code> 已經是這裡既有的依賴）。</li>
+<li><code>AppComponent</code>（在 <code>&lt;app-pcb-svg&gt;</code> 標籤上，原生事件綁定）：負責「確認是 circle + <code>preventDefault</code> + 呼叫 <code>ContextMenuService.getContextContent()</code> + <code>cm.show()</code>」，也就是真正顯示選單的部分。</li>
+</ul>
+<p>同一個 <code>contextmenu</code> 事件，因此會被兩個獨立的監聽器（Directive 跟 <code>AppComponent</code>）各自收到、各自處理，互不干擾——這正好示範了冒泡機制的另一個特性：<strong>同一個事件可以在冒泡路徑上的多個祖先層級被獨立處理，不需要集中在一個地方，也不需要它們知道對方存在。</strong></p>
+<p>意外的額外收穫：<code>mouseover</code>&#x2F;<code>mouseout</code> 需要的 <code>ToolTipService</code>、<code>VirtualGroupService</code>、<code>ChipsetRepairService</code> 三個 service 在 <code>AppComponent</code> 裡完全沒有其他用途了，順手從建構子移除；<code>contextmenu</code> 需要的 <code>ContextMenuService</code> 則完全不受影響（本來就在，不多也不少）——這跟第 7 節「反面教材」剛好相反：這次是先把邏輯放對地方，副作用剛好是依賴數量降低，不是反過來為了湊依賴數量犧牲放置位置。這也是一個值得記住的教訓：<strong>先評估「這段邏輯的資料跟依賴本來就該屬於哪個元件」，再決定監聽器&#x2F;Directive 放哪裡，比先寫好一個大 Directive、再想辦法把資料轉發出去更省事。</strong></p>
 <h3 id="新專案該怎麼做-3"><a href="#新專案該怎麼做-3" class="headerlink" title="新專案該怎麼做"></a>新專案該怎麼做</h3><ul>
 <li>優先用 Angular 的 <code>Renderer2</code>、<code>HostListener</code>、Structural&#x2F;Attribute Directive 來處理 DOM 互動，而不是在元件方法裡手動 <code>querySelectorAll</code>。</li>
 <li>如果某一群元素都需要同一組事件處理邏輯，這是考慮 Directive 的訊號——但<strong>先確認這些元素是不是 Angular 自己渲染出來的</strong>。是的話可以直接把 <code>selector</code> 設成該元素；如果是像本例這樣由其他機制（Web Worker、第三方繪圖函式庫）動態插入的原生 DOM，Directive 要套在一個 Angular 認得的<strong>穩定外層容器</strong>上，搭配事件代理（檢查 <code>event.target</code>）來處理，不能天真地把 <code>selector</code> 設成動態元素本身的標籤名稱。</li>
@@ -350,7 +358,7 @@
 <li><input disabled="" type="checkbox"> 元件方法裡有沒有超過一行、沒有副作用的 <code>if</code>&#x2F;<code>switch</code> 判斷？有的話，能不能抽成純函數？</li>
 <li><input disabled="" type="checkbox"> 新抽出的邏輯，是該放進 <code>*.util.ts</code>（無狀態、不需要 DI），還是該是某個 <code>*.service.ts</code> 的方法（需要跟其他 service 互動、需要記住狀態、需要在測試裡被 mock）？</li>
 <li><input disabled="" type="checkbox"> 有沒有「決策」跟「副作用」混在同一段程式碼裡？能不能拆成「純函數回傳決策」+「呼叫端執行副作用」兩層？</li>
-<li><input disabled="" type="checkbox"> 元件裡有沒有直接操作原生 DOM（<code>document.querySelector</code>、<code>addEventListener</code>、<code>setAttribute</code>）？能不能改用 <code>Renderer2</code>、<code>HostListener</code>、或抽成 Directive？</li>
+<li><input disabled="" type="checkbox"> 元件裡有沒有直接操作原生 DOM（<code>document.querySelector</code>、<code>addEventListener</code>、<code>setAttribute</code>）？能不能改用 <code>Renderer2</code>、<code>HostListener</code>、或抽成 Directive？如果要用 Directive，這些元素是 Angular 自己渲染的嗎？如果是其他機制（Web Worker、第三方函式庫）動態插入的原生 DOM，<code>selector</code> 不能直接設成該元素本身，要套在穩定的外層容器上搭配事件代理。</li>
 <li><input disabled="" type="checkbox"> 新增&#x2F;搬移一個 service 依賴之前，有沒有檢查過目標位置的完整依賴鏈，確認不會造成循環注入？<strong>而且</strong>目標位置的職責範圍跟這段邏輯對得上（循環安全跟放對地方是兩個獨立條件，都要成立）？</li>
 <li><input disabled="" type="checkbox"> 每個 service&#x2F;component 產生時，是否同時補上「有實際驗證價值」的測試，而不是留一個空的 <code>toBeTruthy()</code> 樣板？</li>
 <li><input disabled="" type="checkbox"> 有沒有依賴建構子注入值的 class field 初始化寫法？是否該搬進建構子主體讓順序明確？</li>
@@ -414,13 +422,25 @@
 <td><code>core/services/svg.service.ts</code>（<code>onResize()</code>），元件只留 <code>@HostListener</code> 委派</td>
 <td>4 個測試案例</td>
 </tr>
+<tr>
+<td>circle <code>mouseover</code>&#x2F;<code>mouseout</code> 事件綁定</td>
+<td><code>app.component.ts</code> <code>init()</code>（<code>document.querySelectorAll(&#39;circle&#39;).forEach(...)</code>）</td>
+<td><code>shared/directives/circle-interaction.directive.ts</code>（套在 <code>#viz</code> 上，事件代理）</td>
+<td>額外移除 <code>ToolTipService</code>、<code>VirtualGroupService</code>、<code>ChipsetRepairService</code> 3 個建構子依賴</td>
+</tr>
+<tr>
+<td>circle <code>contextmenu</code> 事件綁定</td>
+<td>同上（原本跟 mouseover&#x2F;mouseout 一起處理）</td>
+<td><code>app.component.html</code> 的 <code>&lt;app-pcb-svg (contextmenu)=&quot;onCircleContextMenu($event)&quot;&gt;</code>（原生事件綁定，不用 Directive&#x2F;<code>@Output</code>）</td>
+<td>2 個測試案例；<code>ContextMenuService</code> 不受影響（本來就在）</td>
+</tr>
 </tbody></table>
 <p>這些都是實際落地的重構，可以直接參考程式碼與對應的 <code>.spec.ts</code> 當作範例。<strong>其中 Remind Notice 那一列本身就是一個真實的反例：第一次搬移只檢查了循環依賴風險，沒檢查職責歸屬，後來被抓出來修正——保留這段記錄，比只呈現「成功」的重構更有參考價值。</strong></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/" data-id="cmt8bew1y0005ucn1c4pga1lw" data-title="Angular Component 設計檢討" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/" data-id="cmtbahbzc0006agn18wctenv7" data-title="Angular Component 設計檢討" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

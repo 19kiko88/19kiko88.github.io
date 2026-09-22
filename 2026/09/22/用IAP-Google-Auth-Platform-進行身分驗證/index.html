@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>用IAP + Google Auth Platform 進行身分驗證 | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="用 IAP + Google Auth Platform 保護一個 .NET 控制面板：完整踩坑記錄這篇記錄我把一個 ASP.NET Core 寫的小型控制面板（用來手動開關另一個 Cloud Run 服務）串上 Google 的 Identity-Aware Proxy（IAP），只讓自己的 Google 帳號能登入使用的完整過程——中間因為 Google 剛好在這段時間淘汰了舊版 IAP 設定">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用IAP + Google Auth Platform 進行身分驗證">
+<meta property="og:url" content="http://example.com/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="用 IAP + Google Auth Platform 保護一個 .NET 控制面板：完整踩坑記錄這篇記錄我把一個 ASP.NET Core 寫的小型控制面板（用來手動開關另一個 Cloud Run 服務）串上 Google 的 Identity-Aware Proxy（IAP），只讓自己的 Google 帳號能登入使用的完整過程——中間因為 Google 剛好在這段時間淘汰了舊版 IAP 設定">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-09-22T07:34:39.000Z">
+<meta property="article:modified_time" content="2026-09-22T07:40:05.325Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="IAP">
+<meta property="article:tag" content="Google Auth Platform">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-用IAP-Google-Auth-Platform-進行身分驗證" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/" class="article-date">
+  <time class="dt-published" datetime="2026-09-22T07:34:39.000Z" itemprop="datePublished">2026-09-22</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Google-Cloud/">Google Cloud</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      用IAP + Google Auth Platform 進行身分驗證
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="用-IAP-Google-Auth-Platform-保護一個-NET-控制面板：完整踩坑記錄"><a href="#用-IAP-Google-Auth-Platform-保護一個-NET-控制面板：完整踩坑記錄" class="headerlink" title="用 IAP + Google Auth Platform 保護一個 .NET 控制面板：完整踩坑記錄"></a>用 IAP + Google Auth Platform 保護一個 .NET 控制面板：完整踩坑記錄</h1><p>這篇記錄我把一個 ASP.NET Core 寫的小型控制面板（用來手動開關另一個 Cloud Run 服務）串上 Google 的 Identity-Aware Proxy（IAP），只讓自己的 Google 帳號能登入使用的完整過程——中間因為 Google 剛好在這段時間淘汰了舊版 IAP 設定 API，踩了不少坑，這篇把每個卡關的地方跟解法都記下來。</p>
+<h2 id="目錄"><a href="#目錄" class="headerlink" title="目錄"></a>目錄</h2><ol>
+<li><a href="#1-%E8%83%8C%E6%99%AF%E8%88%87%E7%9B%AE%E6%A8%99">背景與目標</a></li>
+<li><a href="#2-%E6%95%B4%E9%AB%94%E6%9E%B6%E6%A7%8B">整體架構</a></li>
+<li><a href="#3-%E5%AE%8C%E6%95%B4%E8%A8%AD%E5%AE%9A%E6%B5%81%E7%A8%8B">完整設定流程</a></li>
+<li><a href="#4-net-%E7%A8%8B%E5%BC%8F%E7%AB%AF%E8%A6%81%E5%81%9A%E7%9A%84%E4%BA%8B%E7%B5%90%E8%AB%96%E5%B9%BE%E4%B9%8E%E4%B8%8D%E7%94%A8%E5%81%9A">.NET 程式端要做的事（結論：幾乎不用做）</a></li>
+<li><a href="#5-%E8%B8%A9%E5%9D%91%E8%A8%98%E9%8C%84">踩坑記錄</a></li>
+<li><a href="#6-%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A0%85%E7%B8%BD%E7%B5%90">注意事項總結</a></li>
+<li><a href="#7-%E9%99%84%E9%8C%84%E9%97%9C%E9%8D%B5%E6%8C%87%E4%BB%A4%E9%80%9F%E6%9F%A5%E8%A1%A8">附錄：關鍵指令速查表</a></li>
+</ol>
+<p><span style="color:red;">文章內容透過ai整理產出</span></p>
+<span id="more"></span>
+<hr>
+<h2 id="1-背景與目標"><a href="#1-背景與目標" class="headerlink" title="1. 背景與目標"></a>1. 背景與目標</h2><p>主服務是一個跑 Playwright 自動化訂位的 Cloud Run 服務，因為背景常駐運作的計費模式（CPU 一律配置）不便宜，所以另外做了一個小型「控制面板」（獨立的 Cloud Run 服務），可以手動開&#x2F;關主服務、選擇要用的 CPU&#x2F;記憶體規格。</p>
+<p>這個控制面板本身能直接改動一個會計費的雲端資源，<strong>絕對不能公開給任何人存取</strong>，所以選用 Google Cloud 的 <strong>Identity-Aware Proxy（IAP）</strong> 來保護它——好處是完全不用在應用程式裡寫任何登入&#x2F;驗證邏輯，IAP 會在網路層擋在應用程式前面，只有通過驗證的人，請求才會被放行到後面的程式。</p>
+<h2 id="2-整體架構"><a href="#2-整體架構" class="headerlink" title="2. 整體架構"></a>2. 整體架構</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">瀏覽器</span><br><span class="line">  │  1. 打開控制面板網址</span><br><span class="line">  ▼</span><br><span class="line">IAP（Google 管理，擋在服務前面）</span><br><span class="line">  │  2. 沒登入 → 導去 Google 登入頁</span><br><span class="line">  │  3. 登入後檢查這個身分有沒有被授權</span><br><span class="line">  ▼</span><br><span class="line">Cloud Run 服務（.NET 應用程式）</span><br><span class="line">  │  4. 完全不知道剛剛發生了什麼驗證流程，</span><br><span class="line">  │     直接處理請求（IAP 已經幫你把關）</span><br><span class="line">  ▼</span><br><span class="line">呼叫 Cloud Run Admin API 改動另一個服務的設定</span><br></pre></td></tr></table></figure>
+
+<p>關鍵認知：<strong>認證（你是誰）跟授權（你能不能通過）是兩件分開的事</strong>。任何人都可以在 Google 登入頁輸入自己的帳密成功登入（這是認證），但 IAP 還會另外檢查這個身分有沒有被加進白名單（這是授權）——沒有被加進去的帳號，登入成功後一樣會被擋下來，不會看到後面的頁面。</p>
+<h2 id="3-完整設定流程"><a href="#3-完整設定流程" class="headerlink" title="3. 完整設定流程"></a>3. 完整設定流程</h2><h3 id="3-1-在-Cloud-Run-服務上啟用-IAP"><a href="#3-1-在-Cloud-Run-服務上啟用-IAP" class="headerlink" title="3.1 在 Cloud Run 服務上啟用 IAP"></a>3.1 在 Cloud Run 服務上啟用 IAP</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --iap</span><br></pre></td></tr></table></figure>
+
+<p>執行後如果專案不屬於 Google Workspace 組織（也就是用個人 Gmail 帳號在跑），會看到這個警告：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[Warning] Deploying services with IAP enabled in a project outside of an</span><br><span class="line">Organization and may require initial setup via the Cloud Console.</span><br></pre></td></tr></table></figure>
+
+<p>這句話是關鍵提示，代表接下來有幾個步驟<strong>沒辦法完全用指令列自動化</strong>，一定要進 Console 網頁手動做。</p>
+<h3 id="3-2-設定-Google-Auth-Platform（OAuth-同意畫面）"><a href="#3-2-設定-Google-Auth-Platform（OAuth-同意畫面）" class="headerlink" title="3.2 設定 Google Auth Platform（OAuth 同意畫面）"></a>3.2 設定 Google Auth Platform（OAuth 同意畫面）</h3><p>Google 最近把整個 OAuth 同意畫面的設定畫面重新設計、重新命名（舊版叫「OAuth consent screen」，新版整合進「Google Auth Platform」），進入點：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://console.cloud.google.com/auth/overview?project=&lt;PROJECT_ID&gt;</span><br></pre></td></tr></table></figure>
+
+<p>第一次進去會顯示「尚未設定 Google 驗證平台」，點下去開始設定：</p>
+<ol>
+<li><strong>應用程式資訊</strong>：App 名稱隨便取、使用者支援信箱填自己的</li>
+<li><strong>目標對象</strong>：個人帳號只會看到「外部」這個選項（沒有「內部」，那是 Workspace 組織才有的）</li>
+<li><strong>聯絡資訊</strong>：填自己的信箱</li>
+<li>完成後，進到「<strong>目標對象</strong>」分頁，把自己的 Google 帳號加進「<strong>測試使用者</strong>」清單——這一步決定了只有加進來的帳號才能通過（維持在「測試中」狀態即可，不需要送 Google 審核）</li>
+</ol>
+<h3 id="3-3-手動建立-OAuth-用戶端"><a href="#3-3-手動建立-OAuth-用戶端" class="headerlink" title="3.3 手動建立 OAuth 用戶端"></a>3.3 手動建立 OAuth 用戶端</h3><p>到「<strong>用戶端</strong>」分頁，點「建立用戶端」：</p>
+<ul>
+<li><strong>應用程式類型</strong>：網頁應用程式</li>
+<li><strong>名稱</strong>：隨便取，方便識別即可（例如 <code>IAP &lt;服務名稱&gt;</code>）</li>
+<li>先不填重新導向 URI，直接建立，拿到一組 <strong>Client ID</strong>（長得像 <code>123456789012-abcdefg.apps.googleusercontent.com</code>）</li>
+</ul>
+<p>建立完後，回去編輯這個用戶端，在「<strong>已授權的重新導向 URI</strong>」（不是「已授權的 JavaScript 來源」，這兩個是不同欄位，功能也不同——JavaScript 來源不接受路徑，重新導向 URI 才接受）填入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://iap.googleapis.com/v1/oauth/clientIds/&lt;完整的CLIENT_ID&gt;:handleRedirect</span><br></pre></td></tr></table></figure>
+
+<p>把 <code>&lt;完整的CLIENT_ID&gt;</code> 換成剛剛拿到的<strong>整組</strong> Client ID（不是取一部分），存檔。</p>
+<h3 id="3-4-把-OAuth-用戶端交給-IAP，並重新觸發設定"><a href="#3-4-把-OAuth-用戶端交給-IAP，並重新觸發設定" class="headerlink" title="3.4 把 OAuth 用戶端交給 IAP，並重新觸發設定"></a>3.4 把 OAuth 用戶端交給 IAP，並重新觸發設定</h3><p>回到 IAP 頁面：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://console.cloud.google.com/security/iap?project=&lt;PROJECT_ID&gt;</span><br></pre></td></tr></table></figure>
+
+<p>點進對應的服務資源，把剛剛建立的 Client ID &#x2F; Client Secret 填進去。</p>
+<p>因為一開始執行 <code>--iap</code> 的時候，Google Auth Platform 的品牌設定還不存在，IAP 當時沒能正確建立&#x2F;連結用戶端，所以<strong>建議重新觸發一次</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --no-iap</span><br><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --iap</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-5-把自己的帳號加進-IAP-白名單"><a href="#3-5-把自己的帳號加進-IAP-白名單" class="headerlink" title="3.5 把自己的帳號加進 IAP 白名單"></a>3.5 把自己的帳號加進 IAP 白名單</h3><p>這一步才是真正的「授權」，決定誰能通過：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gcloud iap web add-iam-policy-binding \</span><br><span class="line">  --resource-type=cloud-run --service=&lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; \</span><br><span class="line">  --member=<span class="string">&quot;user:&lt;你的Email&gt;&quot;</span> \</span><br><span class="line">  --role=<span class="string">&quot;roles/iap.httpsResourceAccessor&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>（也可以在 IAP 網頁上點「新增主體」達到同樣效果。）</p>
+<h3 id="3-6-實際測試"><a href="#3-6-實際測試" class="headerlink" title="3.6 實際測試"></a>3.6 實際測試</h3><p>用瀏覽器打開服務網址，應該會被導向 Google 登入頁，登入自己的帳號後，就能看到後面真正的頁面。</p>
+<hr>
+<h2 id="4-NET-程式端要做的事（結論：幾乎不用做）"><a href="#4-NET-程式端要做的事（結論：幾乎不用做）" class="headerlink" title="4. .NET 程式端要做的事（結論：幾乎不用做）"></a>4. .NET 程式端要做的事（結論：幾乎不用做）</h2><p>這是最值得記錄的一點：<strong>IAP 是網路層的保護機制，應用程式完全不需要寫任何登入&#x2F;驗證相關的程式碼</strong>。整個 ASP.NET Core Minimal API 專案裡，沒有一行跟 IAP、OAuth、登入有關的程式——IAP 會在請求送到 Cloud Run 容器之前就完成驗證，容器裡的程式收到的，永遠是已經通過驗證的請求。</p>
+<p>如果應用程式想知道「現在是誰在操作」，IAP 會在請求標頭裡附加 <code>X-Goog-IAP-JWT-Assertion</code>（一組已驗證過身分的 JWT），程式可以選擇性地解析這個標頭拿到使用者身分；但如果只是要「擋掉沒有權限的人」，完全不需要做這件事，IAP 本身已經處理好了。</p>
+<hr>
+<h2 id="5-踩坑記錄"><a href="#5-踩坑記錄" class="headerlink" title="5. 踩坑記錄"></a>5. 踩坑記錄</h2><h3 id="5-1-舊版-IAP-設定指令已被淘汰"><a href="#5-1-舊版-IAP-設定指令已被淘汰" class="headerlink" title="5.1 舊版 IAP 設定指令已被淘汰"></a>5.1 舊版 IAP 設定指令已被淘汰</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcloud iap oauth-brands list</span><br></pre></td></tr></table></figure>
+
+<p>會看到：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WARNING: This command is deprecated and will be non-functional after the</span><br><span class="line">IAP OAuth Admin APIs are turned down. Jan 19, 2026: ... March 19, 2026: ...</span><br></pre></td></tr></table></figure>
+
+<p><code>oauth-brands</code>、<code>oauth-clients</code> 這兩組指令已經停用，現在管理「誰能通過 IAP」要用：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcloud iap web add-iam-policy-binding ...</span><br><span class="line">gcloud iap web get-iam-policy ...</span><br></pre></td></tr></table></figure>
+
+<p>而 OAuth 同意畫面&#x2F;用戶端本身，改到 Google Auth Platform 的網頁介面設定，沒有對應的 gcloud 指令可以完全自動化（至少目前沒有）。</p>
+<h3 id="5-2-502-錯誤但看不到原因"><a href="#5-2-502-錯誤但看不到原因" class="headerlink" title="5.2 502 錯誤但看不到原因"></a>5.2 502 錯誤但看不到原因</h3><p>啟用 IAP 後直接打網址，只看到:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">502 Bad Gateway</span><br></pre></td></tr></table></figure>
+
+<p><strong>沒有任何進一步資訊</strong>。PowerShell 7 的 <code>Invoke-WebRequest</code> 遇到非 2xx 狀態碼會直接丟例外，預設的例外處理拿不到回應本體內容（<code>$_.Exception.Response</code> 是新版 <code>HttpResponseMessage</code>，沒有舊版 <code>GetResponseStream()</code> 方法）。真正有效的做法：</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$resp</span> = <span class="built_in">Invoke-WebRequest</span> <span class="literal">-Uri</span> <span class="variable">$url</span> <span class="literal">-UseBasicParsing</span> <span class="literal">-SkipHttpErrorCheck</span></span><br><span class="line"><span class="variable">$resp</span>.Content</span><br></pre></td></tr></table></figure>
+
+<p><code>-SkipHttpErrorCheck</code> 讓它無論狀態碼為何都直接回傳回應物件，這樣才看到實際錯誤內容：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Empty Google Account OAuth client ID(s)/secret(s).</span><br></pre></td></tr></table></figure>
+
+<p>這句話才是真正的線索，指向「還沒建立 OAuth 用戶端」這個根本原因。</p>
+<h3 id="5-3-重新導向-URI-填錯欄位"><a href="#5-3-重新導向-URI-填錯欄位" class="headerlink" title="5.3 重新導向 URI 填錯欄位"></a>5.3 重新導向 URI 填錯欄位</h3><p>第一次嘗試時把 IAP 要求的重新導向 URI 填進了「<strong>已授權的 JavaScript 來源</strong>」，出現：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">來源無效：URI 不得包含路徑或以「/」結尾。</span><br></pre></td></tr></table></figure>
+
+<p>因為 JavaScript 來源欄位規定只能填網域本身，不能有路徑；IAP 要的那個帶路徑的完整網址，要填在「<strong>已授權的重新導向 URI</strong>」這個不同的欄位。這兩個欄位在畫面上通常排在一起，很容易搞混。</p>
+<h3 id="5-4-手動測試-IAP-保護的網址"><a href="#5-4-手動測試-IAP-保護的網址" class="headerlink" title="5.4 手動測試 IAP 保護的網址"></a>5.4 手動測試 IAP 保護的網址</h3><p>一旦 IAP 設定好，原本用來測試的 <code>gcloud auth print-identity-token</code> 產生的通用身分權杖不能直接用了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Invalid IAP credentials: Invalid bearer token. Invalid JWT audience.</span><br></pre></td></tr></table></figure>
+
+<p>因為 IAP 要求權杖的 <code>audience</code> 必須跟這個資源綁定的 OAuth Client ID 一致，通用的身分權杖 audience 不對，會直接被拒絕。這種情況下，最直接的驗證方式就是<strong>用真正的瀏覽器手動登入測試</strong>，不強求整個流程都能腳本化驗證。</p>
+<h3 id="5-5-順序很重要：先設品牌，再啟用-IAP"><a href="#5-5-順序很重要：先設品牌，再啟用-IAP" class="headerlink" title="5.5 順序很重要：先設品牌，再啟用 IAP"></a>5.5 順序很重要：先設品牌，再啟用 IAP</h3><p>一開始的操作順序是：先跑 <code>--iap</code>，之後才去設定 Google Auth Platform 的品牌&#x2F;目標對象。這個順序造成 IAP 沒能正確建立&#x2F;綁定 OAuth 用戶端，即使後來把品牌設定補上，也要<strong>重新關閉再開啟一次 IAP</strong>（<code>--no-iap</code> 再 <code>--iap</code>）才會重新嘗試綁定。如果重來一次，建議順序改成：先把 Google Auth Platform（品牌、目標對象、測試使用者）都設好，再啟用 IAP，可能可以省掉這個回頭重跑的步驟。</p>
+<hr>
+<h2 id="6-注意事項總結"><a href="#6-注意事項總結" class="headerlink" title="6. 注意事項總結"></a>6. 注意事項總結</h2><ul>
+<li><strong>個人 Gmail 專案 ≠ Workspace 組織專案</strong>：IAP 在組織帳號下可以自動處理掉的事（OAuth 用戶端自動建立），在個人帳號下都要手動做一次，這是最大的差異來源。</li>
+<li><strong>認證跟授權分開設定</strong>：Google Auth Platform（品牌&#x2F;測試使用者）決定「誰可以嘗試登入」；<code>gcloud iap web add-iam-policy-binding</code>（<code>roles/iap.httpsResourceAccessor</code>）才決定「登入後誰真的能通過」。兩邊都要設，缺一個都不會通。</li>
+<li><strong>應用程式端不用寫任何驗證程式碼</strong>——如果你發現自己在應用程式裡寫 OAuth callback、驗證 JWT 之類的邏輯來源自「因為要串 IAP」，那通常代表方向錯了，這些事應該完全交給 IAP 處理。</li>
+<li><strong>診斷問題時，先看回應本體內容，不要只看狀態碼</strong>——單看 502&#x2F;403 這種狀態碼幾乎看不出真正原因，錯誤訊息通常藏在回應本體（body）裡。</li>
+<li><strong>腳本化測試在 IAP 保護的資源上會受限</strong>——通用身分權杖的 audience 跟 IAP 要求的不一致時會直接被拒絕，這種情況接受用真人瀏覽器測試，不要硬要全自動化。</li>
+</ul>
+<hr>
+<h2 id="7-附錄：關鍵指令速查表"><a href="#7-附錄：關鍵指令速查表" class="headerlink" title="7. 附錄：關鍵指令速查表"></a>7. 附錄：關鍵指令速查表</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 Cloud Run 服務上啟用/停用 IAP</span></span><br><span class="line">gcloud run services update &lt;SERVICE&gt; --region=&lt;REGION&gt; --iap</span><br><span class="line">gcloud run services update &lt;SERVICE&gt; --region=&lt;REGION&gt; --no-iap</span><br><span class="line"></span><br><span class="line"><span class="comment"># 管理誰能通過 IAP（現行、未淘汰的指令）</span></span><br><span class="line">gcloud iap web add-iam-policy-binding \</span><br><span class="line">  --resource-type=cloud-run --service=&lt;SERVICE&gt; --region=&lt;REGION&gt; \</span><br><span class="line">  --member=<span class="string">&quot;user:&lt;EMAIL&gt;&quot;</span> --role=<span class="string">&quot;roles/iap.httpsResourceAccessor&quot;</span></span><br><span class="line"></span><br><span class="line">gcloud iap web get-iam-policy \</span><br><span class="line">  --resource-type=cloud-run --service=&lt;SERVICE&gt; --region=&lt;REGION&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 診斷 IAP 保護網址的實際錯誤內容（PowerShell）</span></span><br><span class="line"><span class="variable">$resp</span> = Invoke-WebRequest -Uri <span class="variable">$url</span> -UseBasicParsing -SkipHttpErrorCheck</span><br><span class="line"><span class="variable">$resp</span>.StatusCode</span><br><span class="line"><span class="variable">$resp</span>.Content</span><br><span class="line"></span><br><span class="line"><span class="comment"># 重新導向 URI 格式（填在 OAuth 用戶端的「已授權的重新導向 URI」）</span></span><br><span class="line">https://iap.googleapis.com/v1/oauth/clientIds/&lt;CLIENT_ID&gt;:handleRedirect</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p><em>這篇記錄的是 2026 年 9 月當下的 Google Cloud Console 介面跟流程，Google 正在淘汰舊版 IAP OAuth Admin API、重新設計 Auth Platform 介面，未來畫面跟指令可能會再變動，實際操作請以當時 Console 上顯示的內容為準。</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/" data-id="cmucd7084003zw0n1bodw105h" data-title="用IAP + Google Auth Platform 進行身分驗證" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Google-Auth-Platform/" rel="tag">Google Auth Platform</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IAP/" rel="tag">IAP</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Google-Cloud/">Google Cloud</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-App-Script/" rel="tag">Google App Script</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Auth-Platform/" rel="tag">Google Auth Platform</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IAP/" rel="tag">IAP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 17.5px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 20px;">Angular</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12.5px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Google-App-Script/" style="font-size: 12.5px;">Google App Script</a> <a href="/tags/Google-Auth-Platform/" style="font-size: 10px;">Google Auth Platform</a> <a href="/tags/IAP/" style="font-size: 10px;">IAP</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 15px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 15px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 15px;">docker</a> <a href="/tags/n8n/" style="font-size: 15px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12.5px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/">用IAP + Google Auth Platform 進行身分驗證</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/">事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-ChatGPT/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_ChatGPT</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/24/Angular-%E8%88%87-NET-Core-%E7%9A%84%E4%BE%9D%E8%B3%B4%E6%B3%A8%E5%85%A5-DI-%E6%AF%94%E8%BC%83%E7%AD%86%E8%A8%98-Claude/">Angular 與 .NET Core 的依賴注入(DI)比較筆記_Claude</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/21/Angular-Component-%E8%A8%AD%E8%A8%88%E6%AA%A2%E8%A8%8E/">Angular Component 設計檢討</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

@@ -15,8 +15,9 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/create_oauth.jpg">
 <meta property="og:image" content="http://example.com/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/create_oauth2.jpg">
+<meta property="og:image" content="http://example.com/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/ipa_allow_user.jpg">
 <meta property="article:published_time" content="2026-09-22T07:34:39.000Z">
-<meta property="article:modified_time" content="2026-09-22T08:14:43.708Z">
+<meta property="article:modified_time" content="2026-09-22T08:48:53.806Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="IAP">
 <meta property="article:tag" content="Google Auth Platform">
@@ -167,6 +168,8 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gcloud iap web add-iam-policy-binding \</span><br><span class="line">  --resource-type=cloud-run --service=&lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; \</span><br><span class="line">  --member=<span class="string">&quot;user:&lt;你的Email&gt;&quot;</span> \</span><br><span class="line">  --role=<span class="string">&quot;roles/iap.httpsResourceAccessor&quot;</span></span><br></pre></td></tr></table></figure>
 
 <p>（也可以在 IAP 網頁上點「新增主體」達到同樣效果。）</p>
+<img src="/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/ipa_allow_user.jpg" class="" title="ipa_allow_user">
+
 <h3 id="3-6-實際測試"><a href="#3-6-實際測試" class="headerlink" title="3.6 實際測試"></a>3.6 實際測試</h3><p>用瀏覽器打開服務網址，應該會被導向 Google 登入頁，登入自己的帳號後，就能看到後面真正的頁面。</p>
 <hr>
 <h2 id="4-NET-程式端要做的事（結論：幾乎不用做）"><a href="#4-NET-程式端要做的事（結論：幾乎不用做）" class="headerlink" title="4. .NET 程式端要做的事（結論：幾乎不用做）"></a>4. .NET 程式端要做的事（結論：幾乎不用做）</h2><p>這是最值得記錄的一點：<strong>IAP 是網路層的保護機制，應用程式完全不需要寫任何登入&#x2F;驗證相關的程式碼</strong>。整個 ASP.NET Core Minimal API 專案裡，沒有一行跟 IAP、OAuth、登入有關的程式——IAP 會在請求送到 Cloud Run 容器之前就完成驗證，容器裡的程式收到的，永遠是已經通過驗證的請求。</p>

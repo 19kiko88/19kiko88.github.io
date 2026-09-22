@@ -19,7 +19,7 @@ tags:
 * ##### 主要處理下面這兩件事：
   1. ##### 在WSL裡啟用n8n container
   2. ##### docker-compose.yml設定
-##### 詳細步驟可以參考：[WSL2 with n8n](https://19kiko88.github.io/2026/06/24/WSL2-with-n8x/)
+##### 詳細步驟可以參考：[WSL2 with n8n](https://19kiko88.github.io/2026/06/24/WSL2-with-n8n/)
 #
 #
 #

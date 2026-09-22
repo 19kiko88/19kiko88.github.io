@@ -2,9 +2,9 @@
 title: Google App Script(GAS)應用 - Clasp
 date: 2025-12-03 14:32:25
 categories:
-  - 自動化
+  - Google Cloud
 tags:
-  - GAS
+  - - Google App Script
   - Clasp
 ---
 ##### Clasp（Command Line Apps Script Projects）是 Google 官方推出的工具，用來讓你在本機撰寫 Apps Script。把 Apps Script（GAS）當成一般程式專案來寫、上傳、版本控制。

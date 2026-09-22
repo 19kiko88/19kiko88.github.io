@@ -132,9 +132,10 @@ export class CircleInteractionDirective { ... }
 ### 正確做法：套在 `#viz` 上，用事件代理判斷 `event.target`
 
 ```ts
-export interface CircleContextMenuEvent {
-  event: MouseEvent;
-  element: SVGCircleElement;
+// isCircleElement 是一個 type guard，Directive 跟 AppComponent 共用同一份判斷邏輯，
+// 不用各自寫一份 tagName 比對。
+export function isCircleElement(target: EventTarget | null): target is SVGCircleElement {
+  return (target as Element | null)?.tagName?.toLowerCase() === 'circle';
 }
 
 @Directive({
@@ -143,32 +144,18 @@ export interface CircleContextMenuEvent {
 })
 export class CircleInteractionDirective {
 
-  @Output() circleContextMenu = new EventEmitter<CircleContextMenuEvent>();
-
-  @HostListener('contextmenu', ['$event'])
-  onContextMenu(event: MouseEvent): void {
-    const element = event.target as SVGCircleElement;
-    if (element.tagName?.toLowerCase() !== 'circle') {
-      return; // 事件冒泡上來，但不是點在 circle 上，忽略
-    }
-
-    event.preventDefault(); // 擋掉瀏覽器原生右鍵選單
-    this.circleContextMenu.emit({ event, element });
-  }
-
   @HostListener('mouseover', ['$event'])
   onMouseOver(event: MouseEvent): void {
-    const element = event.target as SVGCircleElement;
-    if (element.tagName?.toLowerCase() !== 'circle') {
-      return;
+    if (!isCircleElement(event.target)) {
+      return; // 事件冒泡上來，但不是點在 circle 上，忽略
     }
+    const element = event.target;
     // ...顯示 tooltip、chipset repair 判斷等邏輯
   }
 
   @HostListener('mouseout', ['$event'])
   onMouseOut(event: MouseEvent): void {
-    const element = event.target as SVGCircleElement;
-    if (element.tagName?.toLowerCase() !== 'circle') {
+    if (!isCircleElement(event.target)) {
       return;
     }
     // ...隱藏 tooltip
@@ -180,57 +167,48 @@ export class CircleInteractionDirective {
 
 ```html
 <!-- pcb-svg.component.html -->
-<div id="viz" appCircleInteraction (circleContextMenu)="circleContextMenu.emit($event)">
+<div id="viz" appCircleInteraction>
 </div>
 ```
 
-`#viz` 是模板裡寫死的 `<div>`，Angular 編譯期認得它，所以 `[appCircleInteraction]` 這個 Directive 可以正常套用；而使用者在動態插入的 `circle` 上按右鍵/移過/移開時，`contextmenu`/`mouseover`/`mouseout` 這三個事件會冒泡到 `#viz`，被 Directive 的 `@HostListener` 收到，再用 `event.target` 判斷「這次事件真正發生在哪個元素上」。
+`#viz` 是模板裡寫死的 `<div>`，Angular 編譯期認得它，所以 `[appCircleInteraction]` 這個 Directive 可以正常套用；而使用者在動態插入的 `circle` 上移過/移開時，`mouseover`/`mouseout` 這兩個事件會冒泡到 `#viz`，被 Directive 的 `@HostListener` 收到，再用 `event.target` 判斷「這次事件真正發生在哪個元素上」。
 
-### 一個額外要處理的細節：顯示右鍵選單的 UI 在另一個元件裡
+### `contextmenu` 為什麼沒有跟 mouseover/mouseout 放在一起處理
 
-實際顯示右鍵選單的 PrimeNG `<p-contextMenu>` 元件，宣告在 `AppComponent` 的模板裡，不是持有 `#viz` 的 `PcbSvgComponent`。Directive 沒辦法直接碰到別的元件模板裡的東西，所以做法是：Directive 只負責「確認是 circle + 組裝資料」，<span style="color: red;">透過 `@Output() circleContextMenu` 把事件送出去；持有 `#viz` 的元件把這個事件原封不動往外轉發；最外層的 `AppComponent` 監聽這個轉發後的事件，在那裡才真正呼叫顯示選單的邏輯。這是 Angular 常見的「子元件事件逐層往上轉發」模式，跟事件冒泡是兩個不同層級的機制（一個是瀏覽器 DOM 事件冒泡，一個是 Angular 元件之間的 `@Output`/`@Input` 通訊），只是恰好都在解決類似的問題：「這個資訊在 A 產生，但要在 B 使用」。</span>
+一開始的版本把 `contextmenu` 也塞進了這個 Directive，判斷完是不是 circle 後，透過 `@Output` 一路轉發（Directive → `PcbSvgComponent` 轉發一次 → `AppComponent` 才真正處理），理由是「顯示右鍵選單的 `<p-contextMenu>` 元件宣告在 `AppComponent` 模板裡，Directive 碰不到」。
 
-#### `@Output()` 的基本用法
+但重新檢視後發現：`contextmenu` 跟另外兩個事件不一樣的地方是，它需要的東西（`ContextMenuService`、`<p-contextMenu>` 的元件參照、選單資料）**本來就已經是 `AppComponent` 既有的東西**，不是新增依賴。既然如此，根本不需要透過元件轉發——**`<app-pcb-svg>` 這個標籤本身就寫在 `app.component.html` 裡，是 `AppComponent` 渲染出來的真實 DOM 節點，範圍剛好完整包住 `#viz`**，可以直接在這個標籤上接原生的 `contextmenu` 事件，跳過 Directive、也跳過任何 `@Output` 轉發：
 
-`@Output()` 是 Angular 讓子層（元件或 Directive）「主動通知外層發生了什麼事、並附帶資料」的機制，一定要搭配 `EventEmitter` 使用：
+```html
+<!-- app.component.html -->
+<app-pcb-svg (contextmenu)="onCircleContextMenu($event)"></app-pcb-svg>
+```
+
+Angular 的 `(eventName)="..."` 語法，如果找不到同名的 `@Output`，會自動當成綁定該元素的**原生 DOM 事件**——這裡沒有任何 Directive 或元件宣告 `contextmenu` 這個 `@Output`，所以 Angular 直接幫我們掛上原生 DOM 事件監聽器。
 
 ```ts
-// 子層（元件或 Directive）
-export class ChildThing {
-  @Output() somethingHappened = new EventEmitter<SomeType>();
-
-  private notifyParent(payload: SomeType) {
-    this.somethingHappened.emit(payload); // 送出事件跟資料
+// app.component.ts
+onCircleContextMenu(event: MouseEvent): void {
+  if (!isCircleElement(event.target)) {
+    return;
   }
+  const element = event.target;
+
+  event.preventDefault(); // 擋掉瀏覽器原生右鍵選單
+  this._contextMenuService.getContextContent(element).then(res => this.menuItems = res);
+  this.cm?.show(event);
 }
 ```
 
-外層模板監聽（圓括號 `()` 是 Angular 綁定「事件」的語法，對應方括號 `[]` 綁定「屬性」）：
+**代價**：「這是不是 circle」的判斷邏輯，現在分別出現在 Directive（`mouseover`/`mouseout`）跟 `AppComponent`（`contextmenu`）兩個地方，用同一個 `isCircleElement()` type guard 共用，避免重複寫兩份判斷條件。換來的好處是完全不需要 `@Output`、不需要中間的元件轉發，鏈路從三層縮成一層。
 
-```html
-<app-child-thing (somethingHappened)="onSomethingHappened($event)"></app-child-thing>
-```
-
-`$event` 在這裡就是 `emit(payload)` 傳進去的那個 `payload`。
-
-**跟 DOM 事件冒泡最大的不同**：`@Output()` 完全是 Angular 自己的機制，只在模板裡有寫父子關係綁定的元件/Directive 之間才會生效，**不會**像
-瀏覽器原生事件那樣自動沿著元件樹一路往上傳——每一層都要自己手動用 `(eventName)="..."` 接住，再自己決定要不要往上再轉發一次。對照本篇案例的
-完整鏈路：
-
-1. `CircleInteractionDirective`（套在 `#viz` 上）：`this.circleContextMenu.emit({ event, element })`
-2. `PcbSvgComponent`（持有 `#viz` 的元件）模板：`(circleContextMenu)="circleContextMenu.emit($event)"` —— 接住 Directive 的事件，透過自己*
-*同名的** `@Output()` 原封不動再送出去一次
-3. `AppComponent` 模板：`<app-pcb-svg (circleContextMenu)="onCircleContextMenu($event)"></app-pcb-svg>` —— 接住 `PcbSvgComponent` 轉發的事
-件，在對應方法裡才真正呼叫 `this.cm?.show(event)` 顯
-
-三層缺一個綁定，事件就傳不過去——這跟冒泡「不用手動接、自動往上跑」是完全相反的心智模型，這也是為什麼这篇特別把兩者放在一起比較。
-
+**還有一個小細節**：Directive 仍然保留了一個很小的 `contextmenu` 監聽，但只做「隱藏 tooltip」這一件事——因為這是 hover 生命週期的一部分（跟 `mouseout` 隱藏 tooltip是同一類邏輯），而 `ToolTipService` 已經是 Directive 既有的依賴。這代表同一個 `contextmenu` 事件，實際上會**同時**被兩個獨立的監聽器收到：Directive 上的（負責隱藏 tooltip）跟 `AppComponent` 上的（負責顯示選單）——這正好示範了冒泡機制的另一個特性：**同一個事件可以在冒泡路徑上的多個祖先層級，各自被獨立的監聽器處理，互不影響、不需要互相知道對方存在。**
 
 ### 這次修正額外帶來的好處
 
-1. **監聽器數量從 O(n) 降到 O(1)**：原本是幫每一個 `circle`（可能上千個）各自掛 3 個監聽器，現在整張圖只有 3 個監聽器（掛在 `#viz` 上）。
-2. **修好了一個隱藏的既有缺陷**：原本的寫法只在初始化那一刻幫「當時存在」的 circle 掛監聽器，如果之後切換層別重新繪圖，新畫出來的 circle 不會被重新綁定，這三個事件就永久失效了。改成事件代理後，新插入的 circle 不需要任何額外動作就能自動生效。
-3. **元件的建構子依賴變少了**：因為這三個事件處理邏輯需要用到的幾個 service（tooltip、VG 高亮、chipset repair 相關）原本注入在根元件裡，現在整段邏輯搬進 Directive 之後，根元件完全不再需要這幾個依賴。
+1. **監聽器數量從 O(n) 降到 O(1)**：原本是幫每一個 `circle`（可能上千個）各自掛監聽器，現在整張圖只需要固定幾個監聽器（`#viz` 上 2 個 + `<app-pcb-svg>` 上 1 個）。
+2. **修好了一個隱藏的既有缺陷**：原本的寫法只在初始化那一刻幫「當時存在」的 circle 掛監聽器，如果之後切換層別重新繪圖，新畫出來的 circle 不會被重新綁定，事件就永久失效了。改成事件代理後，新插入的 circle 不需要任何額外動作就能自動生效。
+3. **元件的建構子依賴變少了**：`mouseover`/`mouseout` 需要的 `ToolTipService`、`VirtualGroupService`、`ChipsetRepairService` 原本注入在 `AppComponent` 裡，搬進 Directive 之後，`AppComponent` 完全不再需要這幾個依賴；`contextmenu` 需要的 `ContextMenuService` 本來就在 `AppComponent` 身上，不多也不少。
 
 ---
 
@@ -242,3 +220,4 @@ export class ChildThing {
 - 當要處理「一大群同類型元素的事件」時，先確認這些元素是不是 Angular 渲染的：
   - 是 → 可以直接把 `selector` 設成該元素，也可以視效能需求選擇用事件代理套在共同祖先上。
   - 不是（例如由第三方繪圖函式庫、Web Worker 動態插入的原生 DOM）→ **必須**用事件代理，套在一個 Angular 認得、且包含這些元素的穩定祖先節點上，這是唯一還能用宣告式 Directive 反應到這些事件的辦法。
+- **同一個事件，可以在冒泡路徑上的多個祖先層級，各自被獨立的監聽器處理**，不需要集中在一個地方。如果一組相關事件裡，其中一種的後續處理剛好已經是另一個元件的既有職責跟依賴，直接讓那個元件用原生事件綁定接住就好，不用勉強把所有事件塞進同一個 Directive、再用 `@Output` 逐層轉發——先看「這段邏輯的資料跟依賴本來就在哪裡」，再決定監聽器放哪裡，比先寫好 Directive 再想辦法轉發資料更省事。

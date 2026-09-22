@@ -2,9 +2,9 @@
 title: Google App Script(GAS)應用
 date: 2025-12-03 14:32:25
 categories:
-  - 自動化
+  - Google Cloud
 tags:
-  - GAS
+  - Google App Script
 ---
 ##### 最近有個需求，要抓取GMAIL的信件，經過一些邏輯整理後，把整理後的結果，儲存在GOOGLE試算表裡面。在網路上servey一下後，發現有Google App Script(GAS)這種東西可以用。透過GAS提供的API，可以讓你在各個Google應用之間互相串連，且語法跟javascript幾乎一模一樣，使用起來可說是輕鬆上手。
 <!-- more -->

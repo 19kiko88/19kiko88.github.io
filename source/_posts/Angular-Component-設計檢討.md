@@ -318,6 +318,17 @@ export class CircleInteractionDirective {
 1. 現在的寫法是幫**每一個** `circle`（PCB 圖可能有成千上萬個）各自掛 3 個監聽器；改成外層容器上只掛 3 個監聽器、靠事件冒泡判斷 target，數量從 O(n) 降到 O(1)，效能更好。
 2. 現在的寫法只在 `init()` 執行的那一刻幫「當時存在」的 circle 掛監聽器——如果之後切換 layer 重新繪圖，新畫出來的 circle **不會**被重新掛上這三個事件（這是現有程式碼一個隱藏的潛在缺陷）。改成容器層級的事件代理後，新插入的 circle 自動就能被監聽到，不需要重新執行任何綁定邏輯。
 
+**這個修正已經真正落地，並經過一輪重新檢視再調整過**：新增 `CircleInteractionDirective`（`selector: '[appCircleInteraction]'`），套用在 `pcb-svg.component.html` 的 `<div id="viz">` 上，負責 `mouseover`/`mouseout`，都先用共用的 `isCircleElement()` type guard 檢查 `event.target`，不是 `circle` 就直接 `return`。
+
+**`contextmenu` 一開始也放進了同一個 Directive**，判斷完是不是 circle 後透過 `@Output() circleContextMenu` 一路轉發（Directive → `PcbSvgComponent` 轉發一次 → `AppComponent` 才真正處理），理由是「顯示選單的 `<p-contextMenu>` 元件宣告在 `AppComponent` 模板裡，Directive 碰不到」。但重新檢視後發現這個理由不成立：`contextmenu` 需要的東西（`ContextMenuService`、`cm`、`menuItems`）本來就已經是 `AppComponent` 既有的東西，而 `<app-pcb-svg>` 這個標籤本身就寫在 `app.component.html` 裡、範圍剛好完整包住 `#viz`——直接在這個標籤上用 `(contextmenu)="onCircleContextMenu($event)"` 接原生事件即可，完全不需要 `@Output` 或元件轉發。最後拆成：
+
+- `CircleInteractionDirective`（在 `#viz` 上）：只保留 `mouseover`/`mouseout`，另外保留一個很小的 `contextmenu` 監聽，只做「隱藏 tooltip」這一件事（因為這是 hover 生命週期的一部分，`ToolTipService` 已經是這裡既有的依賴）。
+- `AppComponent`（在 `<app-pcb-svg>` 標籤上，原生事件綁定）：負責「確認是 circle + `preventDefault` + 呼叫 `ContextMenuService.getContextContent()` + `cm.show()`」，也就是真正顯示選單的部分。
+
+同一個 `contextmenu` 事件，因此會被兩個獨立的監聽器（Directive 跟 `AppComponent`）各自收到、各自處理，互不干擾——這正好示範了冒泡機制的另一個特性：**同一個事件可以在冒泡路徑上的多個祖先層級被獨立處理，不需要集中在一個地方，也不需要它們知道對方存在。**
+
+意外的額外收穫：`mouseover`/`mouseout` 需要的 `ToolTipService`、`VirtualGroupService`、`ChipsetRepairService` 三個 service 在 `AppComponent` 裡完全沒有其他用途了，順手從建構子移除；`contextmenu` 需要的 `ContextMenuService` 則完全不受影響（本來就在，不多也不少）——這跟第 7 節「反面教材」剛好相反：這次是先把邏輯放對地方，副作用剛好是依賴數量降低，不是反過來為了湊依賴數量犧牲放置位置。這也是一個值得記住的教訓：**先評估「這段邏輯的資料跟依賴本來就該屬於哪個元件」，再決定監聽器/Directive 放哪裡，比先寫好一個大 Directive、再想辦法把資料轉發出去更省事。**
+
 ### 新專案該怎麼做
 
 - 優先用 Angular 的 `Renderer2`、`HostListener`、Structural/Attribute Directive 來處理 DOM 互動，而不是在元件方法裡手動 `querySelectorAll`。
@@ -445,7 +456,7 @@ ucsSn = this._mvcService.indexViewModel.UcsInfo?.sn;
 - [ ] 元件方法裡有沒有超過一行、沒有副作用的 `if`/`switch` 判斷？有的話，能不能抽成純函數？
 - [ ] 新抽出的邏輯，是該放進 `*.util.ts`（無狀態、不需要 DI），還是該是某個 `*.service.ts` 的方法（需要跟其他 service 互動、需要記住狀態、需要在測試裡被 mock）？
 - [ ] 有沒有「決策」跟「副作用」混在同一段程式碼裡？能不能拆成「純函數回傳決策」+「呼叫端執行副作用」兩層？
-- [ ] 元件裡有沒有直接操作原生 DOM（`document.querySelector`、`addEventListener`、`setAttribute`）？能不能改用 `Renderer2`、`HostListener`、或抽成 Directive？
+- [ ] 元件裡有沒有直接操作原生 DOM（`document.querySelector`、`addEventListener`、`setAttribute`）？能不能改用 `Renderer2`、`HostListener`、或抽成 Directive？如果要用 Directive，這些元素是 Angular 自己渲染的嗎？如果是其他機制（Web Worker、第三方函式庫）動態插入的原生 DOM，`selector` 不能直接設成該元素本身，要套在穩定的外層容器上搭配事件代理。
 - [ ] 新增/搬移一個 service 依賴之前，有沒有檢查過目標位置的完整依賴鏈，確認不會造成循環注入？**而且**目標位置的職責範圍跟這段邏輯對得上（循環安全跟放對地方是兩個獨立條件，都要成立）？
 - [ ] 每個 service/component 產生時，是否同時補上「有實際驗證價值」的測試，而不是留一個空的 `toBeTruthy()` 樣板？
 - [ ] 有沒有依賴建構子注入值的 class field 初始化寫法？是否該搬進建構子主體讓順序明確？
@@ -465,5 +476,7 @@ ucsSn = this._mvcService.indexViewModel.UcsInfo?.sn;
 | Chipset Repair mouseover 決策 | `app.component.ts` `init()` mouseover handler | `core/services/chipset-repair-mouseover.util.ts` | 8 個測試案例 |
 | Remind Notice 顯示判斷（`toggleRemindNoticeIfAny`） | `app.component.ts` `init()` | `core/services/status-bar.service.ts`（原本誤搬進 `svg.service.ts`，後修正，見第 7 節「反面教材」） | 2 個測試案例 |
 | `onResize()` DOM 操作 | `app.component.ts` `onResize()` | `core/services/svg.service.ts`（`onResize()`），元件只留 `@HostListener` 委派 | 4 個測試案例 |
+| circle `mouseover`/`mouseout` 事件綁定 | `app.component.ts` `init()`（`document.querySelectorAll('circle').forEach(...)`） | `shared/directives/circle-interaction.directive.ts`（套在 `#viz` 上，事件代理） | 額外移除 `ToolTipService`、`VirtualGroupService`、`ChipsetRepairService` 3 個建構子依賴 |
+| circle `contextmenu` 事件綁定 | 同上（原本跟 mouseover/mouseout 一起處理） | `app.component.html` 的 `<app-pcb-svg (contextmenu)="onCircleContextMenu($event)">`（原生事件綁定，不用 Directive/`@Output`） | 2 個測試案例；`ContextMenuService` 不受影響（本來就在） |
 
 這些都是實際落地的重構，可以直接參考程式碼與對應的 `.spec.ts` 當作範例。**其中 Remind Notice 那一列本身就是一個真實的反例：第一次搬移只檢查了循環依賴風險，沒檢查職責歸屬，後來被抓出來修正——保留這段記錄，比只呈現「成功」的重構更有參考價值。**

@@ -2,7 +2,7 @@
 title: Line-API-群組推播
 date: 2025-10-28 14:51:26
 categories:
-  - GCP
+  - Google Cloud
 tags:
   - Cloud Run
 ---

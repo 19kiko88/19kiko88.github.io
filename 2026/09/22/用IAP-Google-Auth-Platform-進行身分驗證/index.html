@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://example.com/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/create_oauth2.jpg">
 <meta property="og:image" content="http://example.com/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/ipa_allow_user.jpg">
 <meta property="article:published_time" content="2026-09-22T07:34:39.000Z">
-<meta property="article:modified_time" content="2026-09-22T08:48:53.806Z">
+<meta property="article:modified_time" content="2026-09-22T10:13:12.754Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="IAP">
 <meta property="article:tag" content="Google Auth Platform">
@@ -127,13 +127,24 @@
 <h2 id="2-整體架構"><a href="#2-整體架構" class="headerlink" title="2. 整體架構"></a>2. 整體架構</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">瀏覽器</span><br><span class="line">  │  1. 打開控制面板網址</span><br><span class="line">  ▼</span><br><span class="line">IAP（Google 管理，擋在服務前面）</span><br><span class="line">  │  2. 沒登入 → 導去 Google 登入頁</span><br><span class="line">  │  3. 登入後檢查這個身分有沒有被授權</span><br><span class="line">  ▼</span><br><span class="line">Cloud Run 服務（.NET 應用程式）</span><br><span class="line">  │  4. 完全不知道剛剛發生了什麼驗證流程，</span><br><span class="line">  │     直接處理請求（IAP 已經幫你把關）</span><br><span class="line">  ▼</span><br><span class="line">呼叫 Cloud Run Admin API 改動另一個服務的設定</span><br></pre></td></tr></table></figure>
 
 <p>關鍵認知：<strong>認證（你是誰）跟授權（你能不能通過）是兩件分開的事</strong>。任何人都可以在 Google 登入頁輸入自己的帳密成功登入（這是認證），但 IAP 還會另外檢查這個身分有沒有被加進白名單（這是授權）——沒有被加進去的帳號，登入成功後一樣會被擋下來，不會看到後面的頁面。</p>
-<h2 id="3-完整設定流程"><a href="#3-完整設定流程" class="headerlink" title="3. 完整設定流程"></a>3. 完整設定流程</h2><h3 id="3-1-在-Cloud-Run-服務上啟用-IAP"><a href="#3-1-在-Cloud-Run-服務上啟用-IAP" class="headerlink" title="3.1 在 Cloud Run 服務上啟用 IAP"></a>3.1 在 Cloud Run 服務上啟用 IAP</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --iap</span><br></pre></td></tr></table></figure>
-
-<p>執行後如果專案不屬於 Google Workspace 組織（也就是用個人 Gmail 帳號在跑），會看到這個警告：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[Warning] Deploying services with IAP enabled in a project outside of an</span><br><span class="line">Organization and may require initial setup via the Cloud Console.</span><br></pre></td></tr></table></figure>
-
-<p>這句話是關鍵提示，代表接下來有幾個步驟<strong>沒辦法完全用指令列自動化</strong>，一定要進 Console 網頁手動做。</p>
-<h3 id="3-2-設定-Google-Auth-Platform（OAuth-同意畫面）"><a href="#3-2-設定-Google-Auth-Platform（OAuth-同意畫面）" class="headerlink" title="3.2 設定 Google Auth Platform（OAuth 同意畫面）"></a>3.2 設定 Google Auth Platform（OAuth 同意畫面）</h3><p>Google 最近把整個 OAuth 同意畫面的設定畫面重新設計、重新命名（舊版叫「OAuth consent screen」，新版整合進「Google Auth Platform」），進入點：</p>
+<h2 id="3-完整設定流程"><a href="#3-完整設定流程" class="headerlink" title="3. 完整設定流程"></a>3. 完整設定流程</h2><h3 id="OAuth-跟-IAP-各自的用途，以及兩者的關係"><a href="#OAuth-跟-IAP-各自的用途，以及兩者的關係" class="headerlink" title="OAuth 跟 IAP 各自的用途，以及兩者的關係"></a>OAuth 跟 IAP 各自的用途，以及兩者的關係</h3><p>在動手設定之前，先搞懂這兩個名詞各自在做什麼，之後每個步驟才不會覺得「不知道在設定什麼」：</p>
+<ul>
+<li><p><strong>OAuth（Google Auth Platform）的用途</strong>：OAuth 是 Google 用來<strong>驗證身分</strong>的協定本身——使用者用 Google 帳號登入、Google 確認密碼&#x2F;身分無誤後，發一組憑證證明「這個人真的是他自稱的那個帳號」。「Google Auth Platform」（品牌、目標對象、用戶端）就是設定「誰可以發起這個登入流程」：品牌決定登入頁上顯示什麼 App 資訊；目標對象決定哪些帳號可以嘗試登入（測試使用者名單）；用戶端（Client ID&#x2F;Secret）則是這個特定應用程式在 Google 那邊的身分證，讓 Google 知道是誰在請求登入、登入完要把使用者送回哪裡。<strong>OAuth 本身不管「這個資源該不該給這個人看」，它只負責回答「這個人是誰」。</strong></p>
+</li>
+<li><p><strong>IAP 的用途</strong>：IAP 是 Google Cloud 的<strong>存取控制關卡</strong>，擋在你的 Cloud Run 服務前面，決定「這個資源到底該不該讓這個請求進來」。它自己不會發明一套登入機制，而是<strong>借用</strong>上面設定好的 OAuth 流程去驗證使用者身分，驗證完之後，再多做一件 OAuth 不會做的事：檢查這個身分有沒有在白名單（IAM）裡，決定要不要把請求真正放行到後面的應用程式。</p>
+</li>
+<li><p><strong>兩者的關係</strong>：可以理解成「OAuth 負責認證，IAP 負責把認證結果拿來做授權判斷、並實際把關」。IAP 需要吃到一組 OAuth 用戶端（Client ID&#x2F;Secret）才能運作，因為它要靠這組用戶端去跟 Google 的 OAuth 伺服器對話、觸發登入畫面；沒有先設定好 OAuth 那一側，IAP 就沒有可以用來驗證身分的管道，這也是為什麼下面的設定順序要先做 OAuth、再啟用 IAP。</p>
+</li>
+</ul>
+<h3 id="3-0-流程總覽"><a href="#3-0-流程總覽" class="headerlink" title="3.0 流程總覽"></a>3.0 流程總覽</h3><p>實際踩坑後，建議的正確順序是這樣（跟一開始直覺想的「先開 IAP 再設定 OAuth」剛好反過來）：</p>
+<ol>
+<li><strong>OAuth（Google Auth Platform）先設好</strong>：品牌 → 目標對象（含加測試使用者）→ 用戶端（建立 + 補上重新導向 URI）</li>
+<li><strong>啟用 IAP</strong>：在 Cloud Run 服務上打開 IAP 開關</li>
+<li><strong>把用戶端交給 IAP</strong>：回到 IAP 頁面，把步驟 1 建立的 Client ID &#x2F; Secret 填進<strong>這個資源</strong>的 IAP 設定——這步最容易被忽略，沒做的話 IAP 不知道要用哪組 OAuth 用戶端，會出現 <code>Empty Google Account OAuth client ID(s)/secret(s)</code> 錯誤（見 5.2）</li>
+<li><strong>IAP 白名單設定</strong>：<code>gcloud iap web add-iam-policy-binding</code>，決定登入成功後誰真的能通過</li>
+</ol>
+<p>我們當時是先做了步驟 2（啟用 IAP），才回頭補步驟 1（OAuth 設定），這個順序顛倒導致 IAP 沒能正確綁定用戶端，後來要多繞一次「關閉再重新啟用 IAP」（<code>--no-iap</code> 再 <code>--iap</code>）才讓它重新嘗試綁定，詳見 5.5。<strong>如果照 1→2→3→4 的順序做，應該可以省掉這個回頭步驟。</strong></p>
+<h3 id="3-1-設定-Google-Auth-Platform（OAuth-同意畫面）"><a href="#3-1-設定-Google-Auth-Platform（OAuth-同意畫面）" class="headerlink" title="3.1 設定 Google Auth Platform（OAuth 同意畫面）"></a>3.1 設定 Google Auth Platform（OAuth 同意畫面）</h3><p>Google 最近把整個 OAuth 同意畫面的設定畫面重新設計、重新命名（舊版叫「OAuth consent screen」，新版整合進「Google Auth Platform」），進入點：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://console.cloud.google.com/auth/overview?project=&lt;PROJECT_ID&gt;</span><br></pre></td></tr></table></figure>
 
 <p>第一次進去會顯示「尚未設定 Google 驗證平台」，點下去開始設定：</p>
@@ -143,7 +154,7 @@
 <li><strong>聯絡資訊</strong>：填自己的信箱</li>
 <li>完成後，進到「<strong>目標對象</strong>」分頁，把自己的 Google 帳號加進「<strong>測試使用者</strong>」清單——這一步決定了只有加進來的帳號才能通過（維持在「測試中」狀態即可，不需要送 Google 審核）</li>
 </ol>
-<h3 id="3-3-手動建立-OAuth-用戶端"><a href="#3-3-手動建立-OAuth-用戶端" class="headerlink" title="3.3 手動建立 OAuth 用戶端"></a>3.3 手動建立 OAuth 用戶端</h3><p>到「<strong>用戶端</strong>」分頁，點「建立用戶端」：</p>
+<h3 id="3-2-手動建立-OAuth-用戶端"><a href="#3-2-手動建立-OAuth-用戶端" class="headerlink" title="3.2 手動建立 OAuth 用戶端"></a>3.2 手動建立 OAuth 用戶端</h3><p>到「<strong>用戶端</strong>」分頁，點「建立用戶端」：</p>
 <ul>
 <li><strong>應用程式類型</strong>：網頁應用程式</li>
 <li><strong>名稱</strong>：隨便取，方便識別即可（例如 <code>IAP &lt;服務名稱&gt;</code>）</li>
@@ -157,13 +168,19 @@
 <p>把 <code>&lt;完整的CLIENT_ID&gt;</code> 換成剛剛拿到的<strong>整組</strong> Client ID（不是取一部分），存檔。</p>
 <img src="/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/create_oauth2.jpg" class="" title="create_oauth2">
 
-<h3 id="3-4-把-OAuth-用戶端交給-IAP，並重新觸發設定"><a href="#3-4-把-OAuth-用戶端交給-IAP，並重新觸發設定" class="headerlink" title="3.4 把 OAuth 用戶端交給 IAP，並重新觸發設定"></a>3.4 把 OAuth 用戶端交給 IAP，並重新觸發設定</h3><p>回到 IAP 頁面：</p>
+<h3 id="3-3-在-Cloud-Run-服務上啟用-IAP"><a href="#3-3-在-Cloud-Run-服務上啟用-IAP" class="headerlink" title="3.3 在 Cloud Run 服務上啟用 IAP"></a>3.3 在 Cloud Run 服務上啟用 IAP</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --iap</span><br></pre></td></tr></table></figure>
+
+<p>執行後如果專案不屬於 Google Workspace 組織（也就是用個人 Gmail 帳號在跑），會看到這個警告：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[Warning] Deploying services with IAP enabled in a project outside of an</span><br><span class="line">Organization and may require initial setup via the Cloud Console.</span><br></pre></td></tr></table></figure>
+
+<p>因為 3.1、3.2 都已經先設定好了，這裡的警告可以放心忽略，繼續下一步。</p>
+<h3 id="3-4-把-OAuth-用戶端交給-IAP"><a href="#3-4-把-OAuth-用戶端交給-IAP" class="headerlink" title="3.4 把 OAuth 用戶端交給 IAP"></a>3.4 把 OAuth 用戶端交給 IAP</h3><p>回到 IAP 頁面：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://console.cloud.google.com/security/iap?project=&lt;PROJECT_ID&gt;</span><br></pre></td></tr></table></figure>
 
-<p>點進對應的服務資源，把剛剛建立的 Client ID &#x2F; Client Secret 填進去。</p>
-<p>因為一開始執行 <code>--iap</code> 的時候，Google Auth Platform 的品牌設定還不存在，IAP 當時沒能正確建立&#x2F;連結用戶端，所以<strong>建議重新觸發一次</strong>：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --no-iap</span><br><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --iap</span><br></pre></td></tr></table></figure>
-
+<p>點進對應的服務資源，把 3.2 建立的 Client ID &#x2F; Client Secret 填進去。</p>
+<blockquote>
+<p>如果順序不小心做反了（先啟用 IAP、後補 OAuth 設定），IAP 可能沒能正確綁定用戶端，需要多一步「關閉再重新啟用 IAP」讓它重新嘗試綁定：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --no-iap</span><br><span class="line">gcloud run services update &lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; --iap</span><br></pre></td></tr></table></figure></blockquote>
 <h3 id="3-5-把自己的帳號加進-IAP-白名單"><a href="#3-5-把自己的帳號加進-IAP-白名單" class="headerlink" title="3.5 把自己的帳號加進 IAP 白名單"></a>3.5 把自己的帳號加進 IAP 白名單</h3><p>這一步才是真正的「授權」，決定誰能通過：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gcloud iap web add-iam-policy-binding \</span><br><span class="line">  --resource-type=cloud-run --service=&lt;SERVICE_NAME&gt; --region=&lt;REGION&gt; \</span><br><span class="line">  --member=<span class="string">&quot;user:&lt;你的Email&gt;&quot;</span> \</span><br><span class="line">  --role=<span class="string">&quot;roles/iap.httpsResourceAccessor&quot;</span></span><br></pre></td></tr></table></figure>
 

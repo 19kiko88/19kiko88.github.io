@@ -101,7 +101,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="用-IAP-Google-Auth-Platform-保護一個-NET-控制面板：完整踩坑記錄"><a href="#用-IAP-Google-Auth-Platform-保護一個-NET-控制面板：完整踩坑記錄" class="headerlink" title="用 IAP + Google Auth Platform 保護一個 .NET 控制面板：完整踩坑記錄"></a>用 IAP + Google Auth Platform 保護一個 .NET 控制面板：完整踩坑記錄</h1><p>這篇記錄我把一個 ASP.NET Core 寫的小型控制面板（用來手動開關另一個 Cloud Run 服務）串上 Google 的 Identity-Aware Proxy（IAP），只讓自己的 Google 帳號能登入使用的完整過程——中間因為 Google 剛好在這段時間淘汰了舊版 IAP 設定 API，踩了不少坑，這篇把每個卡關的地方跟解法都記下來。</p>
+        <p>這篇記錄我把一個 ASP.NET Core 寫的小型控制面板（用來手動開關另一個 Cloud Run 服務）串上 Google 的 Identity-Aware Proxy（IAP），只讓自己的 Google 帳號能登入使用的完整過程——中間因為 Google 剛好在這段時間淘汰了舊版 IAP 設定 API，踩了不少坑，這篇把每個卡關的地方跟解法都記下來。</p>
 <h2 id="目錄"><a href="#目錄" class="headerlink" title="目錄"></a>目錄</h2><ol>
 <li><a href="#1-%E8%83%8C%E6%99%AF%E8%88%87%E7%9B%AE%E6%A8%99">背景與目標</a></li>
 <li><a href="#2-%E6%95%B4%E9%AB%94%E6%9E%B6%E6%A7%8B">整體架構</a></li>

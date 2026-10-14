@@ -14,7 +14,7 @@
 <meta property="og:description" content="澳洲使用者無法正常顯示網站選單 Icon">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-14T07:39:31.000Z">
-<meta property="article:modified_time" content="2026-10-14T07:42:00.459Z">
+<meta property="article:modified_time" content="2026-10-14T08:02:12.186Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="CDN">
 <meta name="twitter:card" content="summary">
@@ -160,7 +160,18 @@
 <li><strong>避免只依賴清除快取。</strong> <code>Ctrl + F5</code> 只能協助排除部分瀏覽器快取問題，不能清除 CDN 遠端快取，也無法修正 Cookie 或存取驗證設定。</li>
 <li><strong>保留修正前後的證據。</strong> 建議記錄請求 URL（遮蔽敏感資訊）、狀態碼、<code>Location</code>、<code>Content-Type</code> 及 CDN 相關回應標頭，以便未來快速定位。</li>
 </ol>
-<h2 id="8-結論"><a href="#8-結論" class="headerlink" title="8. 結論"></a>8. 結論</h2><p>本次澳洲網站選單 Icon 異常，表現為選單文字正常、所有 Icon 消失。排查時發現 <code>.woff</code> 字型檔請求回應 HTTP 302，且測試字型 URI 會導向登入頁面。經 Infra 人員調整 CDN 特定副檔名的存取規則後，End User 回報目前顯示正常。</p>
+<h2 id="8-補充"><a href="#8-補充" class="headerlink" title="8. 補充"></a>8. 補充</h2><ol>
+<li><p>2026年5月份即有此問題<br>收到Mail告知，下列副檔名將進行CDN Cache機制調整：*.woff, *.woff2, <em>.bmp,</em>.css, <em>.jpg,</em>.js, *.svg, *.html….etc。調整後，也出現icon消失的問題。經查，CDN會把經過CDN的檔案的HTTP Response裡的set-Cookie header拿掉，導致檔案無法顯示(因為不是匿名存取)，回應320。</p>
+</li>
+<li><p>CDN為什麼要把cookie資訊拿掉<br>CDN（內容傳遞網路）在快取（Cache）時會把 Cookie（尤其是 Set-Cookie）移除或過濾掉，主要是為了保護用戶隱私、避免資料錯亂以及確保快取機制的正確性。<br>詳細原因如下：</p>
+</li>
+</ol>
+<ul>
+<li>避免私人資訊外洩與共用：<br>Cookie 通常包含特定用戶的登入狀態、身分識別或個人偏好。CDN 的核心功能是把靜態或共用內容儲存起來，分發給成千上萬不同的使用者。如果在 Cache Hit（快取命中）時把某個特定用戶的 Set-Cookie 一起快取並送給下一個使用者，就會造成嚴重的資料外洩與帳號錯亂問題。</li>
+<li>確保快取不會失效或膨脹：<br>每個使用者的 Cookie 值通常都不同。如果 CDN 把 Cookie 納入快取判斷依據（Vary by Cookie），每一個使用者打過來都會被視為不同的 Cache Key，導致 CDN 的快取命中率（Cache Hit Rate）大幅下降，失去加速的意義。</li>
+<li>動態與靜態分流：<br>像登入（Login）、驗證等會產生 Set-Cookie 的行為本質上屬於動態請求。CDN 主要負責優化靜態資源，因此在處理快取回應時，會主動移除與個人化狀態相關的 Cookie 標頭。</li>
+</ul>
+<h2 id="9-結論"><a href="#9-結論" class="headerlink" title="9. 結論"></a>9. 結論</h2><p>本次澳洲網站選單 Icon 異常，表現為選單文字正常、所有 Icon 消失。排查時發現 <code>.woff</code> 字型檔請求回應 HTTP 302，且測試字型 URI 會導向登入頁面。經 Infra 人員調整 CDN 特定副檔名的存取規則後，End User 回報目前顯示正常。</p>
 <p><strong>結論：</strong> 本次事件最可能與 CDN 對字型檔的 Cookie／存取規則有關。建議以調整後的 Network 請求成功紀錄作為最終驗證，並確認規則未影響其他受保護資源。</p>
 
       

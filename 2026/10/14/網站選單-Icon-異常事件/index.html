@@ -14,7 +14,7 @@
 <meta property="og:description" content="澳洲使用者無法正常顯示網站選單 Icon">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-14T07:39:31.000Z">
-<meta property="article:modified_time" content="2026-10-14T08:02:12.186Z">
+<meta property="article:modified_time" content="2026-10-14T08:03:41.341Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="CDN">
 <meta name="twitter:card" content="summary">
@@ -161,7 +161,7 @@
 <li><strong>保留修正前後的證據。</strong> 建議記錄請求 URL（遮蔽敏感資訊）、狀態碼、<code>Location</code>、<code>Content-Type</code> 及 CDN 相關回應標頭，以便未來快速定位。</li>
 </ol>
 <h2 id="8-補充"><a href="#8-補充" class="headerlink" title="8. 補充"></a>8. 補充</h2><ol>
-<li><p>2026年5月份即有此問題<br>收到Mail告知，下列副檔名將進行CDN Cache機制調整：*.woff, *.woff2, <em>.bmp,</em>.css, <em>.jpg,</em>.js, *.svg, *.html….etc。調整後，也出現icon消失的問題。經查，CDN會把經過CDN的檔案的HTTP Response裡的set-Cookie header拿掉，導致檔案無法顯示(因為不是匿名存取)，回應320。</p>
+<li><p>2026年5月份即遇過相同問題<br>收到IT Mail告知，下列副檔名將進行CDN Cache機制調整：*.woff, *.woff2, <em>.bmp,</em>.css, <em>.jpg,</em>.js, *.svg, *.html….etc。調整後，出現icon消失的問題。經查，<span style="color: red;">經過CDN的檔案的HTTP Response裡的set-Cookie header會被拿掉，導致檔案無法顯示(因為不是匿名存取)，回應320。</span></p>
 </li>
 <li><p>CDN為什麼要把cookie資訊拿掉<br>CDN（內容傳遞網路）在快取（Cache）時會把 Cookie（尤其是 Set-Cookie）移除或過濾掉，主要是為了保護用戶隱私、避免資料錯亂以及確保快取機制的正確性。<br>詳細原因如下：</p>
 </li>

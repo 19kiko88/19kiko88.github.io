@@ -13,11 +13,14 @@
 <meta property="og:site_name" content="HaoAreYou~">
 <meta property="og:description" content="澳洲使用者無法正常顯示網站選單 Icon">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2026/10/14/%E7%B6%B2%E7%AB%99%E9%81%B8%E5%96%AE-Icon-%E7%95%B0%E5%B8%B8%E4%BA%8B%E4%BB%B6/302.jpg">
+<meta property="og:image" content="http://example.com/2026/10/14/%E7%B6%B2%E7%AB%99%E9%81%B8%E5%96%AE-Icon-%E7%95%B0%E5%B8%B8%E4%BA%8B%E4%BB%B6/cloud_flare.jpg">
 <meta property="article:published_time" content="2026-10-14T07:39:31.000Z">
-<meta property="article:modified_time" content="2026-10-15T10:13:24.139Z">
+<meta property="article:modified_time" content="2026-10-15T10:15:32.767Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="CDN">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2026/10/14/%E7%B6%B2%E7%AB%99%E9%81%B8%E5%96%AE-Icon-%E7%95%B0%E5%B8%B8%E4%BA%8B%E4%BB%B6/302.jpg">
   
     <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
   
@@ -174,12 +177,12 @@
 <ol start="3">
 <li><strong>字型檔的請求回應為302(重新導頁)</strong><br>因為沒取得身分驗證訊息，所以回傳302，重新導向到登入頁面，要你重新登入。正常的話是回應代碼200</li>
 </ol>
-
+<img src="/2026/10/14/%E7%B6%B2%E7%AB%99%E9%81%B8%E5%96%AE-Icon-%E7%95%B0%E5%B8%B8%E4%BA%8B%E4%BB%B6/302.jpg" class="" width="302">
 
 <ol start="4">
 <li><strong>確認字體檔案，是從CDN Server(AWS CloudFront)快取取得。</strong></li>
 </ol>
-
+<img src="/2026/10/14/%E7%B6%B2%E7%AB%99%E9%81%B8%E5%96%AE-Icon-%E7%95%B0%E5%B8%B8%E4%BA%8B%E4%BB%B6/cloud_flare.jpg" class="" title="cloud_flare">
 
 <h2 id="9-結論"><a href="#9-結論" class="headerlink" title="9. 結論"></a>9. 結論</h2><p>本次澳洲網站選單 Icon 異常，表現為選單文字正常、所有 Icon 消失。排查時發現 <code>.woff</code> 字型檔請求回應 HTTP 302，且測試字型 URI 會導向登入頁面。經 Infra 人員調整 CDN 特定副檔名的存取規則後，End User 回報目前顯示正常。</p>
 <p><strong>結論：</strong> 本次事件最可能與 CDN 對字型檔的 Cookie／存取規則有關。建議以調整後的 Network 請求成功紀錄作為最終驗證，並確認規則未影響其他受保護資源。</p>

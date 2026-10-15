@@ -14,7 +14,7 @@
 <meta property="og:description" content="澳洲使用者無法正常顯示網站選單 Icon">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-14T07:39:31.000Z">
-<meta property="article:modified_time" content="2026-10-14T08:10:34.637Z">
+<meta property="article:modified_time" content="2026-10-15T10:13:24.139Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="CDN">
 <meta name="twitter:card" content="summary">
@@ -171,6 +171,16 @@
 <li>確保快取不會失效或膨脹：<br>每個使用者的 Cookie 值通常都不同。如果 CDN 把 Cookie 納入快取判斷依據（Vary by Cookie），每一個使用者打過來都會被視為不同的 Cache Key，導致 CDN 的快取命中率（Cache Hit Rate）大幅下降，失去加速的意義。</li>
 <li>動態與靜態分流：<br>像登入（Login）、驗證等會產生 Set-Cookie 的行為本質上屬於動態請求。CDN 主要負責優化靜態資源，因此在處理快取回應時，會主動移除與個人化狀態相關的 Cookie 標頭。</li>
 </ul>
+<ol start="3">
+<li><strong>字型檔的請求回應為302(重新導頁)</strong><br>因為沒取得身分驗證訊息，所以回傳302，重新導向到登入頁面，要你重新登入。正常的話是回應代碼200</li>
+</ol>
+
+
+<ol start="4">
+<li><strong>確認字體檔案，是從CDN Server(AWS CloudFront)快取取得。</strong></li>
+</ol>
+
+
 <h2 id="9-結論"><a href="#9-結論" class="headerlink" title="9. 結論"></a>9. 結論</h2><p>本次澳洲網站選單 Icon 異常，表現為選單文字正常、所有 Icon 消失。排查時發現 <code>.woff</code> 字型檔請求回應 HTTP 302，且測試字型 URI 會導向登入頁面。經 Infra 人員調整 CDN 特定副檔名的存取規則後，End User 回報目前顯示正常。</p>
 <p><strong>結論：</strong> 本次事件最可能與 CDN 對字型檔的 Cookie／存取規則有關。建議以調整後的 Network 請求成功紀錄作為最終驗證，並確認規則未影響其他受保護資源。</p>
 

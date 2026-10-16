@@ -6,12 +6,12 @@
   
   <title>建立MCP專案 with .Net | HaoAreYou~</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="用.Net建立一個remote MCP Server專案">
+  <meta name="description" content="用.Net建立一個測試用remote MCP Server專案">
 <meta property="og:type" content="article">
 <meta property="og:title" content="建立MCP專案 with .Net">
 <meta property="og:url" content="http://example.com/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/index.html">
 <meta property="og:site_name" content="HaoAreYou~">
-<meta property="og:description" content="用.Net建立一個remote MCP Server專案">
+<meta property="og:description" content="用.Net建立一個測試用remote MCP Server專案">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/check_port.jpg">
 <meta property="og:image" content="http://example.com/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/cant_use_localhost.jpg">
@@ -23,7 +23,7 @@
 <meta property="og:image" content="http://example.com/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/add_success.jpg">
 <meta property="og:image" content="http://example.com/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/call_mcp_tool.jpg">
 <meta property="article:published_time" content="2026-10-16T02:37:54.000Z">
-<meta property="article:modified_time" content="2026-10-16T09:33:29.222Z">
+<meta property="article:modified_time" content="2026-10-16T09:40:29.008Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="AI">
 <meta property="article:tag" content="MCP">
@@ -115,7 +115,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="用-Net建立一個remote-MCP-Server專案"><a href="#用-Net建立一個remote-MCP-Server專案" class="headerlink" title="用.Net建立一個remote MCP Server專案"></a>用.Net建立一個remote MCP Server專案</h5><span id="more"></span>
+        <h5 id="用-Net建立一個測試用remote-MCP-Server專案"><a href="#用-Net建立一個測試用remote-MCP-Server專案" class="headerlink" title="用.Net建立一個測試用remote MCP Server專案"></a>用.Net建立一個測試用remote MCP Server專案</h5><span id="more"></span>
 <h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
 <h2 id="1-建立Remote-MCP專案"><a href="#1-建立Remote-MCP專案" class="headerlink" title="1. 建立Remote MCP專案"></a>1. 建立Remote MCP專案</h2><ul>
 <li><strong>安裝範本：</strong></li>
@@ -128,7 +128,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dotnet new mcpserver -n MyRemoteMcpServer --transport remote</span><br><span class="line"><span class="built_in">cd</span> MyRemoteMcpServer</span><br><span class="line">dotnet run</span><br></pre></td></tr></table></figure>
 
 <ul>
-<li><strong>確認MCP服務的port</strong><br>執行專案後，會看到</li>
+<li><strong>確認MCP服務的port</strong><br>執行專案後，會看到正在監聽6527這個port</li>
 </ul>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run</span><br></pre></td></tr></table></figure>
 <img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/check_port.jpg" class="" title="check_port">
@@ -173,9 +173,18 @@
 <p>加入成功!</p>
 <img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/add_success.jpg" class="" title="add_success">
 
-<p>測試呼叫MCP Tool</p>
+<p>呼叫測試MCP Tool</p>
 <figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">McpServerTool</span>]</span><br><span class="line">[<span class="meta">Description(<span class="string">&quot;Generates a random number between the specified minimum and maximum values.&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="built_in">int</span> <span class="title">GetRandomNumber</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">    [Description(<span class="string">&quot;Minimum value (inclusive)&quot;</span></span>)] <span class="built_in">int</span> min</span> = <span class="number">7533967</span>,</span><br><span class="line">    [<span class="meta">Description(<span class="string">&quot;Maximum value (exclusive)&quot;</span>)</span>] <span class="built_in">int</span> max = <span class="number">7533987</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> Random.Shared.Next(min, max);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/call_mcp_tool.jpg" class="" title="call_mcp_tool">
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><h2 id="3-後續注意事項"><a href="#3-後續注意事項" class="headerlink" title="3.後續注意事項"></a>3.後續注意事項</h2><p>測試成功後，也別忘記下面的事情：</p>
+<ol>
+<li><strong>要記得補上身分驗證</strong></li>
+<li><strong>要記得把對外暴露的url刪掉</strong><br>你可以指定Tunnel ID做刪除</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">devtunnel delete &lt;通道ID&gt;</span><br></pre></td></tr></table></figure>
+
+<p>也可以全部刪除</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">devtunnel delete-all</span><br></pre></td></tr></table></figure>
 
       
     </div>

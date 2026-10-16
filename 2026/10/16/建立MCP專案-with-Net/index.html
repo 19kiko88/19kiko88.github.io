@@ -22,7 +22,7 @@
 <meta property="og:image" content="http://example.com/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/no_sign_in.jpg">
 <meta property="og:image" content="http://example.com/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/add_success.jpg">
 <meta property="article:published_time" content="2026-10-16T02:37:54.000Z">
-<meta property="article:modified_time" content="2026-10-16T09:24:32.735Z">
+<meta property="article:modified_time" content="2026-10-16T09:31:24.425Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="AI">
 <meta property="article:tag" content="MCP">
@@ -129,9 +129,8 @@
 <ul>
 <li><strong>確認MCP服務的port</strong><br>執行專案後，會看到</li>
 </ul>
-<img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/check_port.jpg" class="" title="check_port">
-<p>check_port</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run</span><br></pre></td></tr></table></figure>
+<img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/check_port.jpg" class="" title="check_port">
 <h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><h2 id="2-測試Remote-MCP"><a href="#2-測試Remote-MCP" class="headerlink" title="2. 測試Remote MCP"></a>2. 測試Remote MCP</h2><p>建立好測試的MCP專案後，藉著就是用claude desktop來測試看看了，結果出現下面的錯誤。<span style="color: red;">原因是 Claude 的自訂 connector 是由 Anthropic 的雲端伺服器去連你的 MCP，而不是從你的電腦發出請求。</span>所以 localhost 對它來說指向的是它自己，連不到你的機器。這是正常現象。</p>
 <img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/cant_use_localhost.jpg" class="" title="cant_use_localhost">
 
@@ -152,7 +151,7 @@
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">devtunnel list</span><br></pre></td></tr></table></figure>
 <img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/tunnel_list.jpg" class="" title="tunnel_list">
 
-<p>再用Tunnel ID去取得Tunnel的資訊</p>
+<p>再用剛剛透過devtunnel list取得的Tunnel ID去取得Tunnel的資訊</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">devtunnel show &lt;Tunnel ID&gt;</span><br></pre></td></tr></table></figure>
 <img src="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/tunnel_show.jpg" class="" title="tunnel_show">
 

@@ -38,8 +38,8 @@ dotnet run
 #
 #
 #
-
-## 2. 測試Remote MCP
+---
+## 2. 測試Remote MCP(devtunnel)
 建立好測試的MCP專案後，藉著就是用claude desktop來測試看看了，結果出現下面的錯誤。<span style="color: red;">原因是 Claude 的自訂 connector 是由 Anthropic 的雲端伺服器去連你的 MCP，而不是從你的電腦發出請求。</span>所以 localhost 對它來說指向的是它自己，連不到你的機器。這是正常現象。
 {%asset_image cant_use_localhost.jpg cant_use_localhost %}
 
@@ -101,7 +101,7 @@ ngrok http <port>
 #
 #
 #
-
+---
 ## 3.後續注意事項
 測試成功後，也別忘記下面的事情：
 1. **要記得補上身分驗證**
@@ -115,3 +115,37 @@ devtunnel delete <通道ID>
 ``` bash
 devtunnel delete-all
 ```
+#
+#
+#
+---
+## 4. 測試Remote MCP(MCP Inspector)
+補充另外一個測試MCP的工具 - MCP Inspector
+
+- **先啟動Server**
+``` bash
+dotnet run
+```
+
+- **另外開一個終端，啟動Inspector**
+``` bash
+npx @modelcontextprotocol/inspector
+```
+{% asset_image npx_mcp_inspector.jpg npx_mcp_inspector %}
+
+- **進入Web管理介面**
+1. 對圖中最右邊的Streamable HTTP點選Edit，
+{% asset_image mcp_inspector_index.jpg mcp_inspector_index %}
+
+2. 把URL換成本機測試網址，並點選SAVE
+{% asset_image set_url.jpg set_url %}
+
+3. 開啟連線
+{% asset_image connected.jpg connected %}
+
+4. 切換到MCP Tools頁籤，看到我們的測試MCP TOOL，點擊Execute按鈕。
+{% asset_image test_process.jpg test_process %}
+
+5. 取得MCP Tool的回傳結果
+{% asset_image test_result.jpg test_result %}
+

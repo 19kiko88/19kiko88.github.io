@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>建立OAuth Server with .Net | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="用.Net建立一個測試用remote MCP Server專案">
+<meta property="og:type" content="article">
+<meta property="og:title" content="建立OAuth Server with .Net">
+<meta property="og:url" content="http://example.com/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-Net/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="用.Net建立一個測試用remote MCP Server專案">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
+<meta property="article:modified_time" content="2026-10-21T03:11:21.360Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-建立OAuth-Server-with-Net" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-Net/" class="article-date">
+  <time class="dt-published" datetime="2026-10-20T06:54:47.000Z" itemprop="datePublished">2026-10-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      建立OAuth Server with .Net
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="用-Net建立一個測試用remote-MCP-Server專案"><a href="#用-Net建立一個測試用remote-MCP-Server專案" class="headerlink" title="用.Net建立一個測試用remote MCP Server專案"></a>用.Net建立一個測試用remote MCP Server專案</h5><span id="more"></span>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<h2 id="1-建立新的-Solution-與-Web-API-專案"><a href="#1-建立新的-Solution-與-Web-API-專案" class="headerlink" title="1. 建立新的 Solution 與 Web API 專案"></a>1. 建立新的 Solution 與 Web API 專案</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> D:\Homer\Project\OAuth</span><br><span class="line"><span class="built_in">cd</span> D:\Homer\Project\OAuth</span><br><span class="line">dotnet new sln -n OAuth</span><br><span class="line">dotnet new webapi -n OAuth.AuthorizationServer -controllers</span><br><span class="line">dotnet sln add .\OAuth.AuthorizationServer\OAuth.AuthorizationServer.csproj</span><br></pre></td></tr></table></figure>
+<h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
+<h2 id="2-加入-OpenIddict-相關-NuGet-套件"><a href="#2-加入-OpenIddict-相關-NuGet-套件" class="headerlink" title="2. 加入 OpenIddict 相關 NuGet 套件"></a>2. 加入 OpenIddict 相關 NuGet 套件</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dotnet add package OpenIddict.AspNetCore</span><br><span class="line">dotnet add package OpenIddict.EntityFrameworkCore</span><br><span class="line">dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL</span><br><span class="line">dotnet add package Microsoft.EntityFrameworkCore.Design</span><br><span class="line"></span><br><span class="line">dotnet tool install --global dotnet-ef</span><br></pre></td></tr></table></figure>
+
+<p>套件說明（跟上次講的對應關係一樣，只是換provider）：</p>
+<ul>
+<li>OpenIddict.AspNetCore：OpenIddict 核心，掛進 ASP.NET Core pipeline，提供 Step 6 會用到的 AddOpenIddict() 設定方法。</li>
+<li>OpenIddict.EntityFrameworkCore：OpenIddict 的 Applications&#x2F;Authorizations&#x2F;Scopes&#x2F;Tokens 資料模型，對應 EF Core。</li>
+<li>Npgsql.EntityFrameworkCore.PostgreSQL：PostgreSQL 的 EF Core Provider，提供 .UseNpgsql(connectionString) 這個方法，讓 EF Core 知道怎麼對 PostgreSQL 產生 SQL、處理 migration。</li>
+<li>Microsoft.EntityFrameworkCore.Design：EF Core migrations 的設計期工具，跟資料庫引擎無關，兩種DB都要裝。</li>
+<li>dotnet-ef：全域 CLI 工具，不分資料庫引擎都要裝一次。</li>
+</ul>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<h2 id="3-建立-DbContext-與-OpenIddict-資料模型"><a href="#3-建立-DbContext-與-OpenIddict-資料模型" class="headerlink" title="3. 建立 DbContext 與 OpenIddict 資料模型"></a>3. 建立 DbContext 與 OpenIddict 資料模型</h2><p>在專案目錄底下新增一個檔案 Data\AuthorizationServerDbContext.cs</p>
+<p>說明：</p>
+<ul>
+<li>繼承 DbContext 是標準 EF Core 寫法，這個類別之後會代表「跟資料庫之間的那個連線工作階段」。</li>
+<li>builder.UseOpenIddict() 是 OpenIddict.EntityFrameworkCore 套件提供的擴充方法，呼叫它之後，OpenIddict 內建的四張表就會自動變成這個 DbContext 的一部分，你不用自己手刻 DbSet<Application> 這些東西——OpenIddict 都幫你定義好了。</li>
+<li>這個檔案目前只定義結構，還沒有實際連到PostgreSQL，連線字串跟 .UseNpgsql() 的註冊會在 Step 4（Program.cs 設定）處理。</li>
+</ul>
+<p>請執行後確認：</p>
+<ol>
+<li>檔案建立在正確路徑，namespace 是 OAuth.AuthorizationServer.Data。</li>
+<li>dotnet build 可以正常編譯（這時候 AuthorizationServerDbContext 還沒被任何地方使用，屬於正常情況，不會因為沒用到就編譯失敗）。</li>
+</ol>
+<h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><hr>
+<h2 id="4-設定-PostgreSQL-連線字串，把-DbContext-掛進-DI"><a href="#4-設定-PostgreSQL-連線字串，把-DbContext-掛進-DI" class="headerlink" title="4. 設定 PostgreSQL 連線字串，把 DbContext 掛進 DI"></a>4. 設定 PostgreSQL 連線字串，把 DbContext 掛進 DI</h2><ul>
+<li>在 appsettings.json 加連線字串</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;ConnectionStrings&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;AuthorizationServerDb&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Host=localhost;Port=5432;Database=oauth_authserver;Username=postgres;Password=你的密碼&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;Logging&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;LogLevel&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;Default&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Information&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Microsoft.AspNetCore&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Warning&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;AllowedHosts&quot;</span><span class="punctuation">:</span> <span class="string">&quot;*&quot;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在 Program.cs 註冊 DbContext<br>在 var builder &#x3D; WebApplication.CreateBuilder(args); 之後、var app &#x3D; builder.Build(); 之前，加入：</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> Microsoft.EntityFrameworkCore;</span><br><span class="line"><span class="keyword">using</span> OAuth.AuthorizationServer.Data;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> connectionString = builder.Configuration.GetConnectionString(<span class="string">&quot;AuthorizationServerDb&quot;</span>)</span><br><span class="line">    ?? <span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">&quot;找不到連線字串 &#x27;AuthorizationServerDb&#x27;&quot;</span>);</span><br><span class="line"></span><br><span class="line">builder.Services.AddDbContext&lt;AuthorizationServerDbContext&gt;(options =&gt;</span><br><span class="line">&#123;</span><br><span class="line">    options.UseNpgsql(connectionString);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><hr>
+<h2 id="5：設定-OpenIddict-Server-本身的行為"><a href="#5：設定-OpenIddict-Server-本身的行為" class="headerlink" title="5：設定 OpenIddict Server 本身的行為"></a>5：設定 OpenIddict Server 本身的行為</h2><p>接續 Step 4，告訴 OpenIddict 要用剛剛那個 DbContext 存資料，並設定核心行為——只允許哪些 grant type、強制 PKCE、token 生命週期、簽章方式。這一步做完，OpenIddict 的「引擎」就設定好了，但還沒有實際處理登入橋接邏輯的程式（那是下一步要做的），所以這階段先不要急著測試打 &#x2F;connect&#x2F;authorize。</p>
+<ul>
+<li>在 Program.cs，緊接著 Step 4 加的 AddDbContext 之後，加入：</li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> OpenIddict.Abstractions;</span><br><span class="line"></span><br><span class="line">builder.Services.AddOpenIddict()</span><br><span class="line">    .AddCore(options =&gt;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 告訴 OpenIddict 用我們的 DbContext 存 Applications/Authorizations/Scopes/Tokens</span></span><br><span class="line">        options.UseEntityFrameworkCore()</span><br><span class="line">               .UseDbContext&lt;AuthorizationServerDbContext&gt;();</span><br><span class="line">    &#125;)</span><br><span class="line">    .AddServer(options =&gt;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 指定 /connect/authorize、/connect/token 這兩個端點的路徑</span></span><br><span class="line">        options.SetAuthorizationEndpointUris(<span class="string">&quot;connect/authorize&quot;</span>)</span><br><span class="line">               .SetTokenEndpointUris(<span class="string">&quot;connect/token&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// OAuth2.1 規範：只開放 authorization_code 與 refresh_token 這兩種 grant</span></span><br><span class="line">        <span class="comment">// 不呼叫 AllowImplicitFlow()、不呼叫 AllowPasswordFlow()</span></span><br><span class="line">        options.AllowAuthorizationCodeFlow()</span><br><span class="line">               .AllowRefreshTokenFlow();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 強制所有 client 都要用 PKCE（不只 public client）</span></span><br><span class="line">        options.RequireProofKeyForCodeExchange();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Token 生命週期（暫定值，先用合理預設；Refresh Token 真正的</span></span><br><span class="line">        <span class="comment">// 「絕對上限＝ticketExpiration」邏輯會在後面接 Bridge 時另外實作）</span></span><br><span class="line">        options.SetAccessTokenLifetime(TimeSpan.FromMinutes(<span class="number">30</span>));</span><br><span class="line">        options.SetRefreshTokenLifetime(TimeSpan.FromHours(<span class="number">12</span>)); <span class="comment">// 暫時對齊PNP ticket的12小時，之後會被動態上限取代</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 開發階段用的簽章/加密憑證：之後正式環境一定要換成</span></span><br><span class="line">        <span class="comment">// 真正保管好的簽章憑證（見設計文件第9節注意事項2、第8.1節）</span></span><br><span class="line">        options.AddDevelopmentEncryptionCertificate()</span><br><span class="line">               .AddDevelopmentSigningCertificate();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 關鍵：關掉 Access Token 加密，確保輸出是外部可驗簽的「乾淨JWT」</span></span><br><span class="line">        <span class="comment">// 而不是 OpenIddict 預設的加密格式（見設計文件第9節注意事項1）</span></span><br><span class="line">        options.DisableAccessTokenEncryption();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 讓 /connect/authorize、/connect/token 的實際處理邏輯</span></span><br><span class="line">        <span class="comment">// 可以由我們自己寫的 Controller action 接手（下一步會用到）</span></span><br><span class="line">        options.UseAspNetCore()</span><br><span class="line">               .EnableAuthorizationEndpointPassthrough()</span><br><span class="line">               .EnableTokenEndpointPassthrough();</span><br><span class="line">    &#125;)</span><br><span class="line">    .AddValidation(options =&gt;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 讓這個 App 自己也能驗證自己發出的 token（方便階段性測試用）</span></span><br><span class="line">        <span class="comment">// 之後真正獨立的 MCP Resource Server 會改用遠端 JWKS 驗證，不是這個設定</span></span><br><span class="line">        options.UseLocalServer();</span><br><span class="line">        options.UseAspNetCore();</span><br><span class="line">    &#125;);</span><br></pre></td></tr></table></figure>
+
+<p>幾個關鍵點說明：</p>
+<ul>
+<li>AllowAuthorizationCodeFlow() + AllowRefreshTokenFlow() 是刻意只開這兩個——OAuth2.1 明確拿掉 Implicit Grant 跟 Resource Owner Password Credentials Grant，我們沒有呼叫對應的 Allow…Flow()，它們就是被禁用的狀態。</li>
+<li>RequireProofKeyForCodeExchange() 讓 PKCE 變成強制（不是只對 public client 選擇性開啟），符合OAuth2.1的要求。</li>
+<li>DisableAccessTokenEncryption() 是設計文件第9節提到的坑——沒加這行，OpenIddict 預設會把 access token 加密，外部的 MCP Resource Server 之後用 JWKS 公鑰會驗不了簽。</li>
+<li>AddDevelopmentSigningCertificate() 現在先用開發用的自簽憑證只是為了先讓程式跑得起來，正式上線前一定要換成正式保管的簽章憑證（對應設計文件第8.1節），這個我們會在後面的步驟特別處理，不會漏掉。</li>
+<li>EnableAuthorizationEndpointPassthrough() &#x2F; EnableTokenEndpointPassthrough() 這兩行很重要：讓 OpenIddict 不要自己把請求整個吃掉處理完，而是解析驗證完基本協定格式後，把控制權交給我們自己的 Controller action——這是後面要接 Bridge 登入橋接邏輯的關鍵，沒開這個就沒辦法插入自訂邏輯。</li>
+</ul>
+<p>請注意：這步做完後，如果你現在就手動打 &#x2F;connect&#x2F;authorize，會出錯或404——這是正常的，因為我們還沒寫對應的 Controller action 來接手處理（下一步才會寫）。不用懷疑這步做錯了。</p>
+<h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><hr>
+<h2 id="6：建立並套用-EF-Core-Migration，在-PostgreSQL-建出資料表"><a href="#6：建立並套用-EF-Core-Migration，在-PostgreSQL-建出資料表" class="headerlink" title="6：建立並套用 EF Core Migration，在 PostgreSQL 建出資料表"></a>6：建立並套用 EF Core Migration，在 PostgreSQL 建出資料表</h2><p>目前為止我們只是在「程式邏輯層面」定義了資料模型（DbContext + OpenIddict的UseOpenIddict()），PostgreSQL裡實際上還沒有任何表。這一步要產生 migration 程式碼，再套用到資料庫，把 Applications、Authorizations、Scopes、Tokens 這四張表真的建出來。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> .\OAuth.AuthorizationServer</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 產生 migration（會在專案底下新增一個 Migrations 資料夾）</span></span><br><span class="line">dotnet ef migrations add InitialCreate</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把 migration 實際套用到你 appsettings.json 裡設定的那個 PostgreSQL</span></span><br><span class="line">dotnet ef database update</span><br></pre></td></tr></table></figure>
+
+<p>說明：</p>
+<ul>
+<li>dotnet ef migrations add InitialCreate：EF Core 工具會比對目前 DbContext 的模型（因為有呼叫 UseOpenIddict()，模型裡已經包含 OpenIddict 那四張表），產生對應的 C# migration 程式碼，描述「要怎麼從空資料庫變成符合這個模型的資料庫」。這一步不會連線資料庫，純粹本機產生程式碼檔案。</li>
+<li>dotnet ef database update：這一步才會真的連線到你 appsettings.json 裡設定的 PostgreSQL，執行 migration、建出實際的資料表。</li>
+</ul>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet ef migrations add InitialCreate 有成功產生 Migrations 資料夾，裡面有類似 XXXXXXXX_InitialCreate.cs 的檔案。</li>
+<li>dotnet ef database update 跑完沒有錯誤訊息。</li>
+<li>用任何 PostgreSQL 工具（psql、pgAdmin、DBeaver都行）連進去那個資料庫，確認看得到 OpenIddictApplications、OpenIddictAuthorizations、OpenIddictScopes、OpenIddictTokens 這幾張表。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-Net/" data-id="cmvhjd7rz0000k4n12v9xagh0" data-title="建立OAuth Server with .Net" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">建立MCP專案 with .Net</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Google-Cloud/">Google Cloud</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Trouble-Shooting/">Trouble Shooting</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/">物件導向</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CDN/" rel="tag">CDN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-App-Script/" rel="tag">Google App Script</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Auth-Platform/" rel="tag">Google Auth Platform</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IAP/" rel="tag">IAP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MCP/" rel="tag">MCP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 16px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 18px;">Angular</a> <a href="/tags/CDN/" style="font-size: 10px;">CDN</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Google-App-Script/" style="font-size: 12px;">Google App Script</a> <a href="/tags/Google-Auth-Platform/" style="font-size: 10px;">Google Auth Platform</a> <a href="/tags/IAP/" style="font-size: 10px;">IAP</a> <a href="/tags/MCP/" style="font-size: 10px;">MCP</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 14px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 14px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 14px;">docker</a> <a href="/tags/n8n/" style="font-size: 14px;">n8n</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/10/">October 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-Net/">建立OAuth Server with .Net</a>
+          </li>
+        
+          <li>
+            <a href="/2026/10/16/%E5%BB%BA%E7%AB%8BMCP%E5%B0%88%E6%A1%88-with-Net/">建立MCP專案 with .Net</a>
+          </li>
+        
+          <li>
+            <a href="/2026/10/14/%E7%B6%B2%E7%AB%99%E9%81%B8%E5%96%AE-Icon-%E7%95%B0%E5%B8%B8%E4%BA%8B%E4%BB%B6/">網站選單 Icon 異常事件</a>
+          </li>
+        
+          <li>
+            <a href="/2026/09/22/%E7%94%A8IAP-Google-Auth-Platform-%E9%80%B2%E8%A1%8C%E8%BA%AB%E5%88%86%E9%A9%97%E8%AD%89/">用IAP + Google Auth Platform 進行身分驗證</a>
+          </li>
+        
+          <li>
+            <a href="/2026/08/25/%E4%BA%8B%E4%BB%B6%E5%86%92%E6%B3%A1%EF%BC%88Event-Bubbling%EF%BC%89%E8%88%87-Angular-Directive-%E4%BA%8B%E4%BB%B6%E4%BB%A3%E7%90%86%E5%AF%A6%E6%88%B0/">事件冒泡（Event Bubbling）與 Angular Directive 事件代理實戰</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

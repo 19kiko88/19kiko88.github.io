@@ -14,7 +14,7 @@
 <meta property="og:description" content="用.Net建立一個測試用remote MCP Server專案">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
-<meta property="article:modified_time" content="2026-10-22T02:41:23.587Z">
+<meta property="article:modified_time" content="2026-10-22T02:47:04.351Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -195,7 +195,7 @@
 <p>一句話總結：Client ID 的核心用途是「識別這次請求是以哪個已註冊的應用程式名義提出」，再由 OAuth Server 根據該 Client 的註冊設定、授權流程與安全驗證機制，決定是否接受這次請求。</p>
 <h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><hr>
 <h2 id="8：驗證-JWKS-與-Discovery-Metadata-端點"><a href="#8：驗證-JWKS-與-Discovery-Metadata-端點" class="headerlink" title="8：驗證 JWKS 與 Discovery Metadata 端點"></a>8：驗證 JWKS 與 Discovery Metadata 端點</h2><p>在繼續寫更複雜的自訂登入橋接邏輯之前，先確認目前為止做的這些設定，整個OpenIddict Server本身有沒有正確跑起來。&#x2F;.well-known&#x2F;openid-configuration（Discovery metadata）跟 JWKS 這兩個端點是OpenIddict自動產生的，不需要我們寫任何Controller，剛好拿來當一個「前面做的東西都接對了嗎」的健檢點。</p>
-<p>先啟動程式(用https執行!)</p>
+<p>先啟動程式(用https執行，驗證伺服器只能在https上運行)</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run --launch-profile https</span><br></pre></td></tr></table></figure>
 
 <p>程式啟動後，看終端機印出來的網址（通常是 <a href="https://localhost:xxxx），另開一個終端機或瀏覽器測試：">https://localhost:xxxx），另開一個終端機或瀏覽器測試：</a><br>（-k 是因為開發階段用的是本機自簽憑證，先跳過憑證驗證；如果你想正規一點，可以先跑 dotnet dev-certs https –trust 信任本機憑證，就不用加 -k。）</p>
@@ -210,7 +210,7 @@
 <li>“code_challenge_methods_supported”：應該有 “S256”（PKCE強制的證明）</li>
 </ul>
 </li>
-<li>&#x2F;.well-known&#x2F;jwks 回傳的JSON裡應該要有一個 “keys” 陣列，裡面至少一把key，”use”: “sig”（簽章用），”kty”: “RSA”——這是Step 6 AddDevelopmentSigningCertificate() 產生的開發用金鑰的公鑰部分。</li>
+<li>&#x2F;.well-known&#x2F;jwks 回傳的JSON裡應該要有一個 “keys” 陣列，裡面至少一把key，”use”: “sig”（簽章用），”kty”: “RSA”——這是Step 6 <span style="color: red;">AddDevelopmentSigningCertificate() 產生的開發用金鑰的公鑰部分。</span></li>
 </ol>
 <p>如果這兩個端點打不通或內容不對，代表Step 5~6的OpenIddict設定哪裡有問題，我們要先抓出來，不要帶著錯誤設定往下走到更複雜的自訂登入邏輯。</p>
 <p>請執行後確認：</p>

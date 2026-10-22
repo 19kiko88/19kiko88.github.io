@@ -14,7 +14,7 @@
 <meta property="og:description" content="用.Net建立一個測試用remote MCP Server專案">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
-<meta property="article:modified_time" content="2026-10-22T10:46:11.027Z">
+<meta property="article:modified_time" content="2026-10-22T10:48:13.396Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -287,7 +287,8 @@
 </li>
 <li>查PendingAuthorizeRequests表，確認UserName等欄位有被填入、最後Used變成true。</li>
 </ol>
-<p>最後整理一次執行順序：<br>MCP Client &#x3D;&gt; Authenrize() &#x3D;&gt; 302轉址到BNB的Bridge，進行登入確認流程，確定為登入後取得BridgeCode &#x3D;&gt; BridgeCallback(bridgeCode, nonce) &amp; RedeemAsync()取得BNB的身分驗證資料 &#x3D;&gt; Authorize() &#x3D;&gt; CompleteAuthorizationAsync()</p>
+<p>流程總結說明：</p>
+<p>執行順序：MCP Client &#x3D;&gt; Authenrize() &#x3D;&gt; 302轉址到BNB的Bridge，進行登入確認流程，確定為登入後取得BridgeCode &#x3D;&gt; BridgeCallback(bridgeCode, nonce) &amp; RedeemAsync()取得BNB的身分驗證資料 &#x3D;&gt; Authorize() &#x3D;&gt; CompleteAuthorizationAsync()</p>
 <ol>
 <li>MCP Client 發起請求（透過瀏覽器）→ 打到 Authorize()。</li>
 <li>因為沒帶__nonce（第一次經過），Authorize()存PendingAuthorizeRequest，回302 → 瀏覽器被導去BNB的Bridge（&#x2F;sso&#x2F;bridge，還沒做），BNB驗證完產生BridgeCode，再302導回我們的bridge-callback。</li>
@@ -300,7 +301,8 @@
 </span>
 
 <p><strong>Authorization Code：[身分 + 授權範圍]認證完成的依據</strong><br><strong>Acess Token：是否有呼叫API權限的依據</strong></p>
-
+<h1 id="-30"><a href="#-30" class="headerlink" title=""></a></h1><h1 id="-31"><a href="#-31" class="headerlink" title=""></a></h1><h1 id="-32"><a href="#-32" class="headerlink" title=""></a></h1><hr>
+<h2 id="11：XXX"><a href="#11：XXX" class="headerlink" title="11：XXX"></a>11：XXX</h2>
       
     </div>
     <footer class="article-footer">

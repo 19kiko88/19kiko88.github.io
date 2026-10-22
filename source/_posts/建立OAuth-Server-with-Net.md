@@ -289,3 +289,378 @@ Client ID用途如下：
 檢查該 Client 是否被允許使用目前要求的授權流程，例如 Authorization Code Flow，以及是否符合相應的 Response Type、Endpoint 與其他安全政策。
 
 一句話總結：Client ID 的核心用途是「識別這次請求是以哪個已註冊的應用程式名義提出」，再由 OAuth Server 根據該 Client 的註冊設定、授權流程與安全驗證機制，決定是否接受這次請求。
+#
+#
+#
+---
+
+##   8：驗證 JWKS 與 Discovery Metadata 端點
+在繼續寫更複雜的自訂登入橋接邏輯之前，先確認目前為止做的這些設定，整個OpenIddict Server本身有沒有正確跑起來。/.well-known/openid-configuration（Discovery metadata）跟 JWKS 這兩個端點是OpenIddict自動產生的，不需要我們寫任何Controller，剛好拿來當一個「前面做的東西都接對了嗎」的健檢點。
+
+先啟動程式(用https執行，驗證伺服器只能在https上運行)
+``` bash
+dotnet run --launch-profile https
+```
+
+程式啟動後，看終端機印出來的網址（通常是 https://localhost:xxxx），另開一個終端機或瀏覽器測試：
+（-k 是因為開發階段用的是本機自簽憑證，先跳過憑證驗證；如果你想正規一點，可以先跑 dotnet dev-certs https --trust 信任本機憑證，就不用加 -k。）
+``` bash
+# Discovery metadata
+curl -k https://localhost:xxxx/.well-known/openid-configuration
+
+# JWKS（公鑰集合）
+curl -k https://localhost:xxxx/.well-known/jwks
+```
+
+要看到什麼才算正確：
+1. /.well-known/openid-configuration 回傳的JSON裡應該要有：
+   - "authorization_endpoint"：指向 .../connect/authorize
+   - "token_endpoint"：指向 .../connect/token
+   - "grant_types_supported"：陣列裡只有 "authorization_code" 跟 "refresh_token"，不應該出現 "implicit" 或 "password"（這是Step 6設定AllowAuthorizationCodeFlow()/AllowRefreshTokenFlow()的結果）
+   - "code_challenge_methods_supported"：應該有 "S256"（PKCE強制的證明）
+2. /.well-known/jwks 回傳的JSON裡應該要有一個 "keys" 陣列，裡面至少一把key，"use": "sig"（簽章用），"kty": "RSA"——這是Step 6 <span style="color: red;">AddDevelopmentSigningCertificate() 產生的開發用金鑰的公鑰部分。</span>
+
+如果這兩個端點打不通或內容不對，代表Step 5~6的OpenIddict設定哪裡有問題，我們要先抓出來，不要帶著錯誤設定往下走到更複雜的自訂登入邏輯。
+
+請執行後確認：
+1. 兩個端點都能正常回應（不是404或500）。
+2. 內容符合上面列的檢查點。
+
+- 什麼是 .well-known/openid-configuration？
+<span style="color: red;">/.well-known/openid-configuration 是標準化路徑，每個 OpenID Connect 提供者都會在此公布設定。</span>將它接在任一 OIDC issuer 的基底 URL 後面，即可取得一份 JSON，列出該提供者的端點、支援功能與密碼學能力。
+
+例如：
+Google：https://accounts.google.com/.well-known/openid-configuration
+Microsoft：https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration
+
+詳細可以參考：  [什麼是 .well-known/openid-configuration？開發者指南](https://codelabs.developers.google.com/codelabs/clasp?hl=zh-tw#0)
+#
+#
+#
+---
+
+##   9：新增「暫存原始授權請求」的資料模型
+/connect/authorize 收到請求後，我們要把使用者導去PCBRepairNavi的 /sso/bridge 驗證身分，驗證完使用者的瀏覽器會被導回我們這個Server——但中間繞去PCBRepairNavi那一圈，原本/connect/authorize帶的那些參數（client_id、redirect_uri、scope、code_challenge等）會跟著消失，瀏覽器導回來的時候我們沒辦法直接從網址上拿回它們。
+
+所以需要一個地方暫存這次原始請求的內容，搭配一個nonce（亂數識別碼）當索引，等使用者從Bridge繞回來、帶著nonce回來時，我們才能查回「原來這次要授權的是哪個client、哪些scope」，繼續把OAuth流程走完。
+
+在 D:\Homer\Project\OAuth\OAuth.AuthorizationServer\Data 底下新增 PendingAuthorizeRequest.cs：
+``` csharp
+namespace OAuth.AuthorizationServer.Data;
+
+public class PendingAuthorizeRequest
+{
+    public string Nonce { get; set; } = default!;            // 主鍵，隨機產生，當作Bridge往返的識別碼
+    public string OriginalRequestJson { get; set; } = default!; // 原始 /connect/authorize 請求參數，序列化成JSON暫存
+    public DateTimeOffset ExpiresAt { get; set; }             // 短效，建議10分鐘（使用者在PNP登入頁花的時間要算進去）
+    public bool Used { get; set; }                            // 單次使用，用過即標記，防重放
+}
+```
+
+修改 AuthorizationServerDbContext.cs，加入這張表：
+``` csharp
+public class AuthorizationServerDbContext : DbContext
+{
+    public AuthorizationServerDbContext(DbContextOptions<AuthorizationServerDbContext> options)
+        : base(options)
+    {
+    }
+
+    public DbSet<PendingAuthorizeRequest> PendingAuthorizeRequests => Set<PendingAuthorizeRequest>();
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.Entity<PendingAuthorizeRequest>().HasKey(p => p.Nonce);
+
+        builder.UseOpenIddict();
+    }
+}
+```
+
+說明：
+
+- 這張表存的是短效、一次性的暫存資料，概念上跟設計文件第4節「Bridge一次性交換碼」很像，但這是不同的一組——那個存在PCBRepairNavi、用來證明「使用者在PNP登入有效」；這個存在Authorization Server自己這邊、單純是為了不要在跨站導來導去的過程中弄丟原始OAuth請求參數，兩者職責不同，不要搞混。
+- OriginalRequestJson 先用JSON字串存，之後在Controller裡要用時反序列化回物件即可，不需要為每個欄位建獨立欄位。
+- HasKey(p => p.Nonce) 明確指定Nonce為主鍵（因為它不是int/Guid的慣例命名Id，EF Core不會自動猜到，要手動指定）。
+
+跑migration把這張表建出來：
+
+``` bash
+cd D:\Homer\Project\OAuth\OAuth.AuthorizationServer
+dotnet ef migrations add AddPendingAuthorizeRequest
+dotnet ef database update
+```
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. migration成功套用（做法跟之前Step 6一樣，看到Done.或資料庫裡查得到PendingAuthorizeRequests這張表）。
+#
+#
+#
+---
+
+##   10：導向Bridge並正確繞回完成授權
+這一步在做什麼：實作/connect/authorize收到請求後，第一次沒有身分時導去PCBRepairNavi的Bridge；Bridge驗證完、透過Redeem換到身分資料後，繞回/connect/authorize本身（不是另開一個端點）完成OpenIddict的授權簽發。這是正確版本，直接取代舊版「用獨立Resume端點直接簽發」的寫法（那個寫法在OpenIddict裡行不通，原因：OpenIddict只在請求路徑是設定的端點/connect/authorize時才會建立內部交易狀態，SignIn()只能在這個狀態存在時被正確攔截）。
+
+10-1：appsettings.json 設定Bridge網址
+``` json
+{
+  "ConnectionStrings": {
+    "AuthorizationServerDb": "..."
+  },
+  "IdentityProviders": {
+    "Pnp": {
+      "BridgeUrl": "https://localhost:16888/sso/bridge"
+    }
+  }
+}
+```
+
+10-2：PendingAuthorizeRequest.cs（在Step 9建立的基礎上，補上Bridge/Redeem結果欄位）
+``` csharp
+namespace OAuth.AuthorizationServer.Data;
+
+public class PendingAuthorizeRequest
+{
+    public string Nonce { get; set; } = default!;
+    public string OriginalRequestJson { get; set; } = default!;
+    public DateTimeOffset ExpiresAt { get; set; }
+    public bool Used { get; set; }
+
+    // 由 BridgeCallback 填入，初始為 null
+    public string? UserName { get; set; }
+    public string? SiteCode { get; set; }
+    public int? TokenId { get; set; }
+    public DateTimeOffset? TicketExpiration { get; set; }
+}
+```
+
+跑migration（如果Step 9之後已經跑過一次沒有這些欄位的版本，這裡會是追加一次新的migration）：
+
+``` bash
+cd D:\Homer\Project\OAuth\OAuth.AuthorizationServer
+dotnet ef migrations add AddBridgeResultFieldsToPendingAuthorizeRequest
+dotnet ef database update
+```
+
+10-3：Models\PendingAuthorizeData.cs
+``` csharp
+namespace OAuth.AuthorizationServer.Models;
+
+public sealed class PendingAuthorizeData
+{
+    public string ClientId { get; set; } = default!;
+    public string RedirectUri { get; set; } = default!;
+    public string? Scope { get; set; }
+    public string? State { get; set; }
+    public string? CodeChallenge { get; set; }
+    public string? CodeChallengeMethod { get; set; }
+}
+```
+
+10-4：Controllers\AuthorizationController.cs
+``` csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using OAuth.AuthorizationServer.Data;
+using OAuth.AuthorizationServer.Models;
+using OpenIddict.Abstractions;
+using OpenIddict.Server.AspNetCore;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text.Json;
+using static OpenIddict.Abstractions.OpenIddictConstants;
+
+namespace OAuth.AuthorizationServer.Controllers;
+
+public class AuthorizationController : Controller
+{
+    private readonly AuthorizationServerDbContext _db;
+    private readonly IConfiguration _configuration;
+
+    public AuthorizationController(AuthorizationServerDbContext db, IConfiguration configuration)
+    {
+        _db = db;
+        _configuration = configuration;
+    }
+
+    [HttpGet("~/connect/authorize")]
+    public async Task<IActionResult> Authorize([FromQuery(Name = "__nonce")] string? resumeNonce)
+    {
+        //雖然Authorize簽章沒有OAuth標準參數(client_id、response_type、redirect_uri、scope、code_challenge、code_challenge_method、state)，
+        //但OAuth標準參數會由HttpContext.GetOpenIddictServerRequest()取得。沒給的話會報error!!
+        var request = HttpContext.GetOpenIddictServerRequest()
+            ?? throw new InvalidOperationException("OpenIddict 請求物件遺失。");
+
+        // 第二次經過：Bridge/Redeem已完成，帶著 __nonce 繞回來
+        if (!string.IsNullOrEmpty(resumeNonce))
+        {
+            return await CompleteAuthorizationAsync(resumeNonce, request);
+        }
+
+        // 第一次經過：還沒驗證身分，暫存原始請求，導去 PCBRepairNavi 的 Bridge
+        var bridgeBaseUrl = _configuration["IdentityProviders:Pnp:BridgeUrl"]
+            ?? throw new InvalidOperationException("找不到設定 'IdentityProviders:Pnp:BridgeUrl'");
+
+        var nonce = GenerateNonce();
+
+        var pending = new PendingAuthorizeRequest
+        {
+            Nonce = nonce,
+            OriginalRequestJson = JsonSerializer.Serialize(new PendingAuthorizeData
+            {
+                ClientId = request.ClientId!,
+                RedirectUri = request.RedirectUri!,
+                Scope = request.Scope,
+                State = request.State,
+                CodeChallenge = request.CodeChallenge,
+                CodeChallengeMethod = request.CodeChallengeMethod,
+            }),
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10),
+            Used = false,
+        };
+
+        _db.PendingAuthorizeRequests.Add(pending);
+        await _db.SaveChangesAsync();
+
+        var callbackUrl = Url.Action(nameof(BridgeCallback), "Authorization", values: null, protocol: Request.Scheme)!;
+        var bridgeUrl = $"{bridgeBaseUrl}?return_url={Uri.EscapeDataString(callbackUrl)}&nonce={Uri.EscapeDataString(nonce)}";
+
+        return Redirect(bridgeUrl);
+    }
+
+    /// <summary>
+    /// PNP Callback
+    /// </summary>
+    /// <param name="bridgeCode">PNP產生，確認通過PNP登入驗證</param>
+    /// <param name="nonce">Authorize產生</param>
+    /// <returns></returns>
+    [HttpGet("~/connect/authorize/bridge-callback")]
+    public async Task<IActionResult> BridgeCallback([FromQuery] string bridgeCode, [FromQuery] string nonce)
+    {
+        var pending = await _db.PendingAuthorizeRequests.FirstOrDefaultAsync(p => p.Nonce == nonce);
+
+        if (pending is null || pending.Used || pending.ExpiresAt < DateTimeOffset.UtcNow)
+        {
+            return BadRequest("無效或已過期的 nonce。");
+        }
+
+        //用bridgeCode換回PNP的身分資料{userName, siteCode, tokenId,ticketExpiration}
+        var (userName, siteCode, tokenId, ticketExpiration) = await RedeemAsync(bridgeCode);
+
+        pending.UserName = userName;
+        pending.SiteCode = siteCode;
+        pending.TokenId = tokenId;
+        pending.TicketExpiration = ticketExpiration;
+        // 注意：這裡先不標記 Used，等真正完成SignIn時才標記，避免Redeem成功但後面失敗時整筆被浪費
+
+        await _db.SaveChangesAsync();
+
+        var original = JsonSerializer.Deserialize<PendingAuthorizeData>(pending.OriginalRequestJson)!;
+
+        var queryParams = new Dictionary<string, string?>
+        {
+            ["client_id"] = original.ClientId,
+            ["redirect_uri"] = original.RedirectUri,
+            ["response_type"] = "code",
+            ["scope"] = original.Scope,
+            ["state"] = original.State,
+            ["code_challenge"] = original.CodeChallenge,
+            ["code_challenge_method"] = original.CodeChallengeMethod,
+            ["__nonce"] = nonce,
+        };
+
+        var authorizeUrl = QueryHelpers.AddQueryString("/connect/authorize",
+            queryParams.Where(p => p.Value is not null).ToDictionary(p => p.Key, p => p.Value!));
+
+        return Redirect(authorizeUrl);
+    }
+
+    private async Task<IActionResult> CompleteAuthorizationAsync(string resumeNonce, OpenIddictRequest request)
+    {
+        var pending = await _db.PendingAuthorizeRequests.FirstOrDefaultAsync(p => p.Nonce == resumeNonce);
+
+        if (pending is null || pending.Used || pending.ExpiresAt < DateTimeOffset.UtcNow || pending.UserName is null)
+        {
+            return BadRequest("無效的授權狀態，請重新開始登入流程。");
+        }
+
+        pending.Used = true;
+        await _db.SaveChangesAsync();
+
+        var identity = new ClaimsIdentity(
+            authenticationType: "PNP-Bridge",
+            nameType: Claims.Name,
+            roleType: Claims.Role);
+
+        identity.SetClaim(Claims.Subject, pending.UserName);
+        identity.SetClaim("site_code", pending.SiteCode);
+        identity.SetClaim("token_id", pending.TokenId?.ToString());
+        identity.SetClaim("ticket_expiration", pending.TicketExpiration?.ToUnixTimeSeconds().ToString());
+        identity.SetScopes(request.GetScopes());
+
+        var principal = new ClaimsPrincipal(identity);
+
+        foreach (var claim in principal.Claims)
+        {
+            claim.SetDestinations(Destinations.AccessToken);
+        }
+
+        return SignIn(principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    /// <summary>
+    /// 從PNP取得身分驗證資料
+    /// </summary>
+    /// <param name="bridgeCode">PNP產生，確認通過PNP登入驗證</param>
+    /// <returns></returns>
+    private static Task<(string UserName, string SiteCode, int TokenId, DateTimeOffset TicketExpiration)> RedeemAsync(string bridgeCode)
+    {
+        // TODO（下一步）：改成真的呼叫 PCBRepairNavi 的 POST /api/internal/sso/redeem
+        return Task.FromResult(("test\\mockuser", "AS", 1, DateTimeOffset.UtcNow.AddHours(12)));
+    }
+
+    private static string GenerateNonce()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(32);
+        return Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_')
+            .TrimEnd('=');
+    }
+}
+```
+
+幾個重點說明：
+
+- HttpContext.GetOpenIddictServerRequest() 是OpenIddict提供的方法，因為Step 6開了EnableAuthorizationEndpointPassthrough()，這裡才能拿到OpenIddict已經先驗證過基本格式（client_id存在、redirect_uri吻合、PKCE必填等）的請求物件。
+- GenerateNonce() 用 RandomNumberGenerator（密碼學安全的亂數來源，不是Random），產生URL-safe的字串。
+- Authorize action身兼兩種情況：用resumeNonce（也就是__nonce查詢參數）是否存在來判斷「這是第一次經過還是第二次繞回來」。兩種情況都發生在同一個/connect/authorize路徑上，這是刻意的——OpenIddict只有在請求打到設定的端點路徑時，才會建立它內部需要的「交易狀態」，SignIn()只有在這個狀態存在時才能被正確攔截轉換成簽發Authorization Code的行為。如果在別的路徑（例如一個獨立的resume端點）呼叫SignIn()，OpenIddict會認不出這個請求、丟出例外。
+- BridgeCallback本身不呼叫SignIn()：它的工作只有「驗證nonce、呼叫Redeem、把身分資料寫回PendingAuthorizeRequest、再轉一手導回/connect/authorize」。真正的SignIn()留到CompleteAuthorizationAsync（在Authorize第二次經過時才呼叫），原因同上。
+- pending.Used在BridgeCallback裡先不標記true：故意的。如果標記了但後面CompleteAuthorizationAsync因為某些原因失敗，這筆暫存資料就變成「已用過但沒真的完成授權」的死資料，使用者會卡住。留到CompleteAuthorizationAsync真正成功簽完才標記，確保狀態一致。
+- QueryHelpers.AddQueryString加上.Where(p => p.Value is not null)過濾：因為scope、state這些欄位在原始請求裡可能是null，直接塞進字典組URL會產生scope=這種空值參數，容易讓OpenIddict重新解析時行為不一致，所以先過濾掉null的。
+- GenerateNonce()用RandomNumberGenerator而非Random：這個nonce是安全機制的一部分（防止有人用猜的nonce去冒用別人的Bridge結果），一定要用密碼學安全的亂數來源。
+- identity.SetClaim(Claims.Subject, pending.UserName)等claims設定：Claims.Subject對應JWT的sub，site_code/token_id/ticket_expiration是我們自訂的claim，供之後Step 7（Refresh雙層檢查）讀取用；claim.SetDestinations(Destinations.AccessToken)明確指定這些claim要寫進access token裡，不設的話OpenIddict預設可能不會把自訂claim放進去。
+- RedeemAsync目前回傳假資料：單純是因為PCBRepairNavi那邊的/api/internal/sso/redeem還沒做，先讓你能測完這條Authorization Server自己的邏輯，不用等對方。
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 用Insomnia依序測：
+    1. https://localhost:7280/connect/authorize?client_id=pnp-mcp-client&response_type=code&redirect_uri=https://localhost:5055/callback&scope=ucs.sn-info.read&code_challenge=test&code_challenge_method=S256 → 預期302到bridge（連線失敗正常，PCBRepairNavi還沒做)
+    2. https://localhost:7280/connect/bridge-callback?bridgeCode=TEST&nonce=<DB裡那筆nonce> → 預期302回/connect/authorize?...&__nonce=... 
+    3. 步驟[2.2.]回傳的網址 → 預期這次簽發出Authorization Code、302到client的redirect_uri（連線失敗一樣正常，重點是有沒有拿到code參數）。
+3. 查PendingAuthorizeRequests表，確認UserName等欄位有被填入、最後Used變成true。
+
+最後整理一次執行順序：
+MCP Client => Authenrize() => 302轉址到PNP的Bridge，進行登入確認流程，確定為登入後取得BridgeCode => BridgeCallback(bridgeCode, nonce) & RedeemAsync()取得PNP的身分驗證資料 => Authorize() => CompleteAuthorizationAsync()
+
+1. MCP Client 發起請求（透過瀏覽器）→ 打到 Authorize()。
+2. 因為沒帶__nonce（第一次經過），Authorize()存PendingAuthorizeRequest，回302 → 瀏覽器被導去PNP的Bridge（/sso/bridge，還沒做），PNP驗證完產生BridgeCode，再302導回我們的bridge-callback。
+3. 瀏覽器打到 BridgeCallback(code, nonce)，裡面呼叫 RedeemAsync()（目前假資料）換到{userName, siteCode, tokenId, ticketExpiration}，寫回PendingAuthorizeRequest，再302導回/connect/authorize（帶__nonce）。
+4. 瀏覽器再次打到 Authorize()（第二次經過，這次帶著__nonce）。
+5. 因為帶了__nonce，呼叫 CompleteAuthorizationAsync()：<span style="color: red;">查出身分資料、組ClaimsPrincipal、SignIn()簽發Authorization Code</span>，302導回MCP Client真正的redirect_uri，流程結束。
+
+<span style="color: red; font: bold">完成上述流程表示身分確認完成，從PNP取得了使用者資訊（userName/siteCode/tokenId/ticketExpiration）跟Authorizatiion Code，但還沒有取得AcessToken，我們必須要用Authorizatiion Code這個憑證，再去兌換AcessToken。</span>

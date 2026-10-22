@@ -14,7 +14,7 @@
 <meta property="og:description" content="用.Net建立一個測試用remote MCP Server專案">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
-<meta property="article:modified_time" content="2026-10-22T02:37:53.173Z">
+<meta property="article:modified_time" content="2026-10-22T02:41:23.587Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -194,7 +194,7 @@
 </ol>
 <p>一句話總結：Client ID 的核心用途是「識別這次請求是以哪個已註冊的應用程式名義提出」，再由 OAuth Server 根據該 Client 的註冊設定、授權流程與安全驗證機制，決定是否接受這次請求。</p>
 <h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><hr>
-<h2 id="8：驗證-JWKS-與-Discovery-Metadata-端點"><a href="#8：驗證-JWKS-與-Discovery-Metadata-端點" class="headerlink" title="8：驗證 JWKS 與 Discovery Metadata 端點"></a>8：驗證 JWKS 與 Discovery Metadata 端點</h2><p>在繼續寫更複雜的自訂登入橋接邏輯（那個要等PCBRepairNavi的Bridge&#x2F;Redeem端點，目前還沒做）之前，先確認目前為止做的這些設定，整個OpenIddict Server本身有沒有正確跑起來。&#x2F;.well-known&#x2F;openid-configuration（Discovery metadata）跟 JWKS 這兩個端點是OpenIddict自動產生的，不需要我們寫任何Controller，剛好拿來當一個「前面做的東西都接對了嗎」的健檢點。</p>
+<h2 id="8：驗證-JWKS-與-Discovery-Metadata-端點"><a href="#8：驗證-JWKS-與-Discovery-Metadata-端點" class="headerlink" title="8：驗證 JWKS 與 Discovery Metadata 端點"></a>8：驗證 JWKS 與 Discovery Metadata 端點</h2><p>在繼續寫更複雜的自訂登入橋接邏輯之前，先確認目前為止做的這些設定，整個OpenIddict Server本身有沒有正確跑起來。&#x2F;.well-known&#x2F;openid-configuration（Discovery metadata）跟 JWKS 這兩個端點是OpenIddict自動產生的，不需要我們寫任何Controller，剛好拿來當一個「前面做的東西都接對了嗎」的健檢點。</p>
 <p>先啟動程式(用https執行!)</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run --launch-profile https</span><br></pre></td></tr></table></figure>
 

@@ -14,7 +14,7 @@
 <meta property="og:description" content="用.Net建立一個測試用remote MCP Server專案">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
-<meta property="article:modified_time" content="2026-10-21T08:03:47.054Z">
+<meta property="article:modified_time" content="2026-10-22T02:37:53.173Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -193,6 +193,37 @@
 <li>限制允許的授權流程<br>檢查該 Client 是否被允許使用目前要求的授權流程，例如 Authorization Code Flow，以及是否符合相應的 Response Type、Endpoint 與其他安全政策。</li>
 </ol>
 <p>一句話總結：Client ID 的核心用途是「識別這次請求是以哪個已註冊的應用程式名義提出」，再由 OAuth Server 根據該 Client 的註冊設定、授權流程與安全驗證機制，決定是否接受這次請求。</p>
+<h1 id="-21"><a href="#-21" class="headerlink" title=""></a></h1><h1 id="-22"><a href="#-22" class="headerlink" title=""></a></h1><h1 id="-23"><a href="#-23" class="headerlink" title=""></a></h1><hr>
+<h2 id="8：驗證-JWKS-與-Discovery-Metadata-端點"><a href="#8：驗證-JWKS-與-Discovery-Metadata-端點" class="headerlink" title="8：驗證 JWKS 與 Discovery Metadata 端點"></a>8：驗證 JWKS 與 Discovery Metadata 端點</h2><p>在繼續寫更複雜的自訂登入橋接邏輯（那個要等PCBRepairNavi的Bridge&#x2F;Redeem端點，目前還沒做）之前，先確認目前為止做的這些設定，整個OpenIddict Server本身有沒有正確跑起來。&#x2F;.well-known&#x2F;openid-configuration（Discovery metadata）跟 JWKS 這兩個端點是OpenIddict自動產生的，不需要我們寫任何Controller，剛好拿來當一個「前面做的東西都接對了嗎」的健檢點。</p>
+<p>先啟動程式(用https執行!)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run --launch-profile https</span><br></pre></td></tr></table></figure>
+
+<p>程式啟動後，看終端機印出來的網址（通常是 <a href="https://localhost:xxxx），另開一個終端機或瀏覽器測試：">https://localhost:xxxx），另開一個終端機或瀏覽器測試：</a><br>（-k 是因為開發階段用的是本機自簽憑證，先跳過憑證驗證；如果你想正規一點，可以先跑 dotnet dev-certs https –trust 信任本機憑證，就不用加 -k。）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Discovery metadata</span></span><br><span class="line">curl -k https://localhost:xxxx/.well-known/openid-configuration</span><br><span class="line"></span><br><span class="line"><span class="comment"># JWKS（公鑰集合）</span></span><br><span class="line">curl -k https://localhost:xxxx/.well-known/jwks</span><br></pre></td></tr></table></figure>
+
+<p>要看到什麼才算正確：</p>
+<ol>
+<li>&#x2F;.well-known&#x2F;openid-configuration 回傳的JSON裡應該要有：<ul>
+<li>“authorization_endpoint”：指向 …&#x2F;connect&#x2F;authorize</li>
+<li>“token_endpoint”：指向 …&#x2F;connect&#x2F;token</li>
+<li>“grant_types_supported”：陣列裡只有 “authorization_code” 跟 “refresh_token”，不應該出現 “implicit” 或 “password”（這是Step 6設定AllowAuthorizationCodeFlow()&#x2F;AllowRefreshTokenFlow()的結果）</li>
+<li>“code_challenge_methods_supported”：應該有 “S256”（PKCE強制的證明）</li>
+</ul>
+</li>
+<li>&#x2F;.well-known&#x2F;jwks 回傳的JSON裡應該要有一個 “keys” 陣列，裡面至少一把key，”use”: “sig”（簽章用），”kty”: “RSA”——這是Step 6 AddDevelopmentSigningCertificate() 產生的開發用金鑰的公鑰部分。</li>
+</ol>
+<p>如果這兩個端點打不通或內容不對，代表Step 5~6的OpenIddict設定哪裡有問題，我們要先抓出來，不要帶著錯誤設定往下走到更複雜的自訂登入邏輯。</p>
+<p>請執行後確認：</p>
+<ol>
+<li>兩個端點都能正常回應（不是404或500）。</li>
+<li>內容符合上面列的檢查點。</li>
+</ol>
+<ul>
+<li>什麼是 .well-known&#x2F;openid-configuration？</li>
+</ul>
+<p><span style="color: red;">&#x2F;.well-known&#x2F;openid-configuration 是標準化路徑，每個 OpenID Connect 提供者都會在此公布設定。</span>將它接在任一 OIDC issuer 的基底 URL 後面，即可取得一份 JSON，列出該提供者的端點、支援功能與密碼學能力。</p>
+<p>例如：<br>Google：<a target="_blank" rel="noopener" href="https://accounts.google.com/.well-known/openid-configuration">https://accounts.google.com/.well-known/openid-configuration</a><br>Microsoft：<a target="_blank" rel="noopener" href="https://login.microsoftonline.com/%7Btenant%7D/v2.0/.well-known/openid-configuration">https://login.microsoftonline.com/{tenant}/v2.0/.well-known/openid-configuration</a></p>
+<p>詳細可以參考：  <a target="_blank" rel="noopener" href="https://codelabs.developers.google.com/codelabs/clasp?hl=zh-tw#0">什麼是 .well-known&#x2F;openid-configuration？開發者指南</a></p>
 
       
     </div>

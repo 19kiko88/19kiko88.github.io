@@ -14,7 +14,7 @@
 <meta property="og:description" content="用.Net建立一個測試用remote MCP Server專案">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
-<meta property="article:modified_time" content="2026-10-27T03:10:12.779Z">
+<meta property="article:modified_time" content="2026-10-27T03:10:53.919Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -123,6 +123,7 @@
 <li>把結果回傳給MCP Client</li>
 </ol>
 <p>MCP Client：使用者的代理人，負責「登入」跟「發出請求」。<br>OAuth Server：門禁警衛，負責「確認你是誰、給你通行證（token）」，不管你進去之後要做什麼。<br>MCP Server：真正做事的窗口，負責「看你的通行證夠不夠權限、幫你實際把事情辦好（呼叫UcsService等）」。</p>
+<p>┌──────────────────┐         ┌──────────────────────┐         ┌──────────────────────┐<br>│   MCP Client       │         │   OAuth Server         │         │   MCP Server           │<br>│ (Claude Desktop)   │◀───────▶│ (Authorization Server) │         │ (Resource Server)      │<br>│                    │ 登入&#x2F;換token │ ← 我們現在在做的       │         │ ← 下一階段，還沒做       │<br>└────────┬───────────┘         └──────────┬────────────┘         └──────────┬────────────┘<br>         │                                 │                                  │<br>         │ 帶著access_token呼叫MCP協定的工具  │ 驗證身分時會呼叫PCBRepairNavi       │ 驗證token時讀OAuth Server的JWKS<br>         └─────────────────────────────────┼──────────────────────────────────┘<br>                                            ▼<br>                                   ┌──────────────────┐<br>                                   │   PCBRepairNavi    │<br>                                   │ （身分來源，Bridge） │<br>                                   └──────────────────┘</p>
 <h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
 <h2 id="1-建立新的-Solution-與-Web-API-專案"><a href="#1-建立新的-Solution-與-Web-API-專案" class="headerlink" title="1. 建立新的 Solution 與 Web API 專案"></a>1. 建立新的 Solution 與 Web API 專案</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> D:\Homer\Project\OAuth</span><br><span class="line"><span class="built_in">cd</span> D:\Homer\Project\OAuth</span><br><span class="line">dotnet new sln -n OAuth</span><br><span class="line">dotnet new webapi -n OAuth.AuthorizationServer -controllers</span><br><span class="line">dotnet sln add .\OAuth.AuthorizationServer\OAuth.AuthorizationServer.csproj</span><br></pre></td></tr></table></figure>
 <h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>

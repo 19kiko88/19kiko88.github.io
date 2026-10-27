@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-Net/MCP_AuthServer-Architecture.jpg">
 <meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
-<meta property="article:modified_time" content="2026-10-27T07:44:11.058Z">
+<meta property="article:modified_time" content="2026-10-27T09:32:16.536Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -367,6 +367,16 @@
 <li>送出後預期拿到200回應，body是JSON，裡面有access_token、refresh_token、token_type、expires_in這些欄位。</li>
 <li>把拿到的access_token複製起來（之後有機會可以貼到jwt.io這類工具解開看裡面的claims，確認sub是不是test\mockuser）。</li>
 </ol>
+<h1 id="-33"><a href="#-33" class="headerlink" title=""></a></h1><h1 id="-34"><a href="#-34" class="headerlink" title=""></a></h1><h1 id="-35"><a href="#-35" class="headerlink" title=""></a></h1><hr>
+<p>完成上述流程，且成功取得access_token(JWT)後，代表Authorization Server自己核心的這段邏輯（Authorize → BridgeCallback → CompleteAuthorizationAsync → 簽發JWT access_token）整條都驗證通過了，從拿到假的PNP身分資料到換出真正的JWT，整個機制是通的。</p>
+<p>目前確認完成的範圍</p>
+<ul>
+<li>Authorize&#x2F;BridgeCallback繞回機制正確運作</li>
+<li>PKCE驗證正確（code_verifier&#x2F;code_challenge配對）</li>
+<li>Authorization Code正確簽發</li>
+<li>&#x2F;connect&#x2F;token的authorization_code grant正確換出JWT access_token</li>
+<li>自訂claims（site_code&#x2F;token_id&#x2F;ticket_expiration）正確寫入JWT payload</li>
+</ul>
 
       
     </div>

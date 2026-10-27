@@ -1,10 +1,46 @@
 ---
 title: 建立OAuth Server with .Net
 date: 2026-10-20 14:54:47
+categories:
+  - 後端開發
 tags:
+  - OAuth
+  - OpenIddict
 ---
 ##### 用.Net建立一個測試用remote MCP Server專案
 <!-- more -->
+
+**核心職責**
+MCP Client（Claude Desktop）: 使用者實際操作的程式；發起登入、拿到token、呼叫工具
+OAuth Server（我們在做的）: 驗證身分、簽發/管理OAuth token
+MCP Server（下一階段）: 實際執行MCP工具、回傳資料
+
+**跟誰說話**
+MCP Client（Claude Desktop）: OAuth Server（登入/換token）、MCP Server（呼叫工具）
+OAuth Server（我們在做的）: MCP Client（發token）、PCBRepairNavi（確認身分）
+MCP Server（下一階段）: MCP Client（收工具呼叫請求）
+
+**具體做的事**
+- MCP Client（Claude Desktop）: 
+    1. 打開瀏覽器導向/connect/authorize
+    2. 臨時開本機loopback server接Authorization Code
+    3. 拿code+code_verifier換access_token/refresh_token
+    4. 帶著access_token呼叫MCP Server的工具
+- OAuth Server（我們在做的）:
+    1. /connect/authorize：依client_id導向Bridge，確認PNP身分，簽發Authorization Code
+    2. /connect/token：驗證PKCE，換發access_token/refresh_token；refresh時做IsTokenActive+ticketExpiration雙層檢查
+    3. 發布JWKS、discovery metadata 
+- MCP Server : 
+    1. 驗證收到的access_token（用OAuth Server的JWKS驗簽、檢查exp/iss/aud/scope）
+    2. 依scope決定能不能呼叫該工具
+    3. 呼叫IUcsService方法，或呼叫PCBRepairNavi的Native Capability API（含per-user權限比對）
+    4. 把結果回傳給MCP Client
+
+MCP Client：使用者的代理人，負責「登入」跟「發出請求」。
+OAuth Server：門禁警衛，負責「確認你是誰、給你通行證（token）」，不管你進去之後要做什麼。
+MCP Server：真正做事的窗口，負責「看你的通行證夠不夠權限、幫你實際把事情辦好（呼叫UcsService等）」。
+
+{% asset_image MCP_AuthServer-Architecture.jpg MCP_AuthServer-Architecture %}
 #
 #
 #
@@ -608,6 +644,8 @@ public class AuthorizationController : Controller
 
         foreach (var claim in principal.Claims)
         {
+            //claim.SetDestinations(Destinations.AccessToken)做的事，就是把一個標記寫進這個claim物件自己的Properties字典裡，內容大概等於：「這個claim，將來要被放進access_token裡」。
+            //程式碼裡對site_code、token_id、ticket_expiration這幾個自訂claim都呼叫SetDestinations(Destinations.AccessToken)，就是在明確表態：「這幾個claim，請放進access_token」，之後你把拿到的JWT丟去jwt.io解開，應該就會在payload裡看到這些欄位。            
             claim.SetDestinations(Destinations.AccessToken);
         }
 
@@ -678,4 +716,76 @@ public class AuthorizationController : Controller
 #
 ---
 
-##   11：XXX
+##   11：實作/connect/token端點，處理authorization_code grant
+
+這一步在做什麼：讓MCP Client可以拿Authorization Code（加上code_verifier）真正換到access_token/refresh_token。目前先只處理authorization_code這個grant type，refresh_token那個（含IsTokenActive+ticketExpiration雙層檢查，設計文件Step 7）留到下一步，避免一次塞太多邏輯。
+
+在AuthorizationController.cs裡加一個新的action：
+``` csharp
+using Microsoft.AspNetCore.Authentication;
+// ...（其他using跟之前一樣）
+
+[HttpPost("~/connect/token")]
+public async Task<IActionResult> Exchange()
+{
+    var request = HttpContext.GetOpenIddictServerRequest()
+        ?? throw new InvalidOperationException("OpenIddict 請求物件遺失。");
+
+    if (request.IsAuthorizationCodeGrantType())
+    {
+        // OpenIddict 在這之前已經自動驗證過：
+        // 1. Authorization Code 本身有效、未過期、未使用過
+        // 2. PKCE：SHA256(code_verifier) == 當初的 code_challenge
+        // 我們只要把 CompleteAuthorizationAsync() 當初存進這個Authorization Code裡的
+        // ClaimsPrincipal 拿回來，再呼叫一次 SignIn()，OpenIddict 就會依此簽發 access_token/refresh_token。
+        var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+        if (result.Principal is null)
+        {
+            return BadRequest("無法取得授權時建立的身分資料。");
+        }
+
+        return SignIn(result.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    // refresh_token grant 的雙層撤銷檢查（IsTokenActive + ticketExpiration）下一步實作
+    throw new NotImplementedException("此 grant type 尚未實作。");
+}
+```
+
+幾個重點說明：
+
+- request.IsAuthorizationCodeGrantType()：OpenIddict提供的擴充方法，檢查這次請求的grant_type參數是不是authorization_code。
+- HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme)：這一行不是重新驗證什麼，是把OpenIddict內部已經跟這個Authorization Code綁在一起的那個ClaimsPrincipal（也就是我們在CompleteAuthorizationAsync()裡組出來、拿去SignIn()的那個）取回來。
+- 這裡再呼叫一次SignIn()，是在**/connect/token這個請求**裡呼叫（不是/connect/authorize），OpenIddict的token endpoint passthrough機制會把這次呼叫轉換成「簽發access_token跟refresh_token、回傳JSON給呼叫端」的行為。
+
+測試時要注意一個常見錯誤：/connect/token是標準OAuth的token endpoint，body格式必須是application/x-www-form-urlencoded，不是JSON。在Insomnia裡：
+
+1. Method選POST，網址https://localhost:7280/connect/token。
+2. Body類型選Form URL Encoded（不是JSON）。
+3. 填入欄位：
+   - grant_type = authorization_code
+   - code = 剛剛從302回應的redirect_uri裡拿到的那個code值
+   - redirect_uri = https://localhost:5055/callback（要跟當初/connect/authorize那次送的完全一樣）
+   - client_id = pnp-mcp-client
+   - code_verifier = 你最早用PowerShell算出來的那個code_verifier原始值（不是code_challenge）
+
+請執行後確認：
+1. dotnet build正常編譯。
+2. 送出後預期拿到200回應，body是JSON，裡面有access_token、refresh_token、token_type、expires_in這些欄位。
+3. 把拿到的access_token複製起來（之後有機會可以貼到jwt.io這類工具解開看裡面的claims，確認sub是不是test\mockuser）。
+#
+#
+#
+---
+
+完成上述流程，且成功取得access_token(JWT)後，代表Authorization Server自己核心的這段邏輯（Authorize → BridgeCallback → CompleteAuthorizationAsync → 簽發JWT access_token）整條都驗證通過了，從拿到假的PNP身分資料到換出真正的JWT，整個機制是通的。
+
+目前確認完成的範圍
+
+- Authorize/BridgeCallback繞回機制正確運作
+- PKCE驗證正確（code_verifier/code_challenge配對）
+- Authorization Code正確簽發
+- /connect/token的authorization_code grant正確換出JWT access_token
+- 自訂claims（site_code/token_id/ticket_expiration）正確寫入JWT payload
+

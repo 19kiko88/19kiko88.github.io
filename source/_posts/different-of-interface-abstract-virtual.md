@@ -2,8 +2,9 @@
 title: different of interface, abstract, virtual.
 date: 2026-01-13 10:15:24
 categories:
- - 物件導向
+ - 後端開發
 tags:
+ - 物件導向
  - OOP
 ---
 ##### 最近再把舊專案的程式碼進行重構，interface/abstract/virtual&override這三個東西，之前雖然已經研究過了，但時間一久又忘記了。趁著這次進行程式重構，又加上AI的輔助，重新寫了一篇對於的interface/abstract/virtual&override的使用方法&情境研究，加上之前的經驗，感覺對於OOP又更有一些感覺了，對於這些東西不再是鴨子聽雷。

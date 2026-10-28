@@ -47,6 +47,7 @@ powershell -ExecutionPolicy Bypass -File PKCE.ps1
 ## 2. 呼叫驗證伺服器的api [authorize]
 模擬MCP Client第一次呼叫驗證伺服器依 client_id 查詢 Identity Provider = PNP Bridge，並取得nonce，再導頁到bridge驗證頁面。
 {% asset_image authorize-1.jpg authorize-1 %}
+<span style="color: red;">參數scope如果沒有加上offline_access的話</span>，會無法取得refresh_token
 
 - 說明
 redirect_uri：MCP Client(Claude Desktop)的網址
@@ -64,8 +65,8 @@ nonce：由上一個步驟302轉址的QueryString取得
 #
 #
 ---
-## 4. 呼叫驗證伺服器的api [token]
-模擬MCP Client從用authorization code從驗證伺服器取得access token。
+## 4. 呼叫驗證伺服器的api [token] (GrantType：Authorization_Code)
+模擬MCP Client從用authorization code從驗證伺服器取得<span style="color: red;">access token以及refresh_token。</span>
 {% asset_image token.jpg token %}
 
 acess_token為JWT，可以用工具解析payload內容。
@@ -74,3 +75,15 @@ acess_token為JWT，可以用工具解析payload內容。
 - 說明
 code：由上一個步驟302轉址的QueryString取得
 code_verifier：步驟1.產生的code_verifier
+#
+#
+#
+---
+## 5. 呼叫驗證伺服器的api [token] (GrantType：Refresh_Token)
+模擬MCP Client的JWT到期後。不重新登入，直接呼叫api [token]來取得新的<span style="color: red;">acess_token跟refresh_token</span>
+{% asset_image refresh_token.jpg refresh_token %}
+
+- 說明
+code_verifier：可以拿掉
+code：可以拿掉
+refresh_token：透過authorization_code取得acess_token時，也會同時取得refresh_token

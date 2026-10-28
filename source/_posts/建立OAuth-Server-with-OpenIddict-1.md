@@ -1,5 +1,5 @@
 ---
-title: 建立OAuth Server with .Net
+title: 建立OAuth Server with OpenIddict(1)
 date: 2026-10-20 14:54:47
 categories:
   - 後端開發
@@ -7,7 +7,7 @@ tags:
   - OAuth
   - OpenIddict
 ---
-##### 用.Net建立一個測試用remote MCP Server專案
+##### 用OpenIddict建立一個測試用remote MCP Server專案
 <!-- more -->
 
 **核心職責**
@@ -236,6 +236,10 @@ dotnet ef database update
 ---
 
 ##  7：Seed 資料 — 註冊 MCP Client 與建立 Scope
+
+Seed（資料植入／初始化）。
+英文原意是「播種」，在軟體開發裡指的是：程式啟動時，自動把一些必要的初始資料寫進資料庫，讓系統一開始就有基本資料可用，不用自己手動下SQL。
+
 資料表結構有了，但裡面還是空的。這一步要寫一段「啟動時執行一次」的程式碼，定義好的 scope、以及BNB這個MCP client的註冊資料寫進 OpenIddictScopes、OpenIddictApplications 這兩張表。這段程式碼設計成冪等（idempotent）——每次程式啟動都會跑一次，但已經存在的資料不會重複建立，所以之後重啟服務不用擔心資料被重複塞入。
 
 ``` csharp
@@ -438,6 +442,10 @@ dotnet ef database update
 ---
 
 ##   10：導向Bridge並正確繞回完成授權
+
+Redeem（兌換）
+英文原意是「拿優惠券/憑證去換東西」。在我們的設計裡，指的是：拿一次性的BridgeCode，去跟PCBRepairNavi換回真正的使用者身分資料（userName/siteCode/tokenId/ticketExpiration）。
+
 這一步在做什麼：實作/connect/authorize收到請求後，第一次沒有身分時導去RepairNavy的Bridge；Bridge驗證完、透過Redeem換到身分資料後，繞回/connect/authorize本身（不是另開一個端點）完成OpenIddict的授權簽發。這是正確版本，直接取代舊版「用獨立Resume端點直接簽發」的寫法（那個寫法在OpenIddict裡行不通，原因：OpenIddict只在請求路徑是設定的端點/connect/authorize時才會建立內部交易狀態，SignIn()只能在這個狀態存在時被正確攔截）。
 
 10-1：appsettings.json 設定Bridge網址
@@ -778,14 +786,154 @@ public async Task<IActionResult> Exchange()
 #
 #
 ---
+## 在scope裡面增加offline_access保留自
 
+這一步在做什麼：要拿到refresh_token，/connect/authorize請求的scope參數裡必須明確包含offline_access這個保留字，不然即使client有refresh_token grant的權限，OpenIddict也只會發access_token，不會發refresh_token。我們之前測試時的scope沒有加offline_access，所以才沒有拿到。
+要拿到refresh_token，必須要先做下面兩個修正：
+
+- **讓pnp-mcp-client這個client被允許要求offline_access**
+修改Program.cs的seed程式碼，在descriptor.Permissions那段多加一行：
+``` bash
+descriptor.Permissions.Add(Permissions.Prefixes.Scope + Scopes.OfflineAccess);
+```
+
+但因為seed程式碼是「client已存在就不會重新建立」的寫法，你之前已經建立過pnp-mcp-client這筆資料，重新跑程式不會套用這個新權限。最簡單的方式：先去資料庫把這筆client資料刪掉，讓它重新跑一次seed時重建：
+``` sql
+DELETE FROM "OpenIddictApplications" WHERE "ClientId" = 'pnp-mcp-client';
+```
+
+刪完重新F5跑起來，seed程式碼會因為查不到這個client而重新建立（這次會帶著offline_access權限）。
+
+- **測試時的scope參數要加上offline_access**
+下次測/connect/authorize時，scope欄位要改成：
+``` text
+ucs.sn-info.read ucs.ecn-rcn.read pnp.auto-open-pnp.read offline_access
+```
+（用空白分隔，多加這一個）
+
+offline_access不需要另外seed進OpenIddictScopes表——<span style="color: red;">它是OAuth/OIDC規範裡的保留字</span>，OpenIddict內建認得，只要client有被授權「可以要求」它就好（就是修正1那行）
+
+改完這兩處，重新完整走一次流程（/connect/authorize → bridge-callback → /connect/authorize → /connect/token），這次應該就會在回應裡看到refresh_token欄位了。
+#
+#
+#
+---
+## /connect/token加入refresh_token grant（設計文件Step 7）
+
+這一步在做什麼：延續剛剛的Exchange() action，加一個分支處理refresh_token grant。依設計文件第4.3節，換發前要做兩層檢查：IsTokenActive（目前mock，之後換PCBRepairNavi真的API）、ticketExpiration絕對上限。任一沒過就拒絕。
+
+修改AuthorizationController.cs的Exchange()：
+
+``` csharp
+using Microsoft.AspNetCore.Authentication;
+using static OpenIddict.Abstractions.OpenIddictConstants;
+// ...（其他using跟之前一樣）
+
+[HttpPost("~/connect/token")]
+public async Task<IActionResult> Exchange()
+{
+    var request = HttpContext.GetOpenIddictServerRequest()
+        ?? throw new InvalidOperationException("OpenIddict 請求物件遺失。");
+
+    if (request.IsAuthorizationCodeGrantType())
+    {
+        var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+        if (result.Principal is null)
+        {
+            return BadRequest("無法取得授權時建立的身分資料。");
+        }
+
+        return SignIn(result.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+    else if (request.IsRefreshTokenGrantType())
+    {
+        var result = await HttpContext.AuthenticateAsync(OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+
+        if (result.Principal is null)
+        {
+            return RejectRefreshToken("無法取得 refresh token 建立時的身分資料。");
+        }
+
+        var tokenIdClaim = result.Principal.GetClaim("token_id");
+        var ticketExpirationClaim = result.Principal.GetClaim("ticket_expiration");
+
+        if (tokenIdClaim is null || ticketExpirationClaim is null)
+        {
+            return RejectRefreshToken("缺少撤銷檢查所需的 claim。");
+        }
+
+        // 第1層：IsTokenActive（目前mock，永遠回傳true；之後改成真的呼叫PCBRepairNavi）
+        var isActive = await IsTokenActiveAsync(int.Parse(tokenIdClaim));
+        if (!isActive)
+        {
+            // TODO：這裡之後要補上「撤銷整條refresh token鏈」的邏輯
+            return RejectRefreshToken("PNP tokenId 已被登出/被踢。");
+        }
+
+        // 第2層：ticketExpiration 絕對上限
+        var ticketExpiration = DateTimeOffset.FromUnixTimeSeconds(long.Parse(ticketExpirationClaim));
+        if (DateTimeOffset.UtcNow >= ticketExpiration)
+        {
+            // TODO：這裡之後要補上「撤銷整條refresh token鏈」的邏輯
+            return RejectRefreshToken("已超過 ticketExpiration 絕對上限，需重新走 Bridge。");
+        }
+
+        return SignIn(result.Principal, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    throw new NotImplementedException("此 grant type 尚未實作。");
+}
+
+private static Task<bool> IsTokenActiveAsync(int tokenId)
+{
+    // TODO：改成真的呼叫 PCBRepairNavi 的撤銷查詢端點
+    return Task.FromResult(true);
+}
+
+private IActionResult RejectRefreshToken(string reason)
+{
+    var properties = new AuthenticationProperties(new Dictionary<string, string?>
+    {
+        [OpenIddictServerAspNetCoreConstants.Properties.Error] = Errors.InvalidGrant,
+        [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = reason,
+    });
+
+    return Forbid(properties, OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+}
+```
+
+幾個重點說明：
+
+- request.IsRefreshTokenGrantType()：判斷這次/connect/token請求的grant_type是不是refresh_token。
+- 一樣用HttpContext.AuthenticateAsync(...)拿回當初簽發這個refresh token時綁定的ClaimsPrincipal——裡面會有我們當初設定的token_id、ticket_expiration這些自訂claim。
+- RejectRefreshToken()：用OpenIddict標準的Forbid() + AuthenticationProperties帶錯誤訊息，回傳標準OAuth格式的invalid_grant錯誤。
+- 「撤銷整條refresh token鏈」這部分先留TODO，因為現在IsTokenActiveAsync是mock、永遠回傳true，走不到拒絕分支，沒辦法實際測試撤銷邏輯——先確保「兩層檢查都通過時能正常換新token」這條路能跑通，之後接上PCBRepairNavi真的撤銷查詢API時，再回來補撤銷鏈的實作。
+
+測試方式：把剛才拿到的refresh_token（不是access_token）拿去測/connect/token，這次body改成：
+- grant_type = refresh_token
+- refresh_token = 剛剛拿到的那個值
+- client_id = pnp-mcp-client
+
+不需要code、code_verifier這些（那是authorization_code grant才要的）。
+
+請執行後確認：
+1. dotnet build正常編譯。
+2. 測試後應該拿到一組新的access_token跟refresh_token。
+#
+#
+#
+---
 完成上述流程，且成功取得access_token(JWT)後，代表Authorization Server自己核心的這段邏輯（Authorize → BridgeCallback → CompleteAuthorizationAsync → 簽發JWT access_token）整條都驗證通過了，從拿到假的PNP身分資料到換出真正的JWT，整個機制是通的。
 
 目前確認完成的範圍
 
-- Authorize/BridgeCallback繞回機制正確運作
-- PKCE驗證正確（code_verifier/code_challenge配對）
-- Authorization Code正確簽發
-- /connect/token的authorization_code grant正確換出JWT access_token
-- 自訂claims（site_code/token_id/ticket_expiration）正確寫入JWT payload
+- ✅ PKCE驗證（code_verifier/code_challenge配對）
+- ✅ Authorize/BridgeCallback繞回機制
+- ✅ Authorization Code正確簽發
+- ✅ authorization_code grant → 換出access_token（JWT）+ refresh_token
+- ✅ refresh_token grant → 雙層檢查（IsTokenActive+ticketExpiration）→ 換發新token
+
+到這裡為止，算是完成了<span style="color: red;">OAuth2.1的核心協定機制</span>
+api測試結果可以參考：  [OpenIddict-測試](https://19kiko88.github.io/2026/10/27/OpenIddict-%E6%B8%AC%E8%A9%A6/)
 

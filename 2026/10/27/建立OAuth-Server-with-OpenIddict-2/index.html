@@ -14,7 +14,7 @@
 <meta property="og:description" content="接續上一篇…">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-10-28T02:18:35.392Z">
+<meta property="article:modified_time" content="2026-10-28T02:36:12.346Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -118,8 +118,12 @@
 
 <p>刪完重新F5跑起來，seed程式碼會因為查不到這個client而重新建立（這次會帶著offline_access權限）。</p>
 <ul>
-<li><strong>測試時的scope參數要加上offline_access</strong></li>
+<li><strong>測試時的scope參數要加上offline_access</strong><br>下次測&#x2F;connect&#x2F;authorize時，scope欄位要改成：</li>
 </ul>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ucs.sn-info.read ucs.ecn-rcn.read pnp.auto-open-pnp.read offline_access</span><br></pre></td></tr></table></figure>
+<p>（用空白分隔，多加這一個）</p>
+<p>offline_access不需要另外seed進OpenIddictScopes表——<span style="color: red;">它是OAuth&#x2F;OIDC規範裡的保留字</span>，OpenIddict內建認得，只要client有被授權「可以要求」它就好（就是修正1那行）</p>
+<p>改完這兩處，重新完整走一次流程（&#x2F;connect&#x2F;authorize → bridge-callback → &#x2F;connect&#x2F;authorize → &#x2F;connect&#x2F;token），這次應該就會在回應裡看到refresh_token欄位了。</p>
 <h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
 <h2 id="connect-token加入refresh-token-grant（設計文件Step-7）"><a href="#connect-token加入refresh-token-grant（設計文件Step-7）" class="headerlink" title="&#x2F;connect&#x2F;token加入refresh_token grant（設計文件Step 7）"></a>&#x2F;connect&#x2F;token加入refresh_token grant（設計文件Step 7）</h2><p>這一步在做什麼：延續剛剛的Exchange() action，加一個分支處理refresh_token grant。依設計文件第4.3節，換發前要做兩層檢查：IsTokenActive（目前mock，之後換PCBRepairNavi真的API）、ticketExpiration絕對上限。任一沒過就拒絕。</p>
 <p>修改AuthorizationController.cs的Exchange()：</p>

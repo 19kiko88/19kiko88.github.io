@@ -22,8 +22,12 @@
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/kid_check.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/diff_of_s256_plain.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/S256_TEST.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/remove_plain.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/remove_plain2.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/no_bridge_code.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/invalid_nonce.jpg">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-10-30T07:28:04.581Z">
+<meta property="article:modified_time" content="2026-10-30T09:48:20.822Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -323,6 +327,78 @@
 </ul>
 <p>我們的測試結果回應的是[302]。</p>
 <img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/S256_TEST.jpg" class="" title="S256_TEST">
+
+<p><span style="color: red;">因為OAuth強制使用S256，所以我們要把plain移除：</span><br>Program.cs 的 .AddServer(…)：在 RequireProofKeyForCodeExchange() 下面加上</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 強制所有 client 都要用 PKCE（不只 public client）</span></span><br><span class="line">options.RequireProofKeyForCodeExchange();</span><br><span class="line"><span class="comment">// AllowAuthorizationCodeFlow() 預設會同時開啟 plain 與 S256 兩種 PKCE 方法；</span></span><br><span class="line"><span class="comment">// plain 的 code_challenge 就是 code_verifier 原文，等於沒有保護，依 OAuth2.1 與設計文件只保留 S256</span></span><br><span class="line">options.Configure(o =&gt; o.CodeChallengeMethods.Remove(CodeChallengeMethods.Plain));</span><br></pre></td></tr></table></figure>
+
+<p>移除後，code_challenge_methods_supported 只剩 S256，對外宣告會正確。重新測試api後(code_challenge_method &#x3D; plain)，也會返回[400]</p>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/remove_plain.jpg" class="" title="remove_plain">
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/remove_plain2.jpg" class="" title="remove_plain2">
+
+
+<p><strong>PKCE 現在只接受 S256，Discovery 的宣告和實際行為也一致了，設計文件 Step 6、8 的這部分確認完成。</strong></p>
+<h1 id="-15"><a href="#-15" class="headerlink" title=""></a></h1><h1 id="-16"><a href="#-16" class="headerlink" title=""></a></h1><h1 id="-17"><a href="#-17" class="headerlink" title=""></a></h1><hr>
+<h2 id="加固-bridge-callback，讓它和-connect-authorize-第二次經過一樣嚴謹"><a href="#加固-bridge-callback，讓它和-connect-authorize-第二次經過一樣嚴謹" class="headerlink" title="加固 bridge-callback，讓它和 &#x2F;connect&#x2F;authorize 第二次經過一樣嚴謹"></a>加固 bridge-callback，讓它和 &#x2F;connect&#x2F;authorize 第二次經過一樣嚴謹</h2><p>這一步在做什麼：前兩步加固的是「第二次經過 &#x2F;connect&#x2F;authorize」，但前一站 BridgeCallback() 還有兩個同類型的漏洞：</p>
+<ol>
+<li>身分資料可以被覆蓋：目前只檢查 pending「沒用過、沒過期」，沒有檢查「是不是已經回填過身分」。同一個 nonce 收到第二次 bridge-callback 時，會用新的 Redeem 結果蓋掉前一次的 UserName。如果攻擊者拿到受害者的 nonce，就可以用自己的 bridgeCode 把受害者那筆 pending 換成攻擊者的身分，受害者最後拿到的會是攻擊者帳號的 token（這叫 login CSRF）。而且這裡用的是「讀 → 改 → 存」的寫法，跟上一步一樣有 race condition。</li>
+<li>沒有輸入驗證：bridgeCode、nonce 沒帶、太長、或含 null byte（%00），都會直接往下走。SECURITY.md 要求所有新端點都要做 null byte 防護。</li>
+</ol>
+<p>解法和上一步相同：先驗證輸入，再用一條 UPDATE … WHERE “UserName” IS NULL 原子性地回填，保證每個 nonce 只能回填一次。<br>BridgeCallback()：整個方法換成下面這樣</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">HttpGet(<span class="string">&quot;~/connect/authorize/bridge-callback&quot;</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">async</span> Task&lt;IActionResult&gt; <span class="title">BridgeCallback</span>(<span class="params">[FromQuery] <span class="built_in">string</span>? bridgeCode, [FromQuery] <span class="built_in">string</span>? nonce</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 輸入驗證（比照SECURITY.md）：必填、長度上限、null byte防護</span></span><br><span class="line">    <span class="keyword">if</span> (!IsValidCallbackParameter(bridgeCode) || !IsValidCallbackParameter(nonce))</span><br><span class="line">    &#123;</span><br><span class="line">        _logger.LogWarning(<span class="string">&quot;BridgeCallback rejected. Reason=InvalidParameter.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> BadRequest(<span class="string">&quot;缺少或格式錯誤的參數。&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> pending = <span class="keyword">await</span> _db.PendingAuthorizeRequests.AsNoTracking().FirstOrDefaultAsync(p =&gt; p.Nonce == nonce);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 先確認nonce有效、而且還沒回填過身分，才去呼叫Redeem，避免浪費PNP的一次性code</span></span><br><span class="line">    <span class="keyword">if</span> (pending <span class="keyword">is</span> <span class="literal">null</span> || pending.Used || pending.ExpiresAt &lt; DateTimeOffset.UtcNow || pending.UserName <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        _logger.LogWarning(<span class="string">&quot;BridgeCallback rejected. Reason=InvalidOrExpiredNonce.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> BadRequest(<span class="string">&quot;無效或已過期的 nonce。&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//用bridgeCode換回PNP的身分資料&#123;userName, siteCode, tokenI</span></span><br><span class="line">    <span class="keyword">var</span> (userName, siteCode, tokenId, ticketExpiration) = <span class="keyword">await</span> RedeemAsync(bridgeCode!);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 用單一條UPDATE原子性地「確認尚未回填 + 寫入身分資料」：</span></span><br><span class="line">    <span class="comment">// 同一個nonce收到多次bridge-callback時，只有第一次能寫入</span></span><br><span class="line">    <span class="comment">// 注意：這裡先不標記 Used，等真正完成SignIn時才標記，避免Redeem成功但後面失敗時整筆被浪費</span></span><br><span class="line">    <span class="keyword">var</span> now = DateTimeOffset.UtcNow;</span><br><span class="line">    <span class="keyword">var</span> filled = <span class="keyword">await</span> _db.PendingAuthorizeRequests</span><br><span class="line">        .Where(p =&gt; p.Nonce == nonce &amp;&amp; !p.Used &amp;&amp; p.ExpiresAt &gt; now &amp;&amp; p.UserName == <span class="literal">null</span>)</span><br><span class="line">        .ExecuteUpdateAsync(s =&gt; s</span><br><span class="line">            .SetProperty(p =&gt; p.UserName, userName)</span><br><span class="line">            .SetProperty(p =&gt; p.SiteCode, siteCode)</span><br><span class="line">            .SetProperty(p =&gt; p.TokenId, (<span class="built_in">int</span>?)tokenId)</span><br><span class="line">            .SetProperty(p =&gt; p.TicketExpiration, (DateTimeOffset?)ticketExpiration));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (filled == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        _logger.LogWarning(<span class="string">&quot;BridgeCallback rejected. Reason=AlreadyFilledOrExpired.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> BadRequest(<span class="string">&quot;無效或已過期的 nonce。&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    _logger.LogInformation(</span><br><span class="line">        <span class="string">&quot;BridgeCallback succeeded. UserName=&#123;UserName&#125;, SiteCode=&#123;SiteCode&#125;, TokenId=&#123;TokenId&#125;.&quot;</span>,</span><br><span class="line">        userName, siteCode, tokenId);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> original = JsonSerializer.Deserialize&lt;PendingAuthorizeData&gt;(pending.OriginalRequestJson)!;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...（下面組 queryParams、Redirect 的部分維持不變）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>新增一個 private 方法</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> bridge-callback參數的基本格式檢查：必填、長度上限、不可含null byte</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="built_in">bool</span> <span class="title">IsValidCallbackParameter</span>(<span class="params"><span class="built_in">string</span>? <span class="keyword">value</span></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> !<span class="built_in">string</span>.IsNullOrEmpty(<span class="keyword">value</span>)</span><br><span class="line">        &amp;&amp; <span class="keyword">value</span>.Length &lt;= <span class="number">256</span></span><br><span class="line">        &amp;&amp; !<span class="keyword">value</span>.Contains(<span class="string">&#x27;\0&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li>參數改成 string?：這個 Controller 沒有掛 [ApiController]，所以參數沒帶時 ASP.NET Core 不會自動回 400，而是傳 null 進來。標成 string? 才符合實際情況，再交給 IsValidCallbackParameter 統一檢查。</li>
+<li>為什麼長度上限是 256：我們的 nonce 是 43 個字元，PNP 的 bridgeCode 也會是類似長度的隨機字串，256 已經很寬鬆。設上限是為了避免有人送超長字串進 log 或 DB 查詢。</li>
+<li>讀取時加了 pending.UserName is not null 的檢查：已經回填過的 pending 會在呼叫 Redeem 之前就被擋下。等到 PNP 真的實作好，bridgeCode 是一次性的，被擋下的請求就不會白白用掉一個 code。</li>
+<li>讀完之後還要用 ExecuteUpdateAsync 再判斷一次：讀取的檢查只能擋住「依序」重送的請求。兩個請求同時進來時，可能都讀到 UserName &#x3D;&#x3D; null，一起通過檢查。最後真正把關的是 UPDATE 的 WHERE “UserName” IS NULL，只有一個請求能讓影響筆數是 1。</li>
+<li>(int?)tokenId、(DateTimeOffset?)ticketExpiration 的轉型：entity 裡這兩個欄位是 nullable，SetProperty 的兩個參數型別要一致，明確轉型可以避免編譯器推斷不出型別。</li>
+<li>原本的 pending.UserName &#x3D; … 和 SaveChangesAsync() 都拿掉了：改由 ExecuteUpdateAsync 直接寫 DB。pending 加了 AsNoTracking()，因為現在只用來讀 OriginalRequestJson。</li>
+</ul>
+<p>測試時要注意：每次測試都要先打一次 &#x2F;connect&#x2F;authorize 拿到新的 nonce，從 302 的 Location（導向 16888 那個網址）抄下來。</p>
+<ol>
+<li><p>輸入驗證：用同一個新 nonce 分別送出下面兩個請求，這兩個都不會回填身分，所以同一個 nonce 還可以拿來做第 2 項：</p>
+<ul>
+<li>沒帶 bridgeCode：<a target="_blank" rel="noopener" href="https://localhost:7280/connect/authorize/bridge-callback?nonce=">https://localhost:7280/connect/authorize/bridge-callback?nonce=</a>&lt;你的nonce&gt;</li>
+</ul>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/no_bridge_code.jpg" class="" title="no_bridge_code">
+<ul>
+<li>含 null byte：<a target="_blank" rel="noopener" href="https://localhost:7280/connect/authorize/bridge-callback?bridgeCode=abc%00def&nonce=">https://localhost:7280/connect/authorize/bridge-callback?bridgeCode=abc%00def&amp;nonce=</a>&lt;你的nonce&gt;</li>
+</ul>
+</li>
+<li><p>不能覆蓋：用同一個 nonce 依序送出兩次正常請求，Follow redirects 關掉：</p>
+<ul>
+<li>…bridge-callback?bridgeCode&#x3D;first&amp;nonce&#x3D;&lt;你的nonce&gt;</li>
+<li>…bridge-callback?bridgeCode&#x3D;second&amp;nonce&#x3D;&lt;你的nonce&gt;</li>
+</ul>
+<p><span style="color: red;">資料表PendingAuthorizeRequests.UserName已經於第一次請求填入test\mockuser。因無法覆蓋，回應 [400]無效或已過期的 nonce。</span></p>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/invalid_nonce.jpg" class="" title="invalid_nonce">
+
+<p>把第一次回應的 Location 複製下來，前面補上 <a target="_blank" rel="noopener" href="https://localhost:7280/">https://localhost:7280</a> 後送出，Follow redirects 一樣關掉，應該會拿到導向 localhost:5055&#x2F;callback?code&#x3D;… 的<br>302。再用這個 code 換 token，確認正常流程沒被改壞。</p>
+</li>
+<li><p>平行請求：重新打 &#x2F;connect&#x2F;authorize 拿一個新的 nonce，用 curl 同時送 5 次：<br>$cb &#x3D; ‘<a target="_blank" rel="noopener" href="https://localhost:7280/connect/authorize/bridge-callback?bridgeCode=test&nonce=">https://localhost:7280/connect/authorize/bridge-callback?bridgeCode=test&amp;nonce=</a>&lt;新的nonce&gt;’<br>curl.exe -k -s -Z –parallel-immediate -w “%{http_code}\n” -o NUL $cb -o NUL $cb -o NUL $cb -o NUL $cb -o NUL $cb</p>
+</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li><p>dotnet build 正常編譯。</p>
+</li>
+<li><p>第 1 項兩個請求都回 400「缺少或格式錯誤的參數」，Console 有 Reason&#x3D;InvalidParameter。</p>
+</li>
+<li><p>第 2 項第一次回 302，第二次回 400，Console 有 Reason&#x3D;InvalierName 是 test\mockuser，沒有被蓋掉。第一次的 Location可以走完整個流程換到 token。</p>
+</li>
+<li><p>第 3 項剛好一個 302、四個 400。四個 400 的 log 會混著出現 InvalidOrExpiredNonce 和 AlreadyFilledOrExpired 兩種：</p>
+<ul>
+<li>InvalidOrExpiredNonce：讀取時就被擋下。</li>
+<li>AlreadyFilledOrExpired：讀取時通過，最後在 UPDATE 被擋下。</li>
+</ul>
+<p>如果你看到後面這種，就是 race condition 真的發生了，而且有被擋住。</p>
+</li>
+</ol>
+
       
     </div>
     <footer class="article-footer">

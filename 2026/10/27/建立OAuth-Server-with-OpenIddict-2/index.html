@@ -17,8 +17,9 @@
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/mock_api_params_setting.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/mock_api.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/pending_revoke.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/race_condition_test.jpg">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-10-30T03:12:27.327Z">
+<meta property="article:modified_time" content="2026-10-30T06:26:16.364Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -226,7 +227,37 @@
 <li>正常流程一樣能正常拿到 code，換到 token。</li>
 <li><span style="color: red;">Follow redirects開啟</span></li>
 </ol>
+<h1 id="-9"><a href="#-9" class="headerlink" title=""></a></h1><h1 id="-10"><a href="#-10" class="headerlink" title=""></a></h1><h1 id="-11"><a href="#-11" class="headerlink" title=""></a></h1><hr>
+<h2 id="讓-PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立"><a href="#讓-PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立" class="headerlink" title="讓 PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立"></a>讓 PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立</h2><p>這一步在做什麼：CompleteAuthorizationAsync() 目前的寫法是「先讀出來 → 檢查 Used &#x3D;&#x3D; false → 設 Used &#x3D; true → 存檔」，分成兩次 DB 操作。如果同一個 resume 網址在極短時間內被送了兩次，例如攻擊者和受害者同時送出，可能會發生：</p>
+<p>請求A：讀到 Used&#x3D;false ─┐<br>請求B：讀到 Used&#x3D;false ─┤  兩個都通過檢查<br>請求A：寫入 Used&#x3D;true   │<br>請求B：寫入 Used&#x3D;true  ─┘  → 兩個都簽出 Authorization Code</p>
+<p>這叫 race condition，「單次使用」被打破。解法是把「檢查」和「標記」合成一條 SQL，由資料庫保證只有一個請求能成功：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">UPDATE</span> &quot;PendingAuthorizeRequests&quot; <span class="keyword">SET</span> &quot;Used&quot; <span class="operator">=</span> <span class="literal">true</span></span><br><span class="line"><span class="keyword">WHERE</span> &quot;Nonce&quot; <span class="operator">=</span> <span class="variable">@nonce</span> <span class="keyword">AND</span> &quot;Used&quot; <span class="operator">=</span> <span class="literal">false</span> <span class="keyword">AND</span> &quot;ExpiresAt&quot; <span class="operator">&gt;</span> <span class="variable">@now</span> <span class="keyword">AND</span> &quot;UserName&quot; <span class="keyword">IS</span> <span class="keyword">NOT NULL</span></span><br></pre></td></tr></table></figure>
 
+<p>PostgreSQL 執行 UPDATE 時會鎖住那一列，第二個請求要等第一個做完才能檢查，那時 Used 已經是 true，條件不成立，影響筆數是 0。看影響筆數是 1 還是 0，就知道自己有沒有搶到。<br>CompleteAuthorizationAsync()：把開頭到 pending.Used &#x3D; true; await _db.SaveChangesAsync(); 這一段整個換掉</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">async</span> Task&lt;IActionResult&gt; <span class="title">CompleteAuthorizationAsync</span>(<span class="params"><span class="built_in">string</span> resumeNonce, OpenIddictRequest request</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 用單一條UPDATE原子性地「檢查有效 + 標記已使用」：</span></span><br><span class="line">    <span class="comment">// 同一個nonce同時被送多次時，只有一個請求能讓影響筆數=1，其他都是0</span></span><br><span class="line">    <span class="keyword">var</span> now = DateTimeOffset.UtcNow;</span><br><span class="line">    <span class="keyword">var</span> consumed = <span class="keyword">await</span> _db.PendingAuthorizeRequests</span><br><span class="line">        .Where(p =&gt; p.Nonce == resumeNonce &amp;&amp; !p.Used &amp;&amp; p.ExpiresAt &gt; now &amp;&amp; p.UserName != <span class="literal">null</span>)</span><br><span class="line">        .ExecuteUpdateAsync(s =&gt; s.SetProperty(p =&gt; p.Used, <span class="literal">true</span>));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (consumed == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        _logger.LogWarning(<span class="string">&quot;Authorization rejected. ClientId=&#123;ClientId&#125;, Reason=InvalidOrExpiredPendingRequest.&quot;</span>, request.ClientId);</span><br><span class="line">        <span class="keyword">return</span> BadRequest(<span class="string">&quot;無效的授權狀態，請重新開始登入流程。&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 搶到使用權後，才把資料讀出來（此時Used已經是true）</span></span><br><span class="line">    <span class="keyword">var</span> pending = <span class="keyword">await</span> _db.PendingAuthorizeRequests.AsNoTracking().FirstAsync(p =&gt; p.Nonce == resumeNonce);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 第二次經過帶來的參數，必須跟第一次經過時暫存的原始參數完全一致，</span></span><br><span class="line">    <span class="comment">// 避免resume網址在瀏覽器端被竄改（例如換掉code_challenge、redirect_uri、scope）</span></span><br><span class="line">    <span class="keyword">var</span> original = JsonSerializer.Deserialize&lt;PendingAuthorizeData&gt;(pending.OriginalRequestJson)!;</span><br><span class="line">    <span class="keyword">if</span> (!MatchesOriginalRequest(request, original))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// 參數被竄改視為異常事件：上面已經標記Used=true，這筆pending已作廢，不給重試機會</span></span><br><span class="line">        _logger.LogWarning(<span class="string">&quot;Authorization rejected. ClientId=&#123;ClientId&#125;, Reason=ResumeParametersTampered.&quot;</span>, request.ClientId);</span><br><span class="line">        <span class="keyword">return</span> BadRequest(<span class="string">&quot;授權參數與原始請求不一致，請重新開始登入流程。&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> identity = <span class="keyword">new</span> ClaimsIdentity(</span><br><span class="line">    <span class="comment">// ...（以下維持不變）</span></span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li>ExecuteUpdateAsync：EF Core 提供的批次更新。它不會先把資料讀進記憶體，而是直接轉成一條 UPDATE … WHERE … 送到 DB，回傳影響筆數。原本「讀 → 改 → SaveChangesAsync()」那套寫法，中間就是 race 的空隙。</li>
+<li>順序反過來了：先標記，再比對參數。原本是「比對 → 不一致就作廢 → 一致也作廢 → 繼續」，不管結果如何最後 Used 都是 true。所以直接一開始就原子性地標記，竄改那條路徑也不用再自己寫 pending.Used &#x3D; true 了，程式反而更短。</li>
+<li>AsNoTracking()：這筆資料只用來讀，不會再改，所以不需要 EF 追蹤變更。</li>
+<li>FirstAsync 而不是 FirstOrDefaultAsync：前面 UPDATE 影響了 1 筆，就代表這筆一定存在。萬一真的讀不到，那是預期之外的錯誤，讓它丟例外比較合理。</li>
+<li>拒絕的訊息和 log 都沒變，上一步的竄改測試和作廢測試結果應該維持一樣。</li>
+</ul>
+<p>測試時要注意：race 用手動點兩下是很難重現的，要用指令同時送出多個請求。</p>
+<ol>
+<li>跑完整流程到 bridge-callback，Follow redirects 關掉，複製 302 的 Location，前面補上 <a href="https://localhost:7280。這次不要竄改，也先不要送出。">https://localhost:7280。這次不要竄改，也先不要送出。</a></li>
+<li>在 PowerShell 7 用下面的指令同時送 5 次，記得把網址換成你的：<br>$url &#x3D; ‘<a target="_blank" rel="noopener" href="https://localhost:7280/connect/authorize?client_id=...&__nonce=">https://localhost:7280/connect/authorize?client_id=...&amp;__nonce=</a>…’<br>1..5 | ForEach-Object -Parallel {<br> curl.exe -k -s -o NUL -w “%{http_code}&#96;n” $using:url<br>}<br>網址要用單引號包住，因為裡面有 &amp;、$ 這類 PowerShell 會解讀的字元。</li>
+<li>再從頭跑一次完整流程，什麼都不改，確認正常流程沒被改壞，可以換到 token。</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯。</li>
+<li>第 2 步的 5 個結果裡，剛好一個 302，其他四個都是 400。</li>
+<li>Console 有 1 行 AuthorizationCode issued，4 行 Reason&#x3D;InvalidOrExpiredPendingRequest。</li>
+<li>第 3 步的正常流程可以換到 token。</li>
+</ol>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/race_condition_test.jpg" class="" title="race_condition_test">
       
     </div>
     <footer class="article-footer">

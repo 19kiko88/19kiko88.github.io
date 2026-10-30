@@ -14,8 +14,9 @@
 <meta property="og:description" content="接續上一篇…">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/ticket_expired.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/mock_api.jpg">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-10-28T09:26:45.813Z">
+<meta property="article:modified_time" content="2026-10-30T03:00:44.745Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -172,7 +173,50 @@
 <li>測完記得把 RedeemAsync 改回 AddHours(12)。</li>
 </ol>
 <img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/ticket_expired.jpg" class="" title="ticket_expired">
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<h2 id="第二次經過-connect-authorize-時，檢查參數有沒有被竄改"><a href="#第二次經過-connect-authorize-時，檢查參數有沒有被竄改" class="headerlink" title="第二次經過 &#x2F;connect&#x2F;authorize 時，檢查參數有沒有被竄改"></a>第二次經過 &#x2F;connect&#x2F;authorize 時，檢查參數有沒有被竄改</h2><p>這一步在做什麼：bridge-callback 會把原始參數和 __nonce 組成網址，讓瀏覽器導回 &#x2F;connect&#x2F;authorize。問題是這個網址在瀏覽器手上，任何人都能改，而 CompleteAuthorizationAsync() 目前只查 __nonce 是否有效，完全沒有比對這次帶來的參數，是不是和第一次暫存在 PendingAuthorizeRequest.OriginalRequestJson 裡的一樣。</p>
+<p>可能的攻擊情境：攻擊者拿到受害者的 resume 網址，例如從 log、Referer 或瀏覽器歷史紀錄。他把裡面的 code_challenge 換成自己產生的值，搶在受害者之前送出。OpenIddict 就會以受害者的身分簽出 Authorization Code，而且這個 code 和攻擊者的 code_challenge 綁在一起，攻擊者能用自己的 code_verifier 換到受害者的 token。<span style="color: red;">PKCE 原本要擋的就是這種事，但因為我們多繞了一手，這道防線在中間被繞過了。</span></p>
+<ul>
+<li><strong>CompleteAuthorizationAsync()：在檢查 pending 有效之後、pending.Used &#x3D; true 之前，加上比對</strong></li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (pending <span class="keyword">is</span> <span class="literal">null</span> || pending.Used || pending.ExpiresAt &lt; DateTimeOffset.UtcNow || pending.UserName <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">&#123;</span><br><span class="line">    _logger.LogWarning(<span class="string">&quot;Authorization rejected. ClientId=&#123;ClientId&#125;, Reason=InvalidOrExpiredPendingRequest.&quot;</span>, request.ClientId);</span><br><span class="line">    <span class="keyword">return</span> BadRequest(<span class="string">&quot;無效的授權狀態，請重新開始登入流程。&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 第二次經過帶來的參數，必須跟第一次經過時暫存的原始參數完全一致，</span></span><br><span class="line"><span class="comment">// 避免resume網址在瀏覽器端被竄改（例如換掉code_challenge、redirect_uri、scope）</span></span><br><span class="line"><span class="keyword">var</span> original = JsonSerializer.Deserialize&lt;PendingAuthorizeData&gt;(pending.OriginalRequestJson)!;</span><br><span class="line"><span class="keyword">if</span> (!MatchesOriginalRequest(request, original))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 參數被竄改視為異常事件：直接作廢這筆pending，不給重試機會</span></span><br><span class="line">    pending.Used = <span class="literal">true</span>;</span><br><span class="line">    <span class="keyword">await</span> _db.SaveChangesAsync();</span><br><span class="line"></span><br><span class="line">    _logger.LogWarning(<span class="string">&quot;Authorization rejected. ClientId=&#123;ClientId&#125;, Reason=ResumeParametersTampered.&quot;</span>, request.ClientId);</span><br><span class="line">    <span class="keyword">return</span> BadRequest(<span class="string">&quot;授權參數與原始請求不一致，請重新開始登入流程。&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">pending.Used = <span class="literal">true</span>;</span><br><span class="line"><span class="keyword">await</span> _db.SaveChangesAsync();</span><br></pre></td></tr></table></figure>
 
+<ul>
+<li><strong>新增一個 private 方法</strong></li>
+</ul>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 比對第二次經過/connect/authorize的參數，是否與第一次經過時暫存的原始參數一致</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="built_in">bool</span> <span class="title">MatchesOriginalRequest</span>(<span class="params">OpenIddictRequest request, PendingAuthorizeData original</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">string</span>.Equals(request.ClientId, original.ClientId, StringComparison.Ordinal)</span><br><span class="line">        &amp;&amp; <span class="built_in">string</span>.Equals(request.RedirectUri, original.RedirectUri, StringComparison.Ordinal)</span><br><span class="line">        &amp;&amp; <span class="built_in">string</span>.Equals(request.Scope, original.Scope, StringComparison.Ordinal)</span><br><span class="line">        &amp;&amp; <span class="built_in">string</span>.Equals(request.State, original.State, StringComparison.Ordinal)</span><br><span class="line">        &amp;&amp; <span class="built_in">string</span>.Equals(request.CodeChallenge, original.CodeChallenge, StringComparison.Ordinal)</span><br><span class="line">        &amp;&amp; <span class="built_in">string</span>.Equals(request.CodeChallengeMethod, original.CodeChallengeMethod, StringComparison.Ordinal);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li>為什麼 6 個欄位全部都要比對：<ul>
+<li>code_challenge 和 code_challenge_method：防止上面那種 PKCE 替換攻擊。</li>
+<li>redirect_uri：防止 code 被導去別的地方。OpenIddict 雖然會檢查網址有沒有註冊，但同一個 client 有多個 redirect_uri 時還是可以互換。</li>
+<li>scope：防止有人偷偷把權限擴大。</li>
+<li>client_id 和 state：確保整個請求和原始請求是同一個。</li>
+</ul>
+</li>
+<li>為什麼用 StringComparison.Ordinal：這些都是協定值，必須逐字元完全相符。不能忽略大小寫，也不能受文化特性影響。</li>
+<li>為什麼不一致時要把 pending 作廢：參數被改過，代表這個 resume 網址可能已經外洩。作廢之後，就算攻擊者手上有原始網址也不能再用，受害者最多只是要重新登入一次。</li>
+<li>OriginalRequestJson 為什麼可以信任：它存在 Authorization Server 自己的 DB，瀏覽器碰不到。BridgeCallback() 也是從這裡重建參數，所以正常流程下兩邊一定會一致。</li>
+</ul>
+<p>測試時要注意：要竄改的是 bridge-callback 回應的 302 Location，也就是那個帶 __nonce 的 &#x2F;connect&#x2F;authorize?… 網址。</p>
+<p>測試流程：</p>
+<ol>
+<li>先關閉Follow redirects(Insomnia的設定：Application &#x3D;&gt; Preferences &#x3D;&gt; Follow redirects，把他取消勾選)</li>
+<li>正常流程呼叫，api [connect&#x2F;authorize]. [connect&#x2F;authorize&#x2F;bridge-callback]</li>
+<li>這步驟是種點，要模擬<span>PNP角色</span>呼叫OAuth Server的API [connect&#x2F;authorize]。參數要與API [connect&#x2F;authorize]的Header的location一致。接著把code_challenge改動一個字元(長度不變)，讓他跟原始的code_challenge不一致。正常的話會出現[授權參數與原始請求不一致，請重新開始登入流程]的錯誤訊息</li>
+</ol>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/mock_api.jpg" class="" title="mock_api">
+<ol start="4">
+<li>到DB確認 那筆 PendingAuthorizeRequests 的 Used 變成 true。</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯。</li>
+<li>到DB確認 那筆 PendingAuthorizeRequests 的 Used 變成 true。</li>
+<li>正常流程一樣能正常拿到 code，換到 token。</li>
+<li><span style="color: red;">Follow redirects開啟</span></li>
+</ol>
 
       
     </div>

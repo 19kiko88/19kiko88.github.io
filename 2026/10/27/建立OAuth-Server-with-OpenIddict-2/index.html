@@ -18,8 +18,9 @@
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/mock_api.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/pending_revoke.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/race_condition_test.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/openid-configuration.jpg">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-10-30T06:37:10.896Z">
+<meta property="article:modified_time" content="2026-10-30T06:39:16.855Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -271,8 +272,8 @@
 <ul>
 <li><strong>讀 Discovery</strong><br>GET <a target="_blank" rel="noopener" href="https://localhost:7280/.well-known/openid-configuration">https://localhost:7280/.well-known/openid-configuration</a></li>
 </ul>
-<p>逐項確認回傳的 JSON：<br>┌──────────────────────────────────┬────────────────────────────────────────┬────────────────────────────────────────────┐<br>│               欄位               │                  預期                  │                   為什麼                   │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ issuer                           │ <a target="_blank" rel="noopener" href="https://localhost:7280/">https://localhost:7280/</a>                │ JWT 裡的 iss，Resource Server 會比對這個值 │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ authorization_endpoint           │ …&#x2F;connect&#x2F;authorize                  │                                            │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ token_endpoint                   │ …&#x2F;connect&#x2F;token                      │                                            │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ jwks_uri                         │ …&#x2F;.well-known&#x2F;jwks                   │ Resource Server 從這裡抓公鑰               │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ grant_types_supported            │ 只有 authorization_code、refresh_token │ OAuth 2.1：不能有 implicit、password       │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ response_types_supported         │ 只有 code                              │                                            │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ code_challenge_methods_supported │ 只有 S256                              │ 這一項是這次的重點                         │<br>└──────────────────────────────────┴────────────────────────────────────────┴────────────────────────────────────────────┘</p>
-
+<p>逐項確認回傳的 JSON：</p>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/openid-configuration.jpg" class="" title="openid-configuration">
       
     </div>
     <footer class="article-footer">

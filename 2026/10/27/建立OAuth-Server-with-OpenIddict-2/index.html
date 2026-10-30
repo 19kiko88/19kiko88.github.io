@@ -20,8 +20,10 @@
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/race_condition_test.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/openid-configuration.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/kid_check.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/diff_of_s256_plain.jpg">
+<meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/S256_TEST.jpg">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-10-30T06:55:34.607Z">
+<meta property="article:modified_time" content="2026-10-30T07:28:04.581Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -277,15 +279,50 @@
 <img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/openid-configuration.jpg" class="" title="openid-configuration">
 
 <ol start="2">
-<li><strong>讀 JWKS</strong></li>
+<li><strong>讀 JWKS</strong><br>GET <a target="_blank" rel="noopener" href="https://localhost:7280/.well-known/jwks">https://localhost:7280/.well-known/jwks</a></li>
 </ol>
-<p>GET <a target="_blank" rel="noopener" href="https://localhost:7280/.well-known/jwks">https://localhost:7280/.well-known/jwks</a></p>
 <p>確認 keys 裡的那把公鑰：</p>
 <ul>
 <li>kty 是 RSA，alg 是 RS256。</li>
 <li>kid 和你之前在 jwt.io 解開 access_token 時 header 裡的 kid 一樣。Resource Server 就是用 kid 找出該用哪一把公鑰驗簽的。</li>
 </ul>
 <img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/kid_check.jpg" class="" title="kid_check">
+
+<ol start="3">
+<li>測 plain 會不會被接受<br>用 GET 送出下面的網址，Follow redirects 關掉：</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://localhost:7280/connect/authorize?client_id=pnp-mcp-client&redirect_uri=https://localhost:5055/callback&response_type=code&scope=ucs.sn-info.read&code_challenge=abcdefghijklmnopqrstuvwxyzabcdefghijklmnopq&code_challenge_method=plain">https://localhost:7280/connect/authorize?client_id=pnp-mcp-client&amp;redirect_uri=https%3A%2F%2Flocalhost%3A5055%2Fcallback&amp;response_type=code&amp;scope=ucs.sn-info.read&amp;code_challenge=abcdefghijklmnopqrstuvwxyzabcdefghijklmnopq&amp;code_challenge_method=plain</a></p>
+<ul>
+<li>如果被拒絕：預期是 400，或是導回 redirect_uri 並帶上 error&#x3D;invalid_request。代表 OpenIddict 本來就只接受 S256，不需要改程式。</li>
+<li>如果回 302 導向 localhost:16888&#x2F;sso&#x2F;bridge：代表 plain 被接受了，下一步要在 Program.cs 把它關掉。</li>
+</ul>
+<p><strong>這個測試要回答的問題是：MCP Client 能不能用比較弱的 plain 方法做 PKCE？ 設計文件規定只能用 S256。</strong></p>
+<p>先複習 PKCE 在做什麼</p>
+<p><span style="color: red;">PKCE 是為了防止「Authorization Code 被偷走後，被別人拿去換 token」：</span></p>
+<ol>
+<li>Client 先產生一個只有自己知道的隨機字串，叫 <span style="color: red;">code_verifier</span>。</li>
+<li>呼叫 &#x2F;connect&#x2F;authorize 時，送出由它算出來的 <span style="color: red;">code_challenge</span>。</li>
+<li>拿到 code 之後，呼叫 &#x2F;connect&#x2F;token 時要附上原本的 code_verifier。Server 驗證它和當初的 code_challenge 對得上，才發 token。</li>
+</ol>
+<p>就算有人在半路偷到 code，手上沒有 code_verifier 也換不到 token。</p>
+<p>S256 和 plain 的差別</p>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/diff_of_s256_plain.jpg" class="" title="diff_of_s256_plain">
+
+<p>code_challenge 會出現在 &#x2F;connect&#x2F;authorize 的網址上，可能留在瀏覽器歷史紀錄、proxy log、Referer 裡。用 plain 的話，等於把通關密碼寫在網址上，PKCE 就失去保護作用了。所以 OAuth 2.1 和設計文件都規定只能用 S256。</p>
+<p>這個測試在做什麼</p>
+<p>Program.cs 目前只寫了 RequireProofKeyForCodeExchange()，意思是「一定要帶 PKCE」，但沒有規定只能用哪一種方法。我不確定 OpenIddict 預設允不允許 plain，所以用實際請求來確認：故意送一個 code_challenge_method&#x3D;plain 的請求，看 Server 的反應。</p>
+<p>結果 A：被拒絕（400，或是導回 redirect_uri 並帶上 error&#x3D;invalid_request）</p>
+<ul>
+<li>OpenIddict 在請求進到我們的程式之前，就判定 plain 不支援。</li>
+<li>代表預設就只接受 S256，符合設計文件，不用改程式。</li>
+</ul>
+<p>結果 B：回 302，導向 localhost:16888&#x2F;sso&#x2F;bridge</p>
+<ul>
+<li>代表 OpenIddict 接受了 plain，請求一路進到我們的 Authorize()，開始走 Bridge 流程。導向 Bridge 是「第一次經過」的正常行為，你之前也看過這個網址。</li>
+<li>這就違反設計文件了，要在 Program.cs 加設定把 plain 關掉。</li>
+</ul>
+<p>我們的測試結果回應的是[302]。</p>
+<img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/S256_TEST.jpg" class="" title="S256_TEST">
       
     </div>
     <footer class="article-footer">

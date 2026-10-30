@@ -19,7 +19,7 @@
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/pending_revoke.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/race_condition_test.jpg">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-10-30T06:28:31.674Z">
+<meta property="article:modified_time" content="2026-10-30T06:37:10.896Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -259,6 +259,20 @@
 <li>第 3 步的正常流程可以換到 token。</li>
 </ol>
 <img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/race_condition_test.jpg" class="" title="race_condition_test">
+<p>結果符合預期：同一個 __nonce 同時送 5 次，只有一個請求能簽出 Authorization Code，race condition 已經擋住了。</p>
+<h1 id="-12"><a href="#-12" class="headerlink" title=""></a></h1><h1 id="-13"><a href="#-13" class="headerlink" title=""></a></h1><h1 id="-14"><a href="#-14" class="headerlink" title=""></a></h1><hr>
+<h2 id="檢查-Discovery-和-JWKS-的內容，確認只允許-S256（設計文件-Step-6、Step-8）"><a href="#檢查-Discovery-和-JWKS-的內容，確認只允許-S256（設計文件-Step-6、Step-8）" class="headerlink" title="檢查 Discovery 和 JWKS 的內容，確認只允許 S256（設計文件 Step 6、Step 8）"></a>檢查 Discovery 和 JWKS 的內容，確認只允許 S256（設計文件 Step 6、Step 8）</h2><p>這一步在做什麼：OpenIddict 會自動發布兩份公開文件，給 MCP Client 和 MCP Resource Server 讀：</p>
+<ul>
+<li>Discovery（&#x2F;.well-known&#x2F;openid-configuration）：告訴 client 這台 Server 的各個端點在哪裡、支援哪些 grant、哪些 PKCE 方法。MCP Client 第一次連線時會先讀這份。</li>
+<li>JWKS（&#x2F;.well-known&#x2F;jwks）：公開驗簽用的公鑰。MCP Resource Server 會抓這份來驗 JWT 的簽章。</li>
+</ul>
+<p>這兩份是 OpenIddict 依照 Program.cs 的設定自動產生的，我們沒有寫任何程式。這一步要做的是確認它們對外宣告的內容符合設計文件，特別是 PKCE。設計文件規定只允許 S256，而 Program.cs 目前只呼叫了 RequireProofKeyForCodeExchange()，意思是「一定要帶 PKCE」，但沒有限制方法。如果 plain 也被允許，client 可以直接把 code_verifier 原文當成 code_challenge 送出，PKCE 的保護就沒有意義了。</p>
+<p>這一步先不改程式，看完結果再決定。</p>
+<ul>
+<li><strong>讀 Discovery</strong><br>GET <a target="_blank" rel="noopener" href="https://localhost:7280/.well-known/openid-configuration">https://localhost:7280/.well-known/openid-configuration</a></li>
+</ul>
+<p>逐項確認回傳的 JSON：<br>┌──────────────────────────────────┬────────────────────────────────────────┬────────────────────────────────────────────┐<br>│               欄位               │                  預期                  │                   為什麼                   │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ issuer                           │ <a target="_blank" rel="noopener" href="https://localhost:7280/">https://localhost:7280/</a>                │ JWT 裡的 iss，Resource Server 會比對這個值 │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ authorization_endpoint           │ …&#x2F;connect&#x2F;authorize                  │                                            │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ token_endpoint                   │ …&#x2F;connect&#x2F;token                      │                                            │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ jwks_uri                         │ …&#x2F;.well-known&#x2F;jwks                   │ Resource Server 從這裡抓公鑰               │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ grant_types_supported            │ 只有 authorization_code、refresh_token │ OAuth 2.1：不能有 implicit、password       │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ response_types_supported         │ 只有 code                              │                                            │<br>├──────────────────────────────────┼────────────────────────────────────────┼────────────────────────────────────────────┤<br>│ code_challenge_methods_supported │ 只有 S256                              │ 這一項是這次的重點                         │<br>└──────────────────────────────────┴────────────────────────────────────────┴────────────────────────────────────────────┘</p>
+
       
     </div>
     <footer class="article-footer">

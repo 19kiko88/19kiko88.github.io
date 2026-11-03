@@ -786,7 +786,7 @@ public async Task<IActionResult> Exchange()
 #
 #
 ---
-## 在scope裡面增加offline_access保留自
+## 在scope裡面增加offline_access保留字
 
 這一步在做什麼：要拿到refresh_token，/connect/authorize請求的scope參數裡必須明確包含offline_access這個保留字，不然即使client有refresh_token grant的權限，OpenIddict也只會發access_token，不會發refresh_token。我們之前測試時的scope沒有加offline_access，所以才沒有拿到。
 要拿到refresh_token，必須要先做下面兩個修正：

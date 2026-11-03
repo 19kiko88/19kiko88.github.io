@@ -818,3 +818,130 @@ JOIN "IdentityProviders" p
 ON p."ProviderId" = a."Properties"::jsonb ->> 'identity_provider_id';
 ```
 {% asset_image json_join.jpg json_join %}
+
+#
+#
+#
+---
+## /connect/authorize 改成依 client_id 去 DB 查身分來源，取代 appsettings 裡寫死的 BridgeUrl
+
+這一步在做什麼：目前 Authorize() 第一次經過時，是讀 appsettings.json 的 IdentityProviders:Pnp:BridgeUrl。不管是哪個 client 來，都一律導去 PNP。這次改成上一則說的查詢順序：
+
+client_id → OpenIddictApplications.Properties.identity_provider_id → IdentityProviders → BridgeUrl
+
+改完之後，要新增身分來源或改 Bridge 網址，只要改 DB 資料，不用改程式。這就是設計文件第 6 節「核心協定邏輯不寫死任何特定身分來源」的意思。
+
+1. AuthorizationController.cs：注入 IOpenIddictApplicationManager
+``` csharp
+private readonly IOpenIddictApplicationManager _applicationManager;
+
+public AuthorizationController(
+    AuthorizationServerDbContext db,
+    IConfiguration configuration,
+    ILogger<AuthorizationController> logger,
+    IOpenIddictApplicationManager applicationManager,
+    IOpenIddictScopeManager scopeManager,
+    IOpenIddictAuthorizationManager authorizationManager,
+    IOpenIddictTokenManager tokenManager)
+{
+    _db = db;
+    _configuration = configuration;
+    _logger = logger;
+    _applicationManager = applicationManager;
+    _scopeManager = scopeManager;
+    _authorizationManager = authorizationManager;
+    _tokenManager = tokenManager;
+}
+```
+
+2. Authorize()：把讀 appsettings 的那段換掉
+原本：
+``` csharp
+// 第一次經過：還沒驗證身分，暫存原始請求，導去 PCBRepairNavi 的 Bridge
+var bridgeBaseUrl = _configuration["IdentityProviders:Pnp:BridgeUrl"]
+    ?? throw new InvalidOperationException("找不到設定 'IdentityProviders:Pnp:BridgeUrl'");
+```
+改成：
+``` csharp
+// 第一次經過：還沒驗證身分，依 client_id 查出綁定的身分來源（設計文件第6節），決定要導去哪裡驗證
+var provider = await ResolveIdentityProviderAsync(request.ClientId!);
+if (provider is null)
+{
+    _logger.LogError("Authorize rejected. ClientId={ClientId}, Reason=IdentityProviderNotConfigured.", request.ClientId);
+    return BadRequest("此 Client 未設定身分來源。");
+}
+
+// 目前只實作 Bridge 模式；聯邦/直接驗證模式待有實際接入對象時再實作
+if (provider.Mode != IdentityProviderMode.Bridge || string.IsNullOrEmpty(provider.BridgeUrl))
+{
+    _logger.LogError(
+        "Authorize rejected. ClientId={ClientId}, ProviderId={ProviderId}, Mode={Mode}, Reason=UnsupportedIdentityProvider.",
+        request.ClientId, provider.ProviderId, provider.Mode);
+    return BadRequest("此 Client 的身分來源設定不支援。");
+}
+
+var bridgeBaseUrl = provider.BridgeUrl;
+```
+下面 GenerateNonce()、建立 pending、組 bridgeUrl 的部分都維持不變。
+
+3. 新增一個 private 方法
+``` csharp
+/// <summary>
+/// 依 client_id 查出該 Client 綁定的身分來源：
+/// OpenIddictApplications.Properties.identity_provider_id → IdentityProviders.ProviderId
+/// </summary>
+/// <returns>找不到綁定、或綁定的身分來源不存在時回傳 null</returns>
+private async Task<IdentityProvider?> ResolveIdentityProviderAsync(string clientId)
+{
+    var application = await _applicationManager.FindByClientIdAsync(clientId);
+    if (application is null)
+    {
+        return null;
+    }
+
+    var properties = await _applicationManager.GetPropertiesAsync(application);
+    if (!properties.TryGetValue(IdentityProvider.ApplicationPropertyName, out var element)
+        || element.ValueKind != JsonValueKind.String)
+    {
+        return null;
+    }
+
+    var providerId = element.GetString();
+    return await _db.IdentityProviders.AsNoTracking().FirstOrDefaultAsync(p => p.ProviderId == providerId);
+}
+```
+
+4. appsettings.json：刪掉不再使用的設定
+把整個 "IdentityProviders": { "Pnp": { "BridgeUrl": ... } } 區塊刪掉。之後做 HMAC 那一步時，會再加回密鑰相關的設定。
+
+幾個重點說明：
+
+- ResolveIdentityProviderAsync 就是上一則那段 SQL join 的 C# 版本：先用 client_id 找到 client，從 Properties 讀出 identity_provider_id，再拿去查 IdentityProviders。因為沒有外鍵保護，每一關都要檢查查不到的情況，查不到就回傳 null。
+- element.ValueKind != JsonValueKind.String：Properties 的值是 JsonElement，理論上可能被人存成數字或物件。先確認它是字串，再呼叫 GetString()，避免丟例外。
+- 為什麼放在建立 pending 之前：設定有問題時直接拒絕，不會在 DB 留下一筆沒用的 pending。
+- 為什麼用 LogError，不是之前常用的 LogWarning：之前的 LogWarning 大多是「請求有問題」，例如參數被竄改、nonce 過期，可能是攻擊或使用者操作問題。這次是「Server 設定有問題」，維運人員必須去修，所以等級較高。
+- 為什麼 Mode 不是 Bridge 就拒絕：聯邦和直接驗證模式還沒實作。將來實作時，就在這裡依 provider.Mode 分流，導去不同的地方。
+- IConfiguration 先保留：這一步之後 _configuration 暫時沒用到，但之後讀 HMAC 密鑰還會用到，所以先不刪。
+- 還沒做的部分：這一步只讓「導去哪裡」改成依 DB 決定。bridge-callback 的 Redeem、refresh 的撤銷查詢也需要知道是哪個身分來源，那些留到「真正呼叫 PNP API」那一步一起改。
+
+測試時要注意：第 2 項會暫時修改 DB 資料，測完記得改回來。
+
+1. 確認導向的網址真的是從 DB 讀的：
+   - 先打一次 /connect/authorize，確認還是 302 導向 https://localhost:16888/sso/bridge?...。
+   - 到 DB 暫時把 Bridge 網址改成 16889：
+UPDATE "IdentityProviders" SET "BridgeUrl" = 'https://localhost:16889/sso/bridge' WHERE "ProviderId" = 'pnp';
+   - 不要重啟 Server，再打一次 /connect/authorize。
+   - 改回來：
+UPDATE "IdentityProviders" SET "BridgeUrl" = 'https://localhost:16888/sso/bridge' WHERE "ProviderId" = 'pnp';
+2. 確認綁定錯誤時會被擋下：
+   - 暫時把 client 綁定到一個不存在的身分來源：
+UPDATE "OpenIddictApplications" SET "Properties" = '{"identity_provider_id":"nope"}' WHERE "ClientId" = 'pnp-mcp-client';
+   - 重啟 Server 後打一次 /connect/authorize。<span style="color: red;">這裡要重啟，是因為 OpenIddict 會把 client 資料快取在記憶體裡，不重啟可能讀到舊值。</span>第 1 項的 IdentityProviders 是我們自己用 AsNoTracking 查的，沒有快取，所以不用重啟。
+   - 改回來，再重啟一次：
+UPDATE "OpenIddictApplications" SET "Properties" = '{"identity_provider_id":"pnp"}' WHERE "ClientId" = 'pnp-mcp-client';
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 第 1 項改成 16889 之後，不重啟就導向 https://localhost:16889/sso/bridge?...，證明網址是從 DB 讀的，不是 appsettings。
+3. 第 2 項回 400「此 Client 未設定身分來源」，Console 有 Reason=IdentityProviderNotConfigured。
+4. 兩項都改回來之後，/connect/authorize 恢復導向 16888。

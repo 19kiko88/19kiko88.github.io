@@ -644,7 +644,7 @@ builder.Services.AddHostedService<PendingAuthorizeRequestCleanupService>();
 測試時要注意：清除只在啟動時和每小時執行，所以要用重啟 Server 來觸發。
 
 1. 重啟前，先打一次 /connect/authorize，製造一筆還沒過期的資料。然後到 DB 執行：
-SELECT count(*) FILTER (WHERE "ExpiresAt" < now())  AS expired,
+SELECT count(*) FILTER (WHERE "ExpiresAt" <span now())  AS expired,
        count(*) FILTER (WHERE "ExpiresAt" >= now()) AS active
 FROM "PendingAuthorizeRequests";
    記下 expired 和 active 兩個數字。
@@ -654,3 +654,167 @@ FROM "PendingAuthorizeRequests";
 1. dotnet build 正常編譯。
 2. 啟動時 Console 出現 PendingAuthorizeRequest cleanup completed. Deleted=N，N 等於第 1 步的 expired。
 3. 第 2 步的 expired 變成 0，active 不變，代表還沒過期的資料沒有被誤刪。
+#
+#
+#
+---
+## 建資料表，並把 client 綁定到身分來源，將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。
+
+這一步在做什麼：
+設計文件的目標之一，是將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。所以「要去哪裡驗證身分」不能寫死成 PNP，要變成一筆筆設定：
+
+先看一下DB Table [OpenIddictApplications] 跟 [IdentityProvider] 這兩張Table的差異：
+- OpenIddictApplications：<span style="color: red;">誰來要 token（OAuth Client）。</span>每個 OAuth Client 記錄自己屬於哪個身分來源(ex：MCP Client)。之後 /connect/authorize 看到 client_id，就知道要導去哪裡。
+- IdentityProvider ：<span style="color: red;">使用者去哪裡驗證身分（身分來源）。</span>每一筆代表一個身分來源，記錄它的模式（Bridge、聯邦、直接驗證）和對接網址。目前只有 PNP 一筆。
+
+{% asset_image table_compare.jpg table_compare %}
+
+1. 新增檔案 Data/IdentityProvider.cs
+``` csharp
+namespace OAuth.AuthorizationServer.Data;
+
+public class IdentityProvider
+{
+    // OpenIddict Application 的 Properties 裡，用這個 key 記錄該 Client 綁定哪個 IdentityProvider
+    public const string ApplicationPropertyName = "identity_provider_id";
+
+    public string ProviderId { get; set; } = default!;      // 主鍵，例如 "pnp"
+    public IdentityProviderMode Mode { get; set; }          // 對接模式，見設計文件第6節
+    public string? BridgeUrl { get; set; }                  // Bridge模式：身分來源的 /sso/bridge
+    public string? RedeemApiUrl { get; set; }               // Bridge模式：用一次性code換回身分資料
+    public string? RevocationCheckApiUrl { get; set; }      // refresh時查詢撤銷狀態（第4.3節第1層）
+    public string? HmacSecretRef { get; set; }              // 指向金鑰管理機制的參照名稱，不存密鑰明文
+}
+
+public enum IdentityProviderMode
+{
+    /// <summary>
+    /// 身分來源的登入狀態存在於其專屬 app 的 cookie/session 中，無法被 Authorization Server 跨網域讀取 | **PNP 採用此模式**
+    /// </summary>
+    Bridge,
+    /// <summary>
+    /// 身分來源已有公司既有的集中式 SSO（AD FS / Azure AD / Okta 等標準 OIDC/SAML） | 未來視接入對象而定
+    /// </summary>
+    Federation,  
+    /// <summary>
+    /// 身分來源為單純 AD/LDAP 帳密 | 未來視接入對象而定
+    /// </summary>
+    Direct,
+}
+```
+
+2. Data/AuthorizationServerDbContext.cs：加上 DbSet 和設定
+``` csharp
+public DbSet<PendingAuthorizeRequest> PendingAuthorizeRequests => Set<PendingAuthorizeRequest>();
+public DbSet<IdentityProvider> IdentityProviders => Set<IdentityProvider>();
+
+protected override void OnModelCreating(ModelBuilder builder)
+{
+    base.OnModelCreating(builder);
+
+    builder.Entity<PendingAuthorizeRequest>().HasKey(p => p.Nonce);
+
+    builder.Entity<IdentityProvider>(e =>
+    {
+        e.HasKey(p => p.ProviderId);
+        // enum 存成字串（"Bridge"），直接查DB時看得懂，日後調整enum順序也不會讓舊資料對錯值
+        e.Property(p => p.Mode).HasConversion<string>();
+    });
+
+    // 讓 OpenIddict 把 Applications/Authorizations/Scopes/Tokens
+    // 這四張表的 EF Core 模型註冊進這個 DbContext
+    builder.UseOpenIddict();
+}
+```
+
+3. Program.cs 的 SeedDataAsync：新增 PNP 身分來源，並讓 client 綁定它
+
+最上面加上 using System.Text.Json;，然後在 const string mcpClientId = "pnp-mcp-client"; 前面加上：
+``` csharp
+var db = scope.ServiceProvider.GetRequiredService<AuthorizationServerDbContext>();
+const string pnpProviderId = "pnp";
+
+if (await db.IdentityProviders.FindAsync(pnpProviderId) is null)
+{
+    // TODO：網址為本機開發用，正式環境依PCBRepairNavi實際部署位置調整
+    db.IdentityProviders.Add(new IdentityProvider
+    {
+        ProviderId = pnpProviderId,
+        Mode = IdentityProviderMode.Bridge,
+        BridgeUrl = "https://localhost:16888/sso/bridge",
+        RedeemApiUrl = "https://localhost:16888/api/internal/sso/redeem",
+        RevocationCheckApiUrl = "https://localhost:16888/api/internal/sso/token-status",
+        HmacSecretRef = "IdentityProviders:Pnp:HmacSecret",
+    });
+    await db.SaveChangesAsync();
+}
+```
+
+client 的部分，把原本的 if (await appManager.FindByClientIdAsync(mcpClientId) is null) { ... } 改成：
+``` csharp
+var application = await appManager.FindByClientIdAsync(mcpClientId);
+
+if (application is null)
+{
+    var descriptor = new OpenIddictApplicationDescriptor
+    {
+        // ...（原本的 ClientId、ClientType、ConsentType、DisplayName、RedirectUris、Permissions 維持不變）
+    };
+
+    // ...（原本的 Permissions.Add 維持不變）
+
+    // 綁定這個Client的身分來源
+    descriptor.Properties[IdentityProvider.ApplicationPropertyName] = JsonSerializer.SerializeToElement(pnpProviderId);
+
+    await appManager.CreateAsync(descriptor);
+}
+else if (!(await appManager.GetPropertiesAsync(application)).ContainsKey(IdentityProvider.ApplicationPropertyName))
+{
+    // 已存在但尚未綁定身分來源的Client（建立於這個欄位出現之前），補上綁定
+    var descriptor = new OpenIddictApplicationDescriptor();
+    await appManager.PopulateAsync(descriptor, application);
+    descriptor.Properties[IdentityProvider.ApplicationPropertyName] = JsonSerializer.SerializeToElement(pnpProviderId);
+    await appManager.UpdateAsync(application, descriptor);
+}
+```
+
+4. 建立 migration 並套用到 DB
+
+在 OAuth.AuthorizationServer 資料夾下執行：
+``` bash
+dotnet ef migrations add AddIdentityProvider
+dotnet ef database update
+```
+
+幾個重點說明：
+
+- <span style="color: red;">Client 綁定為什麼存在 Properties，而不是新增一個欄位：OpenIddictApplications 這張表的 entity 是 OpenIddict 套件定義的，不是我們的。要加欄位，必須自己繼承它的 entity 類別，再替換掉 OpenIddict 預設的 entity，改動很大。</span>OpenIddict 本來就提供 Properties 這個 JSON 欄位，專門讓使用者存自訂資料，用它最省事。DB 裡會看到 {"identity_provider_id":"pnp"}。
+- JsonSerializer.SerializeToElement(...)：Properties 的值型別是 JsonElement，所以要先把字串 "pnp" 轉成 JsonElement 才能放進去。
+- 為什麼 client 要多一個 else if 分支：你 DB 裡的 pnp-mcp-client 早就建好了。如果只改「不存在才新增」那段，它永遠不會被補上綁定。PopulateAsync 會把現有資料讀進 descriptor，加上綁定後再 UpdateAsync 寫回去，其他設定都不受影響。
+- HmacSecretRef 存的是「參照名稱」，不是密鑰本身：設計文件第 9.1 節規定密鑰不能明文存在 DB 或設定檔。這裡只記「去哪裡拿」，例如將來的 KeyVault 名稱。真正讀取密鑰，是做 Redeem 那一步的事。
+- RevocationCheckApiUrl 的路徑是暫定的：PNP 端的撤銷查詢端點還沒定名稱，先用 token-status 佔位。
+- 這一步不會改變任何流程行為：Authorize() 還是讀 appsettings 的 BridgeUrl，下一步才會切換。
+
+測試時要注意：這一步只需要看 DB。
+
+1. dotnet ef migrations add 執行後，Migrations 資料夾多出 ..._AddIdentityProvider.cs。打開看一下，Up() 裡應該只有建立 IdentityProviders 表，不應該動到其他表。
+2. dotnet ef database update 之後重啟 Server，到 DB 執行：
+SELECT * FROM "IdentityProviders";
+SELECT "ClientId", "Properties" FROM "OpenIddictApplications";
+
+請執行後確認：
+1. dotnet build 正常編譯，migration 的 Up() 只有建立 IdentityProviders 表。
+2. IdentityProviders 有 1 筆 pnp，Mode 是字串 Bridge。
+3. pnp-mcp-client 的 Properties 是 {"identity_provider_id":"pnp"}。
+
+<span style="color: red;">總結一下這段在做什麼：</span>
+OpenIddictApplications.Properties這個欄位可以拿來擴充OpenIddictApplications這個Table的欄位，不用異動到OpenIddict 套件定義好的 Entity。(先前有提到過)
+我們可以用OpenIddictApplications.Properties的identity_provider_id的屬性值[pnp]來join到IdentityProviders.ProviderId
+
+``` sql
+SELECT a."ClientId", p."ProviderId", p."Mode", p."BridgeUrl", a."Properties" 
+FROM "OpenIddictApplications" a
+JOIN "IdentityProviders" p
+ON p."ProviderId" = a."Properties"::jsonb ->> 'identity_provider_id';
+```
+{% asset_image json_join.jpg json_join %}

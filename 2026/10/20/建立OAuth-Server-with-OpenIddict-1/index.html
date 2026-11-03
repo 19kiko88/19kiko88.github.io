@@ -15,7 +15,7 @@
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-1/MCP_AuthServer-Architecture.jpg">
 <meta property="article:published_time" content="2026-10-20T06:54:47.000Z">
-<meta property="article:modified_time" content="2026-10-28T06:08:58.091Z">
+<meta property="article:modified_time" content="2026-11-03T10:06:53.393Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -370,7 +370,7 @@
 <li>把拿到的access_token複製起來（之後有機會可以貼到jwt.io這類工具解開看裡面的claims，確認sub是不是test\mockuser）。</li>
 </ol>
 <h1 id="-33"><a href="#-33" class="headerlink" title=""></a></h1><h1 id="-34"><a href="#-34" class="headerlink" title=""></a></h1><h1 id="-35"><a href="#-35" class="headerlink" title=""></a></h1><hr>
-<h2 id="在scope裡面增加offline-access保留自"><a href="#在scope裡面增加offline-access保留自" class="headerlink" title="在scope裡面增加offline_access保留自"></a>在scope裡面增加offline_access保留自</h2><p>這一步在做什麼：要拿到refresh_token，&#x2F;connect&#x2F;authorize請求的scope參數裡必須明確包含offline_access這個保留字，不然即使client有refresh_token grant的權限，OpenIddict也只會發access_token，不會發refresh_token。我們之前測試時的scope沒有加offline_access，所以才沒有拿到。<br>要拿到refresh_token，必須要先做下面兩個修正：</p>
+<h2 id="在scope裡面增加offline-access保留字"><a href="#在scope裡面增加offline-access保留字" class="headerlink" title="在scope裡面增加offline_access保留字"></a>在scope裡面增加offline_access保留字</h2><p>這一步在做什麼：要拿到refresh_token，&#x2F;connect&#x2F;authorize請求的scope參數裡必須明確包含offline_access這個保留字，不然即使client有refresh_token grant的權限，OpenIddict也只會發access_token，不會發refresh_token。我們之前測試時的scope沒有加offline_access，所以才沒有拿到。<br>要拿到refresh_token，必須要先做下面兩個修正：</p>
 <ul>
 <li><strong>讓pnp-mcp-client這個client被允許要求offline_access</strong><br>修改Program.cs的seed程式碼，在descriptor.Permissions那段多加一行：</li>
 </ul>

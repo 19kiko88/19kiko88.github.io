@@ -17,7 +17,7 @@
 <meta property="og:image" content="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/json_join.jpg">
 <meta property="og:image" content="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/call_api_method.jpg">
 <meta property="article:published_time" content="2026-11-03T07:37:17.000Z">
-<meta property="article:modified_time" content="2026-11-03T07:44:28.142Z">
+<meta property="article:modified_time" content="2026-11-03T09:17:21.441Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -228,6 +228,78 @@
 <h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
 <h2 id="讓「身分來源」跟著整個流程走，bridge-callback-和-refresh-都知道該找哪個身分來源"><a href="#讓「身分來源」跟著整個流程走，bridge-callback-和-refresh-都知道該找哪個身分來源" class="headerlink" title="讓「身分來源」跟著整個流程走，bridge-callback 和 refresh 都知道該找哪個身分來源"></a>讓「身分來源」跟著整個流程走，bridge-callback 和 refresh 都知道該找哪個身分來源</h2><p>這一步在做什麼：上一步只有 Authorize() 第一次經過時會查身分來源。但流程中還有兩個地方，將來也要呼叫身分來源的 API：</p>
 <img src="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/call_api_method.jpg" class="" title="call_api_method">
+
+<p>這兩個地方都拿不到 client_id 對應的 provider，所以要把「第一次經過時查到的 ProviderId」一路傳下去：</p>
+<p>Authorize()           查到 provider → 存進 PendingAuthorizeRequest.ProviderId<br>    ↓<br>BridgeCallback()      從 pending 讀 ProviderId → 查 provider → 傳給 RedeemAsync<br>    ↓<br>CompleteAuthorization 從 pending 讀 ProviderId → 寫進 principal 的 “idp” claim<br>    ↓<br>Exchange (refresh)    從 refresh token 的 “idp” claim → 查 provider → 傳給 IsTokenActiveAsync</p>
+<p>RedeemAsync 和 IsTokenActiveAsync 仍然是 mock，這一步只是把 provider 傳到它們手上。下一步改成真的呼叫時，直接用 provider.RedeemApiUrl、provider.RevocationCheckApiUrl 就好。</p>
+<ol>
+<li>Data&#x2F;PendingAuthorizeRequest.cs：新增欄位</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="built_in">bool</span> Used &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;                            <span class="comment">// 單次使用，用過即標記，防重放</span></span><br><span class="line"><span class="keyword">public</span> <span class="built_in">string</span> ProviderId &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = <span class="literal">default</span>!;        <span class="comment">// 第一次經過時依client_id查出的身分來源，bridge-callback要用它找RedeemApiUrl</span></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>AuthorizationController.cs：新增一個共用的查詢方法，並讓 ResolveIdentityProviderAsync 改用它</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 依 ProviderId 查出身分來源設定，找不到時回傳 null</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="keyword">private</span> Task&lt;IdentityProvider?&gt; FindIdentityProviderAsync(<span class="built_in">string</span>? providerId)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> _db.IdentityProviders.AsNoTracking().FirstOrDefaultAsync(p =&gt; p.ProviderId == providerId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ResolveIdentityProviderAsync 最後一行改成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="keyword">await</span> FindIdentityProviderAsync(element.GetString());</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>Authorize()：建立 pending 時記下 ProviderId</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(<span class="number">10</span>),</span><br><span class="line">Used = <span class="literal">false</span>,</span><br><span class="line">ProviderId = provider.ProviderId,</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>BridgeCallback()：在呼叫 RedeemAsync 之前查出 provider</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 依第一次經過時記下的身分來源，決定要去哪裡Redeem</span></span><br><span class="line"><span class="keyword">var</span> provider = <span class="keyword">await</span> FindIdentityProviderAsync(pending.ProviderId);</span><br><span class="line"><span class="keyword">if</span> (provider <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">&#123;</span><br><span class="line">    _logger.LogError(<span class="string">&quot;BridgeCallback rejected. ProviderId=&#123;ProviderId&#125;, Reason=IdentityProviderNotFound.&quot;</span>, pending.ProviderId);</span><br><span class="line">    <span class="keyword">return</span> BadRequest(<span class="string">&quot;身分來源設定不存在。&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//用bridgeCode換回PNP的身分資料&#123;userName, siteCode, tokenId,ticketExpiration&#125;</span></span><br><span class="line"><span class="keyword">var</span> (userName, siteCode, tokenId, ticketExpiration) = <span class="keyword">await</span> RedeemAsync(provider, bridgeCode!);</span><br></pre></td></tr></table></figure>
+
+<p>RedeemAsync 的方法簽章改成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name=&quot;provider&quot;&gt;</span>身分來源設定，之後要呼叫其 RedeemApiUrl<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name=&quot;bridgeCode&quot;&gt;</span>PNP產生，確認通過PNP登入驗證<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Task&lt;(<span class="built_in">string</span> UserName, <span class="built_in">string</span> SiteCode, <span class="built_in">int</span> TokenId, DateTimeOffset TicketExpiration)&gt; RedeemAsync(IdentityProvider provider, <span class="built_in">string</span> bridgeCode)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// TODO（下一步）：改成真的呼叫 provider.RedeemApiUrl</span></span><br><span class="line">    <span class="keyword">return</span> Task.FromResult((<span class="string">&quot;test\\mockuser&quot;</span>, <span class="string">&quot;AS&quot;</span>, <span class="number">1</span>, DateTimeOffset.UtcNow.AddHours(<span class="number">12</span>)));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>CompleteAuthorizationAsync()：把 ProviderId 寫進 principal</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">identity.SetClaim(Claims.Subject, pending.UserName);</span><br><span class="line">identity.SetClaim(<span class="string">&quot;idp&quot;</span>, pending.ProviderId);</span><br><span class="line">identity.SetClaim(<span class="string">&quot;site_code&quot;</span>, pending.SiteCode);</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>Exchange() 的 refresh 分支：依 idp claim 查 provider</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> userName = result.Principal.GetClaim(Claims.Subject);</span><br><span class="line"><span class="keyword">var</span> providerId = result.Principal.GetClaim(<span class="string">&quot;idp&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> tokenIdClaim = result.Principal.GetClaim(<span class="string">&quot;token_id&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> ticketExpirationClaim = result.Principal.GetClaim(<span class="string">&quot;ticket_expiration&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (providerId <span class="keyword">is</span> <span class="literal">null</span> || tokenIdClaim <span class="keyword">is</span> <span class="literal">null</span> || ticketExpirationClaim <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">await</span> RevokeTokenChainAsync(result.Principal);</span><br><span class="line">    <span class="keyword">return</span> RejectRefreshToken(<span class="string">&quot;缺少撤銷檢查所需的 claim。&quot;</span>, userName);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 依token所屬的身分來源，決定要去哪裡查撤銷狀態（設計文件第4.3節第1層）</span></span><br><span class="line"><span class="keyword">var</span> provider = <span class="keyword">await</span> FindIdentityProviderAsync(providerId);</span><br><span class="line"><span class="keyword">if</span> (provider <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">await</span> RevokeTokenChainAsync(result.Principal);</span><br><span class="line">    <span class="keyword">return</span> RejectRefreshToken(<span class="string">&quot;身分來源設定不存在。&quot;</span>, userName);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 第1層：IsTokenActive（目前mock，永遠回傳true；之後改成真的呼叫身分來源）</span></span><br><span class="line"><span class="keyword">var</span> isActive = <span class="keyword">await</span> IsTokenActiveAsync(provider, <span class="built_in">int</span>.Parse(tokenIdClaim));</span><br></pre></td></tr></table></figure>
+
+<p>IsTokenActiveAsync 的方法簽章改成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Task&lt;<span class="built_in">bool</span>&gt; <span class="title">IsTokenActiveAsync</span>(<span class="params">IdentityProvider provider, <span class="built_in">int</span> tokenId</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// TODO：改成真的呼叫 provider.RevocationCheckApiUrl</span></span><br><span class="line">    <span class="keyword">return</span> Task.FromResult(<span class="literal">true</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>建立 migration 並套用</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dotnet ef migrations add AddProviderIdToPendingAuthorizeRequest</span><br><span class="line">dotnet ef database update</span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li>為什麼 bridge-callback 存在 pending 裡，refresh 卻要用 claim：<ul>
+<li>bridge-callback 時，pending 還在，直接從 DB 讀就好。</li>
+<li>refresh 時，pending 早就用完、被清掉了，手上只有 refresh token。所以要在簽發時把 ProviderId 寫進 principal，refresh token 解出來的 principal 才有。</li>
+</ul>
+</li>
+<li>為什麼 claim 叫 idp：這是業界常用的名稱，代表 Identity Provider，Azure AD、IdentityServer 都這樣用。它也會出現在 access token 裡，將來 Resource Server 也能看出這個使用者來自哪個身分來源。</li>
+<li>為什麼 provider 查不到時也要撤銷整條鏈：這代表 token 所屬的身分來源已經被移除或設定錯誤，無法確認使用者是否還有效。依設計文件第 4.3 節，任一層檢查不通過，就要拒絕並撤銷。</li>
+<li>舊的 refresh token 會被拒絕：這一步之前簽發的 refresh token 沒有 idp claim，refresh 時會走「缺少撤銷檢查所需的 claim」那條路被拒絕。這是預期行為，測試時要用改完之後新拿的 token。</li>
+<li>抽出 FindIdentityProviderAsync：現在有 3 個地方需要依 ProviderId 查 provider，抽成一個方法，查詢邏輯只寫一次。</li>
+</ul>
+<p>測試時要注意：用一次完整流程就能驗證所有改動。</p>
+<ol>
+<li>打開新產生的 …_AddProviderIdToPendingAuthorizeRequest.cs，Up() 應該只有對 PendingAuthorizeRequests 新增 ProviderId 欄位。</li>
+<li>跑一次完整流程：&#x2F;connect&#x2F;authorize → bridge-callback → 第二次 &#x2F;connect&#x2F;authorize → &#x2F;connect&#x2F;token（scope 含 offline_access）→ 用 refresh_token 再換一次。</li>
+<li>在第 2 步打完 &#x2F;connect&#x2F;authorize 之後，到 DB 看最新那一筆：<br>SELECT “Nonce”, “ProviderId”, “UserName” FROM “PendingAuthorizeRequests” ORDER BY “ExpiresAt” DESC LIMIT 1;</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯，migration 的 Up() 只新增 ProviderId 欄位。</li>
+<li>第 3 步那筆的 ProviderId 是 pnp。</li>
+<li>access_token 的 payload 裡有 “idp”: “pnp”。</li>
+<li>refresh 回 200，拿到的新 access_token 裡也有 “idp”: “pnp”。</li>
+</ol>
 
       
     </div>

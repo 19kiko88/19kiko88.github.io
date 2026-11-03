@@ -551,3 +551,106 @@ curl.exe -k -s -Z --parallel-immediate -w "%{http_code}\n" -o NUL $url -o NUL $u
    - AlreadyFilledOrExpired：讀取時通過，最後在 UPDATE 被擋下。
 
    如果你看到後面這種，就是 race condition 真的發生了，而且有被擋住。
+
+
+**bridge-callback 加固完成，加上前面幾步，整個 Bridge 流程的參數驗證、單次使用、防覆蓋都已經做好了。**
+
+#
+#
+#
+---
+## 定期清除過期的 PendingAuthorizeRequests（設計文件第 7 節）
+
+這一步在做什麼：每次有人打 /connect/authorize，就會新增一筆 PendingAuthorizeRequest。它 10 分鐘後就過期、沒有用了，但目前沒有任何程式會刪掉它，所以 DB 會一直累積，你之前查的時候已經有 63 筆了。這次加一個背景服務：Server 啟動時先清一次，之後每小時清一次，把已經過期的資料刪掉。
+
+1. 新增檔案 OAuth.AuthorizationServer/Services/PendingAuthorizeRequestCleanupService.cs
+``` csharp
+using Microsoft.EntityFrameworkCore;
+using OAuth.AuthorizationServer.Data;
+
+namespace OAuth.AuthorizationServer.Services;
+
+/// <summary>
+/// 定期清除已過期的 PendingAuthorizeRequest：啟動時先清一次，之後每隔 Interval 清一次
+/// </summary>
+public class PendingAuthorizeRequestCleanupService : BackgroundService
+{
+    private static readonly TimeSpan Interval = TimeSpan.FromHours(1);
+
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<PendingAuthorizeRequestCleanupService> _logger;
+
+    public PendingAuthorizeRequestCleanupService(
+        IServiceScopeFactory scopeFactory,
+        ILogger<PendingAuthorizeRequestCleanupService> logger)
+    {
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        using var timer = new PeriodicTimer(Interval);
+
+        do
+        {
+            try
+            {
+                // DbContext 是 Scoped，背景服務是 Singleton，不能直接注入，每次清除時自己開一個 scope
+                using var scope = _scopeFactory.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AuthorizationServerDbContext>();
+
+                var now = DateTimeOffset.UtcNow;
+                var deleted = await db.PendingAuthorizeRequests
+                    .Where(p => p.ExpiresAt < now)
+                    .ExecuteDeleteAsync(stoppingToken);
+
+                _logger.LogInformation("PendingAuthorizeRequest cleanup completed. Deleted={Deleted}.", deleted);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // 清除失敗不影響主要功能，記 log 後等下一輪再試
+                _logger.LogError(ex, "PendingAuthorizeRequest cleanup failed.");
+            }
+        }
+        while (await timer.WaitForNextTickAsync(stoppingToken));
+    }
+}
+```
+
+2. Program.cs：註冊這個背景服務
+
+最上面加上 using：
+``` csharp
+using OAuth.AuthorizationServer.Services;
+```
+
+在 builder.Services.AddControllers(); 前面加上：
+``` csharp
+// 定期清除過期的 PendingAuthorizeRequest
+builder.Services.AddHostedService<PendingAuthorizeRequestCleanupService>();
+```
+
+幾個重點說明：
+
+- BackgroundService：ASP.NET Core 內建的背景工作基底類別。用 AddHostedService 註冊後，Server 啟動時會自動呼叫 ExecuteAsync，和處理 HTTP 請求互不干擾，一直執行到 Server 關閉。
+- <span style="color: red;">為什麼要用 IServiceScopeFactory，不直接注入 DbContext：背景服務只會建立一次（Singleton），從頭用到尾。DbContext 則是 Scoped，設計上每個請求用一個、用完就丟。直接把 DbContext 注入背景服務會啟動失敗。所以每輪清除時自己開一個 scope，拿一個新的 DbContext，用完就釋放。</span>
+- do { ... } while (await timer.WaitForNextTickAsync(...))：do-while 讓迴圈先執行一次，所以啟動時馬上清一次。PeriodicTimer 則每隔 1 小時讓 WaitForNextTickAsync 回傳 true，進行下一輪。Server 關閉時 stoppingToken 會被取消，迴圈就結束了。
+- ExecuteDeleteAsync：和之前用的 ExecuteUpdateAsync 是同一系列，直接轉成一條 DELETE ... WHERE "ExpiresAt" < @now 送到 DB，不用先把資料讀進記憶體。
+- 為什麼只刪「已過期」的：還沒過期的資料可能是使用者正在進行中的登入流程，例如剛被導去 PNP、還沒回來。如果刪掉，他回來時就會失敗。已經 Used 但還沒過期的資料，最多 10 分鐘後也會過期，下一輪就會被刪掉。
+- 為什麼要 catch：DB 暫時連不上之類的錯誤，不應該讓整個背景服務停掉。記下 log，下一輪再試就好。when (ex is not OperationCanceledException) 是排除「Server 正在關閉」造成的取消，那種情況要讓它正常結束。
+- 將來部署多台主機時：每台都會執行清除，但 DELETE 重複執行不會出問題，最多是後執行的那台刪到 0 筆。
+
+測試時要注意：清除只在啟動時和每小時執行，所以要用重啟 Server 來觸發。
+
+1. 重啟前，先打一次 /connect/authorize，製造一筆還沒過期的資料。然後到 DB 執行：
+SELECT count(*) FILTER (WHERE "ExpiresAt" < now())  AS expired,
+       count(*) FILTER (WHERE "ExpiresAt" >= now()) AS active
+FROM "PendingAuthorizeRequests";
+   記下 expired 和 active 兩個數字。
+2. 10 分鐘內重啟 Server，再執行一次同樣的 SQL。
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 啟動時 Console 出現 PendingAuthorizeRequest cleanup completed. Deleted=N，N 等於第 1 步的 expired。
+3. 第 2 步的 expired 變成 0，active 不變，代表還沒過期的資料沒有被誤刪。

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>建立OAuth-Server-with-OpenIddict-3 | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="接續上一篇…">
+<meta property="og:type" content="article">
+<meta property="og:title" content="建立OAuth-Server-with-OpenIddict-3">
+<meta property="og:url" content="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="接續上一篇…">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/table_compare.jpg">
+<meta property="og:image" content="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/json_join.jpg">
+<meta property="og:image" content="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/call_api_method.jpg">
+<meta property="article:published_time" content="2026-11-03T07:37:17.000Z">
+<meta property="article:modified_time" content="2026-11-03T07:44:28.142Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="OAuth">
+<meta property="article:tag" content="OpenIddict">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/table_compare.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-建立OAuth-Server-with-OpenIddict-3" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/" class="article-date">
+  <time class="dt-published" datetime="2026-11-03T07:37:17.000Z" itemprop="datePublished">2026-11-03</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      建立OAuth-Server-with-OpenIddict-3
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><span id="more"></span>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<h2 id="建資料表，並把-client-綁定到身分來源，將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。"><a href="#建資料表，並把-client-綁定到身分來源，將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。" class="headerlink" title="建資料表，並把 client 綁定到身分來源，將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。"></a>建資料表，並把 client 綁定到身分來源，將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。</h2><p>這一步在做什麼：<br>設計文件的目標之一，是將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。所以「要去哪裡驗證身分」不能寫死成 PNP，要變成一筆筆設定：</p>
+<p>先看一下DB Table [OpenIddictApplications] 跟 [IdentityProvider] 這兩張Table的差異：</p>
+<ul>
+<li>OpenIddictApplications：<span style="color: red;">誰來要 token（OAuth Client）。</span>每個 OAuth Client 記錄自己屬於哪個身分來源(ex：MCP Client)。之後 &#x2F;connect&#x2F;authorize 看到 client_id，就知道要導去哪裡。</li>
+<li>IdentityProvider ：<span style="color: red;">使用者去哪裡驗證身分（身分來源）。</span>每一筆代表一個身分來源，記錄它的模式（Bridge、聯邦、直接驗證）和對接網址。目前只有 PNP 一筆。</li>
+</ul>
+<img src="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/table_compare.jpg" class="" title="table_compare">
+
+<ol>
+<li>新增檔案 Data&#x2F;IdentityProvider.cs</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">OAuth.AuthorizationServer.Data</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">IdentityProvider</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// OpenIddict Application 的 Properties 裡，用這個 key 記錄該 Client 綁定哪個 IdentityProvider</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">const</span> <span class="built_in">string</span> ApplicationPropertyName = <span class="string">&quot;identity_provider_id&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span> ProviderId &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = <span class="literal">default</span>!;      <span class="comment">// 主鍵，例如 &quot;pnp&quot;</span></span><br><span class="line">    <span class="keyword">public</span> IdentityProviderMode Mode &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;          <span class="comment">// 對接模式，見設計文件第6節</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? BridgeUrl &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;                  <span class="comment">// Bridge模式：身分來源的 /sso/bridge</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? RedeemApiUrl &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;               <span class="comment">// Bridge模式：用一次性code換回身分資料</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? RevocationCheckApiUrl &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;      <span class="comment">// refresh時查詢撤銷狀態（第4.3節第1層）</span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? HmacSecretRef &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;              <span class="comment">// 指向金鑰管理機制的參照名稱，不存密鑰明文</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="built_in">enum</span> IdentityProviderMode</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 身分來源的登入狀態存在於其專屬 app 的 cookie/session 中，無法被 Authorization Server 跨網域讀取 | **PNP 採用此模式**</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">    Bridge,</span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 身分來源已有公司既有的集中式 SSO（AD FS / Azure AD / Okta 等標準 OIDC/SAML） | 未來視接入對象而定</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">    Federation,  </span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 身分來源為單純 AD/LDAP 帳密 | 未來視接入對象而定</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">    Direct,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Data&#x2F;AuthorizationServerDbContext.cs：加上 DbSet 和設定</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> DbSet&lt;PendingAuthorizeRequest&gt; PendingAuthorizeRequests =&gt; Set&lt;PendingAuthorizeRequest&gt;();</span><br><span class="line"><span class="keyword">public</span> DbSet&lt;IdentityProvider&gt; IdentityProviders =&gt; Set&lt;IdentityProvider&gt;();</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnModelCreating</span>(<span class="params">ModelBuilder builder</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">base</span>.OnModelCreating(builder);</span><br><span class="line"></span><br><span class="line">    builder.Entity&lt;PendingAuthorizeRequest&gt;().HasKey(p =&gt; p.Nonce);</span><br><span class="line"></span><br><span class="line">    builder.Entity&lt;IdentityProvider&gt;(e =&gt;</span><br><span class="line">    &#123;</span><br><span class="line">        e.HasKey(p =&gt; p.ProviderId);</span><br><span class="line">        <span class="comment">// enum 存成字串（&quot;Bridge&quot;），直接查DB時看得懂，日後調整enum順序也不會讓舊資料對錯值</span></span><br><span class="line">        e.Property(p =&gt; p.Mode).HasConversion&lt;<span class="built_in">string</span>&gt;();</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 讓 OpenIddict 把 Applications/Authorizations/Scopes/Tokens</span></span><br><span class="line">    <span class="comment">// 這四張表的 EF Core 模型註冊進這個 DbContext</span></span><br><span class="line">    builder.UseOpenIddict();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>Program.cs 的 SeedDataAsync：新增 PNP 身分來源，並讓 client 綁定它</li>
+</ol>
+<p>最上面加上 using System.Text.Json;，然後在 const string mcpClientId &#x3D; “pnp-mcp-client”; 前面加上：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> db = scope.ServiceProvider.GetRequiredService&lt;AuthorizationServerDbContext&gt;();</span><br><span class="line"><span class="keyword">const</span> <span class="built_in">string</span> pnpProviderId = <span class="string">&quot;pnp&quot;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">await</span> db.IdentityProviders.FindAsync(pnpProviderId) <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// TODO：網址為本機開發用，正式環境依PCBRepairNavi實際部署位置調整</span></span><br><span class="line">    db.IdentityProviders.Add(<span class="keyword">new</span> IdentityProvider</span><br><span class="line">    &#123;</span><br><span class="line">        ProviderId = pnpProviderId,</span><br><span class="line">        Mode = IdentityProviderMode.Bridge,</span><br><span class="line">        BridgeUrl = <span class="string">&quot;https://localhost:16888/sso/bridge&quot;</span>,</span><br><span class="line">        RedeemApiUrl = <span class="string">&quot;https://localhost:16888/api/internal/sso/redeem&quot;</span>,</span><br><span class="line">        RevocationCheckApiUrl = <span class="string">&quot;https://localhost:16888/api/internal/sso/token-status&quot;</span>,</span><br><span class="line">        HmacSecretRef = <span class="string">&quot;IdentityProviders:Pnp:HmacSecret&quot;</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">await</span> db.SaveChangesAsync();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>client 的部分，把原本的 if (await appManager.FindByClientIdAsync(mcpClientId) is null) { … } 改成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> application = <span class="keyword">await</span> appManager.FindByClientIdAsync(mcpClientId);</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (application <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> descriptor = <span class="keyword">new</span> OpenIddictApplicationDescriptor</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// ...（原本的 ClientId、ClientType、ConsentType、DisplayName、RedirectUris、Permissions 維持不變）</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...（原本的 Permissions.Add 維持不變）</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 綁定這個Client的身分來源</span></span><br><span class="line">    descriptor.Properties[IdentityProvider.ApplicationPropertyName] = JsonSerializer.SerializeToElement(pnpProviderId);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">await</span> appManager.CreateAsync(descriptor);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (!(<span class="keyword">await</span> appManager.GetPropertiesAsync(application)).ContainsKey(IdentityProvider.ApplicationPropertyName))</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 已存在但尚未綁定身分來源的Client（建立於這個欄位出現之前），補上綁定</span></span><br><span class="line">    <span class="keyword">var</span> descriptor = <span class="keyword">new</span> OpenIddictApplicationDescriptor();</span><br><span class="line">    <span class="keyword">await</span> appManager.PopulateAsync(descriptor, application);</span><br><span class="line">    descriptor.Properties[IdentityProvider.ApplicationPropertyName] = JsonSerializer.SerializeToElement(pnpProviderId);</span><br><span class="line">    <span class="keyword">await</span> appManager.UpdateAsync(application, descriptor);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>建立 migration 並套用到 DB</li>
+</ol>
+<p>在 OAuth.AuthorizationServer 資料夾下執行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dotnet ef migrations add AddIdentityProvider</span><br><span class="line">dotnet ef database update</span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li><span style="color: red;">Client 綁定為什麼存在 Properties，而不是新增一個欄位：OpenIddictApplications 這張表的 entity 是 OpenIddict 套件定義的，不是我們的。要加欄位，必須自己繼承它的 entity 類別，再替換掉 OpenIddict 預設的 entity，改動很大。</span>OpenIddict 本來就提供 Properties 這個 JSON 欄位，專門讓使用者存自訂資料，用它最省事。DB 裡會看到 {“identity_provider_id”:”pnp”}。</li>
+<li>JsonSerializer.SerializeToElement(…)：Properties 的值型別是 JsonElement，所以要先把字串 “pnp” 轉成 JsonElement 才能放進去。</li>
+<li>為什麼 client 要多一個 else if 分支：你 DB 裡的 pnp-mcp-client 早就建好了。如果只改「不存在才新增」那段，它永遠不會被補上綁定。PopulateAsync 會把現有資料讀進 descriptor，加上綁定後再 UpdateAsync 寫回去，其他設定都不受影響。</li>
+<li>HmacSecretRef 存的是「參照名稱」，不是密鑰本身：設計文件第 9.1 節規定密鑰不能明文存在 DB 或設定檔。這裡只記「去哪裡拿」，例如將來的 KeyVault 名稱。真正讀取密鑰，是做 Redeem 那一步的事。</li>
+<li>RevocationCheckApiUrl 的路徑是暫定的：PNP 端的撤銷查詢端點還沒定名稱，先用 token-status 佔位。</li>
+<li>這一步不會改變任何流程行為：Authorize() 還是讀 appsettings 的 BridgeUrl，下一步才會切換。</li>
+</ul>
+<p>測試時要注意：這一步只需要看 DB。</p>
+<ol>
+<li>dotnet ef migrations add 執行後，Migrations 資料夾多出 …_AddIdentityProvider.cs。打開看一下，Up() 裡應該只有建立 IdentityProviders 表，不應該動到其他表。</li>
+<li>dotnet ef database update 之後重啟 Server，到 DB 執行：<br>SELECT * FROM “IdentityProviders”;<br>SELECT “ClientId”, “Properties” FROM “OpenIddictApplications”;</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯，migration 的 Up() 只有建立 IdentityProviders 表。</li>
+<li>IdentityProviders 有 1 筆 pnp，Mode 是字串 Bridge。</li>
+<li>pnp-mcp-client 的 Properties 是 {“identity_provider_id”:”pnp”}。</li>
+</ol>
+<p><span style="color: red;">總結一下這段在做什麼：</span><br>OpenIddictApplications.Properties這個欄位可以拿來擴充OpenIddictApplications這個Table的欄位，不用異動到OpenIddict 套件定義好的 Entity。(先前有提到過)<br>我們可以用OpenIddictApplications.Properties的identity_provider_id的屬性值[pnp]來join到IdentityProviders.ProviderId</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> a.&quot;ClientId&quot;, p.&quot;ProviderId&quot;, p.&quot;Mode&quot;, p.&quot;BridgeUrl&quot;, a.&quot;Properties&quot; </span><br><span class="line"><span class="keyword">FROM</span> &quot;OpenIddictApplications&quot; a</span><br><span class="line"><span class="keyword">JOIN</span> &quot;IdentityProviders&quot; p</span><br><span class="line"><span class="keyword">ON</span> p.&quot;ProviderId&quot; <span class="operator">=</span> a.&quot;Properties&quot;::jsonb <span class="operator">-</span><span class="operator">&gt;&gt;</span> <span class="string">&#x27;identity_provider_id&#x27;</span>;</span><br></pre></td></tr></table></figure>
+<img src="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/json_join.jpg" class="" title="json_join">
+
+<h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
+<h2 id="connect-authorize-改成依-client-id-去-DB-查身分來源，取代-appsettings-裡寫死的-BridgeUrl"><a href="#connect-authorize-改成依-client-id-去-DB-查身分來源，取代-appsettings-裡寫死的-BridgeUrl" class="headerlink" title="&#x2F;connect&#x2F;authorize 改成依 client_id 去 DB 查身分來源，取代 appsettings 裡寫死的 BridgeUrl"></a>&#x2F;connect&#x2F;authorize 改成依 client_id 去 DB 查身分來源，取代 appsettings 裡寫死的 BridgeUrl</h2><p>這一步在做什麼：目前 Authorize() 第一次經過時，是讀 appsettings.json 的 IdentityProviders:Pnp:BridgeUrl。不管是哪個 client 來，都一律導去 PNP。這次改成上一則說的查詢順序：</p>
+<p>client_id → OpenIddictApplications.Properties.identity_provider_id → IdentityProviders → BridgeUrl</p>
+<p>改完之後，要新增身分來源或改 Bridge 網址，只要改 DB 資料，不用改程式。這就是設計文件第 6 節「核心協定邏輯不寫死任何特定身分來源」的意思。</p>
+<ol>
+<li>AuthorizationController.cs：注入 IOpenIddictApplicationManager</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">readonly</span> IOpenIddictApplicationManager _applicationManager;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">AuthorizationController</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">    AuthorizationServerDbContext db,</span></span></span><br><span class="line"><span class="params"><span class="function">    IConfiguration configuration,</span></span></span><br><span class="line"><span class="params"><span class="function">    ILogger&lt;AuthorizationController&gt; logger,</span></span></span><br><span class="line"><span class="params"><span class="function">    IOpenIddictApplicationManager applicationManager,</span></span></span><br><span class="line"><span class="params"><span class="function">    IOpenIddictScopeManager scopeManager,</span></span></span><br><span class="line"><span class="params"><span class="function">    IOpenIddictAuthorizationManager authorizationManager,</span></span></span><br><span class="line"><span class="params"><span class="function">    IOpenIddictTokenManager tokenManager</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    _db = db;</span><br><span class="line">    _configuration = configuration;</span><br><span class="line">    _logger = logger;</span><br><span class="line">    _applicationManager = applicationManager;</span><br><span class="line">    _scopeManager = scopeManager;</span><br><span class="line">    _authorizationManager = authorizationManager;</span><br><span class="line">    _tokenManager = tokenManager;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Authorize()：把讀 appsettings 的那段換掉<br>原本：</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第一次經過：還沒驗證身分，暫存原始請求，導去 PCBRepairNavi 的 Bridge</span></span><br><span class="line"><span class="keyword">var</span> bridgeBaseUrl = _configuration[<span class="string">&quot;IdentityProviders:Pnp:BridgeUrl&quot;</span>]</span><br><span class="line">    ?? <span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">&quot;找不到設定 &#x27;IdentityProviders:Pnp:BridgeUrl&#x27;&quot;</span>);</span><br></pre></td></tr></table></figure>
+<p>改成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 第一次經過：還沒驗證身分，依 client_id 查出綁定的身分來源（設計文件第6節），決定要導去哪裡驗證</span></span><br><span class="line"><span class="keyword">var</span> provider = <span class="keyword">await</span> ResolveIdentityProviderAsync(request.ClientId!);</span><br><span class="line"><span class="keyword">if</span> (provider <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">&#123;</span><br><span class="line">    _logger.LogError(<span class="string">&quot;Authorize rejected. ClientId=&#123;ClientId&#125;, Reason=IdentityProviderNotConfigured.&quot;</span>, request.ClientId);</span><br><span class="line">    <span class="keyword">return</span> BadRequest(<span class="string">&quot;此 Client 未設定身分來源。&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 目前只實作 Bridge 模式；聯邦/直接驗證模式待有實際接入對象時再實作</span></span><br><span class="line"><span class="keyword">if</span> (provider.Mode != IdentityProviderMode.Bridge || <span class="built_in">string</span>.IsNullOrEmpty(provider.BridgeUrl))</span><br><span class="line">&#123;</span><br><span class="line">    _logger.LogError(</span><br><span class="line">        <span class="string">&quot;Authorize rejected. ClientId=&#123;ClientId&#125;, ProviderId=&#123;ProviderId&#125;, Mode=&#123;Mode&#125;, Reason=UnsupportedIdentityProvider.&quot;</span>,</span><br><span class="line">        request.ClientId, provider.ProviderId, provider.Mode);</span><br><span class="line">    <span class="keyword">return</span> BadRequest(<span class="string">&quot;此 Client 的身分來源設定不支援。&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> bridgeBaseUrl = provider.BridgeUrl;</span><br></pre></td></tr></table></figure>
+<p>下面 GenerateNonce()、建立 pending、組 bridgeUrl 的部分都維持不變。</p>
+<ol start="3">
+<li>新增一個 private 方法</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 依 client_id 查出該 Client 綁定的身分來源：</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> OpenIddictApplications.Properties.identity_provider_id → IdentityProviders.ProviderId</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;returns&gt;</span>找不到綁定、或綁定的身分來源不存在時回傳 null<span class="doctag">&lt;/returns&gt;</span></span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">async</span> Task&lt;IdentityProvider?&gt; ResolveIdentityProviderAsync(<span class="built_in">string</span> clientId)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> application = <span class="keyword">await</span> _applicationManager.FindByClientIdAsync(clientId);</span><br><span class="line">    <span class="keyword">if</span> (application <span class="keyword">is</span> <span class="literal">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> properties = <span class="keyword">await</span> _applicationManager.GetPropertiesAsync(application);</span><br><span class="line">    <span class="keyword">if</span> (!properties.TryGetValue(IdentityProvider.ApplicationPropertyName, <span class="keyword">out</span> <span class="keyword">var</span> element)</span><br><span class="line">        || element.ValueKind != JsonValueKind.String)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> providerId = element.GetString();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">await</span> _db.IdentityProviders.AsNoTracking().FirstOrDefaultAsync(p =&gt; p.ProviderId == providerId);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>appsettings.json：刪掉不再使用的設定<br>把整個 “IdentityProviders”: { “Pnp”: { “BridgeUrl”: … } } 區塊刪掉。之後做 HMAC 那一步時，會再加回密鑰相關的設定。</li>
+</ol>
+<p>幾個重點說明：</p>
+<ul>
+<li>ResolveIdentityProviderAsync 就是上一則那段 SQL join 的 C# 版本：先用 client_id 找到 client，從 Properties 讀出 identity_provider_id，再拿去查 IdentityProviders。因為沒有外鍵保護，每一關都要檢查查不到的情況，查不到就回傳 null。</li>
+<li>element.ValueKind !&#x3D; JsonValueKind.String：Properties 的值是 JsonElement，理論上可能被人存成數字或物件。先確認它是字串，再呼叫 GetString()，避免丟例外。</li>
+<li>為什麼放在建立 pending 之前：設定有問題時直接拒絕，不會在 DB 留下一筆沒用的 pending。</li>
+<li>為什麼用 LogError，不是之前常用的 LogWarning：之前的 LogWarning 大多是「請求有問題」，例如參數被竄改、nonce 過期，可能是攻擊或使用者操作問題。這次是「Server 設定有問題」，維運人員必須去修，所以等級較高。</li>
+<li>為什麼 Mode 不是 Bridge 就拒絕：聯邦和直接驗證模式還沒實作。將來實作時，就在這裡依 provider.Mode 分流，導去不同的地方。</li>
+<li>IConfiguration 先保留：這一步之後 _configuration 暫時沒用到，但之後讀 HMAC 密鑰還會用到，所以先不刪。</li>
+<li>還沒做的部分：這一步只讓「導去哪裡」改成依 DB 決定。bridge-callback 的 Redeem、refresh 的撤銷查詢也需要知道是哪個身分來源，那些留到「真正呼叫 PNP API」那一步一起改。</li>
+</ul>
+<p>測試時要注意：第 2 項會暫時修改 DB 資料，測完記得改回來。</p>
+<ol>
+<li>確認導向的網址真的是從 DB 讀的：<ul>
+<li>先打一次 &#x2F;connect&#x2F;authorize，確認還是 302 導向 <a target="_blank" rel="noopener" href="https://localhost:16888/sso/bridge?...%E3%80%82">https://localhost:16888/sso/bridge?...。</a></li>
+<li>到 DB 暫時把 Bridge 網址改成 16889：<br>UPDATE “IdentityProviders” SET “BridgeUrl” &#x3D; ‘<a target="_blank" rel="noopener" href="https://localhost:16889/sso/bridge">https://localhost:16889/sso/bridge</a>‘ WHERE “ProviderId” &#x3D; ‘pnp’;</li>
+<li>不要重啟 Server，再打一次 &#x2F;connect&#x2F;authorize。</li>
+<li>改回來：<br>UPDATE “IdentityProviders” SET “BridgeUrl” &#x3D; ‘<a target="_blank" rel="noopener" href="https://localhost:16888/sso/bridge">https://localhost:16888/sso/bridge</a>‘ WHERE “ProviderId” &#x3D; ‘pnp’;</li>
+</ul>
+</li>
+<li>確認綁定錯誤時會被擋下：<ul>
+<li>暫時把 client 綁定到一個不存在的身分來源：<br>UPDATE “OpenIddictApplications” SET “Properties” &#x3D; ‘{“identity_provider_id”:”nope”}’ WHERE “ClientId” &#x3D; ‘pnp-mcp-client’;</li>
+<li>重啟 Server 後打一次 &#x2F;connect&#x2F;authorize。<span style="color: red;">這裡要重啟，是因為 OpenIddict 會把 client 資料快取在記憶體裡，不重啟可能讀到舊值。</span>第 1 項的 IdentityProviders 是我們自己用 AsNoTracking 查的，沒有快取，所以不用重啟。</li>
+<li>改回來，再重啟一次：<br>UPDATE “OpenIddictApplications” SET “Properties” &#x3D; ‘{“identity_provider_id”:”pnp”}’ WHERE “ClientId” &#x3D; ‘pnp-mcp-client’;</li>
+</ul>
+</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯。</li>
+<li>第 1 項改成 16889 之後，不重啟就導向 <a target="_blank" rel="noopener" href="https://localhost:16889/sso/bridge?...%EF%BC%8C%E8%AD%89%E6%98%8E%E7%B6%B2%E5%9D%80%E6%98%AF%E5%BE%9E">https://localhost:16889/sso/bridge?...，證明網址是從</a> DB 讀的，不是 appsettings。</li>
+<li>第 2 項回 400「此 Client 未設定身分來源」，Console 有 Reason&#x3D;IdentityProviderNotConfigured。</li>
+<li>兩項都改回來之後，&#x2F;connect&#x2F;authorize 恢復導向 16888。</li>
+</ol>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<h2 id="讓「身分來源」跟著整個流程走，bridge-callback-和-refresh-都知道該找哪個身分來源"><a href="#讓「身分來源」跟著整個流程走，bridge-callback-和-refresh-都知道該找哪個身分來源" class="headerlink" title="讓「身分來源」跟著整個流程走，bridge-callback 和 refresh 都知道該找哪個身分來源"></a>讓「身分來源」跟著整個流程走，bridge-callback 和 refresh 都知道該找哪個身分來源</h2><p>這一步在做什麼：上一步只有 Authorize() 第一次經過時會查身分來源。但流程中還有兩個地方，將來也要呼叫身分來源的 API：</p>
+<img src="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/call_api_method.jpg" class="" title="call_api_method">
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/" data-id="cmw0dw1lz0000qgn1c1hz5kik" data-title="建立OAuth-Server-with-OpenIddict-3" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/11/02/PKCE-code-challenge-code-verifier%E9%96%93%E7%9A%84%E9%97%9C%E4%BF%82/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">PKCE. code_challenge. code_verifier間的關係</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Google-Cloud/">Google Cloud</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Trouble-Shooting/">Trouble Shooting</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CDN/" rel="tag">CDN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-App-Script/" rel="tag">Google App Script</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Auth-Platform/" rel="tag">Google Auth Platform</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IAP/" rel="tag">IAP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MCP/" rel="tag">MCP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" rel="tag">物件導向</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 16px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 18px;">Angular</a> <a href="/tags/CDN/" style="font-size: 10px;">CDN</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Google-App-Script/" style="font-size: 12px;">Google App Script</a> <a href="/tags/Google-Auth-Platform/" style="font-size: 10px;">Google Auth Platform</a> <a href="/tags/IAP/" style="font-size: 10px;">IAP</a> <a href="/tags/MCP/" style="font-size: 10px;">MCP</a> <a href="/tags/OAuth/" style="font-size: 16px;">OAuth</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/OpenIddict/" style="font-size: 16px;">OpenIddict</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 14px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 14px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 14px;">docker</a> <a href="/tags/n8n/" style="font-size: 14px;">n8n</a> <a href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" style="font-size: 10px;">物件導向</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/11/">November 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/10/">October 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/">建立OAuth-Server-with-OpenIddict-3</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/02/PKCE-code-challenge-code-verifier%E9%96%93%E7%9A%84%E9%97%9C%E4%BF%82/">PKCE. code_challenge. code_verifier間的關係</a>
+          </li>
+        
+          <li>
+            <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/">建立OAuth Server with OpenIddict(2)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/10/27/OpenIddict-%E6%B8%AC%E8%A9%A6/">OpenIddict 測試</a>
+          </li>
+        
+          <li>
+            <a href="/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-1/">建立OAuth Server with OpenIddict(1)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

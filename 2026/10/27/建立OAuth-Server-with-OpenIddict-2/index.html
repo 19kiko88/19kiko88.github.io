@@ -31,7 +31,7 @@
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/race_condition.jpg">
 <meta property="og:image" content="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/table_compare.jpg">
 <meta property="article:published_time" content="2026-10-27T09:44:03.000Z">
-<meta property="article:modified_time" content="2026-11-03T06:06:38.937Z">
+<meta property="article:modified_time" content="2026-11-03T06:10:01.738Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -450,7 +450,7 @@
 <p>先看一下DB Table [OpenIddictApplications] 跟 [IdentityProvider] 這兩張Table的差異：</p>
 <ul>
 <li>OpenIddictApplications：<span style="color: red;">誰來要 token（OAuth Client）。</span>每個 OAuth Client 記錄自己屬於哪個身分來源(ex：MCP Client)。之後 &#x2F;connect&#x2F;authorize 看到 client_id，就知道要導去哪裡。</li>
-<li>IdentityProvider ：&lt;&#x2F;span style&#x3D;”color: red;”&gt;使用者去哪裡驗證身分（身分來源）。</span>每一筆代表一個身分來源，記錄它的模式（Bridge、聯邦、直接驗證）和對接網址。目前只有 PNP 一筆。</li>
+<li>IdentityProvider ：<span style="color: red;">使用者去哪裡驗證身分（身分來源）。</span>每一筆代表一個身分來源，記錄它的模式（Bridge、聯邦、直接驗證）和對接網址。目前只有 PNP 一筆。</li>
 </ul>
 <img src="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/table_compare.jpg" class="" title="table_compare">
 

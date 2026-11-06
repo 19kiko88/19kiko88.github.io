@@ -681,4 +681,223 @@ https://localhost:16888/sso/bridge?return_url=https%3A%2F%2Fevil.example%2Fcb&no
 3. 第 2 項回 400「return_url 不在白名單內」。
 4. 第 3 項回 401，MockPnp 的 Console 有 Reason=MissingTimestamp。
 
-**到目前為止。MockPnp 完成了：Bridge 能自動跑完整條鏈，白名單和簽章驗證也都正常擋下。**
+到目前為止。MockPnp 完成了：Bridge 能自動跑完整條鏈，白名單和簽章驗證也都正常擋下。<span style="color: red;">也代表從OAuth Server成功拿到了Authorization Code了。</span>
+#
+#
+#
+---
+## Authorization Server 的 RedeemAsync 改成真的呼叫 Redeem API，並簽上 HMAC
+
+這一步在做什麼：<span style="color: red;">目前 BridgeCallback() 拿到 bridgeCode 之後，呼叫的 RedeemAsync 是 mock，固定回傳 test\mockuser，完全沒有用到 bridgeCode。</span>這次改成真的照上一步定好的格式呼叫身分來源的 RedeemApiUrl：
+
+POST {provider.RedeemApiUrl}
+X-Timestamp: <現在的 unix 秒數>
+X-Signature: HMAC-SHA256(密鑰, "timestamp\nPOST\npath\nsha256(body)")
+{ "code": "<bridgeCode>", "nonce": "<nonce>" }
+
+呼叫外部 API 的邏輯（組請求、簽章、讀密鑰）抽成一個獨立的 IdentityProviderClient 類別，不放在 Controller 裡。下一步做撤銷查詢時，也會用同一個類別和同一套簽章邏輯。
+
+1. 把 HMAC 密鑰設進 Authorization Server 的 user-secrets<span style="color: red;">(上個步驟的HMAC，是存在MOCK_Pnp的，兩邊的HMAC需一致。)</span>
+
+值要和 MockPnp 的完全一樣。可以先用 dotnet user-secrets list --project OAuth.MockPnp 查出來，然後在 D:\Homer\Project\OAuth 下執行：
+``` bash
+dotnet user-secrets init --project OAuth.AuthorizationServer
+dotnet user-secrets set "IdentityProviders:Pnp:HmacSecret" "<和MockPnp相同的值>" --project OAuth.AuthorizationServer
+```
+
+可以在這先確認Mock_Pnp跟OAuth Server兩邊的HMAC是否一致
+``` bash
+dotnet user-secrets list --project OAuth.AuthorizationServer
+dotnet user-secrets list --project OAuth.MockPnp
+```
+
+2. 新增檔案 OAuth.AuthorizationServer/Services/IdentityProviderClient.cs
+
+``` csharp
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using OAuth.AuthorizationServer.Data;
+
+namespace OAuth.AuthorizationServer.Services;
+
+/// <summary>
+/// 呼叫身分來源（如PCBRepairNavi）的內部API：組請求、附上HMAC簽章（設計文件第4.2節）
+/// </summary>
+public class IdentityProviderClient
+{
+    private readonly HttpClient _httpClient;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger<IdentityProviderClient> _logger;
+
+    public IdentityProviderClient(
+        HttpClient httpClient,
+        IConfiguration configuration,
+        ILogger<IdentityProviderClient> logger)
+    {
+        _httpClient = httpClient;
+        _configuration = configuration;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// 用一次性 bridgeCode 換回身分資料
+    /// </summary>
+    /// <returns>Redeem 失敗（簽章錯誤、code無效、網路錯誤等）時回傳 null</returns>
+    public async Task<RedeemResult?> RedeemAsync(IdentityProvider provider, string bridgeCode, string nonce)
+    {
+        var body = JsonSerializer.Serialize(new { code = bridgeCode, nonce }, JsonSerializerOptions.Web);
+        using var request = CreateSignedRequest(provider, HttpMethod.Post, provider.RedeemApiUrl, body);
+
+        try
+        {
+            using var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Redeem failed. ProviderId={ProviderId}, StatusCode={StatusCode}.",
+                    provider.ProviderId, (int)response.StatusCode);
+                return null;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<RedeemResult>(JsonSerializerOptions.Web);
+            if (result is null || string.IsNullOrEmpty(result.UserName))
+            {
+                _logger.LogWarning("Redeem failed. ProviderId={ProviderId}, Reason=InvalidResponse.", provider.ProviderId);
+                return null;
+            }
+
+            return result;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            // 連不上身分來源或逾時
+            _logger.LogError(ex, "Redeem failed. ProviderId={ProviderId}, Reason=RequestError.", provider.ProviderId);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// 建立附有 X-Timestamp、X-Signature 的請求
+    /// </summary>
+    private HttpRequestMessage CreateSignedRequest(IdentityProvider provider, HttpMethod method, string? url, string body)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps)
+        {
+            // 設計文件第4.2節：僅接受HTTPS
+            throw new InvalidOperationException($"身分來源 '{provider.ProviderId}' 的 API 網址未設定或不是 HTTPS。");
+        }
+
+        // HmacSecretRef 是設定的 key 名稱，實際密鑰從設定讀取（開發環境：user-secrets；正式環境：金鑰管理機制）
+        var secret = string.IsNullOrEmpty(provider.HmacSecretRef) ? null : _configuration[provider.HmacSecretRef];
+        if (string.IsNullOrEmpty(secret))
+        {
+            throw new InvalidOperationException($"找不到身分來源 '{provider.ProviderId}' 的 HMAC 密鑰設定。");
+        }
+
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        var request = new HttpRequestMessage(method, uri)
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json"),
+        };
+        request.Headers.Add("X-Timestamp", timestamp.ToString());
+        request.Headers.Add("X-Signature", ComputeSignature(secret, timestamp, method.Method, uri.AbsolutePath, body));
+
+        return request;
+    }
+
+    // 簽章內容：timestamp\nmethod\npath\nsha256(body)，必須與身分來源端的驗證格式完全一致
+    private static string ComputeSignature(string secret, long timestamp, string method, string path, string body)
+    {
+        var bodyHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(body)));
+        var canonical = $"{timestamp}\n{method}\n{path}\n{bodyHash}";
+        var signature = HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(canonical));
+        return Convert.ToBase64String(signature);
+    }
+}
+
+public record RedeemResult(string UserName, string SiteCode, int TokenId, long TicketExpiration);
+```
+
+3. Program.cs：註冊 IdentityProviderClient
+
+在 AddHostedService<PendingAuthorizeRequestCleanupService>() 下面加上：
+``` csharp
+// 呼叫身分來源內部API（Redeem、撤銷查詢）用的HttpClient
+builder.Services.AddHttpClient<IdentityProviderClient>(client => client.Timeout = TimeSpan.FromSeconds(10));
+```
+
+4. AuthorizationController.cs：改用 IdentityProviderClient
+
+建構子把不再使用的 IConfiguration 換成 IdentityProviderClient：
+``` csharp
+private readonly AuthorizationServerDbContext _db;
+private readonly ILogger<AuthorizationController> _logger;
+private readonly IdentityProviderClient _identityProviderClient;
+// ...（其他 manager 欄位維持不變）
+
+public AuthorizationController(
+    AuthorizationServerDbContext db,
+    ILogger<AuthorizationController> logger,
+    IdentityProviderClient identityProviderClient,
+    IOpenIddictApplicationManager applicationManager,
+    IOpenIddictScopeManager scopeManager,
+    IOpenIddictAuthorizationManager authorizationManager,
+    IOpenIddictTokenManager tokenManager)
+{
+    _db = db;
+    _logger = logger;
+    _identityProviderClient = identityProviderClient;
+    // ...（其他 manager 的指派維持不變）
+}
+```
+
+檔案最上面要加 using OAuth.AuthorizationServer.Services;。
+
+BridgeCallback() 裡原本呼叫 mock 的那一行：
+``` csharp
+var (userName, siteCode, tokenId, ticketExpiration) = await RedeemAsync(provider, bridgeCode!);
+```
+
+換成：
+``` csharp
+//用bridgeCode換回身分資料{userName, siteCode, tokenId, ticketExpiration}
+var redeem = await _identityProviderClient.RedeemAsync(provider, bridgeCode!, nonce!);
+if (redeem is null)
+{
+    _logger.LogWarning("BridgeCallback rejected. ProviderId={ProviderId}, Reason=RedeemFailed.", provider.ProviderId);
+    return BadRequest("身分驗證失敗，請重新登入。");
+}
+
+var (userName, siteCode, tokenId, ticketExpirationUnix) = redeem;
+var ticketExpiration = DateTimeOffset.FromUnixTimeSeconds(ticketExpirationUnix);
+```
+最後把舊的 private static Task<...> RedeemAsync(IdentityProvider provider, string bridgeCode) 整個方法刪掉。
+
+幾個重點說明：
+
+- AddHttpClient<IdentityProviderClient>：這是 ASP.NET Core 建議的 HttpClient 用法（typed client）。框架會自動建立、重複使用底層連線，再注入 IdentityProviderClient。不建議自己 new HttpClient()，那樣用久了可能把連線用光。
+- Timeout = 10 秒：PNP 沒有回應時，最多等 10 秒就放棄。否則使用者的瀏覽器會一直轉圈。
+- 為什麼 nonce 也要送：這就是上一步 MockPnp 檢查的 NonceMismatch。PNP 會確認這個 bridgeCode 是為這個 nonce 發的。
+- 簽章用 uri.AbsolutePath：只取路徑，例如 /api/internal/sso/redeem，不含主機名稱和 query string，和 MockPnp 那邊的 request.Path 一致。兩邊用來簽章的內容只要差一個字元，簽章就對不上。
+- Redeem 失敗時回傳 null，不丟例外：簽章錯誤、code 無效、連不上 PNP，都是「這次登入失敗」，由 Controller 回 400 給使用者重新登入就好。只有「設定錯誤」（網址不是 HTTPS、找不到密鑰）才丟例外，因為那需要維運人員修正，不是使用者重試能解決的。
+- Redeem 失敗時 pending 不作廢：pending 還沒被回填，10 分鐘內可以重新走一次 PNP。現在 PNP 會比對 bridgeCode 和 nonce，攻擊者沒辦法用別人的 code 搭上這個 nonce。
+- var (userName, ...) = redeem;：record 可以直接解構成多個變數，後面 ExecuteUpdateAsync 用到的變數名稱和型別都和原本一樣，所以那段不用改。
+
+測試時要注意：兩個專案都要跑，Follow redirects 開著。
+
+1. 正常流程：送一次 /connect/authorize，從最後的 Location 複製 code，再到 /connect/token 換 token。
+2. 密鑰錯誤：
+   - 把 Authorization Server 的密鑰暫時改成錯的值：
+dotnet user-secrets set "IdentityProviders:Pnp:HmacSecret" "wrong-secret" --project OAuth.AuthorizationServer
+   - 重啟 Authorization Server，再送一次 /connect/authorize。
+   - 測完改回正確的值，再重啟。
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 第 1 項換到 token，MockPnp 的 Console 這次會出現 Redeem succeeded. UserName=test\mockuser，代表 Authorization Server 真的去呼叫了 Redeem API。
+{% asset_image mock_pnp_3.jpg mock_pnp_3 %}
+
+3. 第 2 項最後停在 bridge-callback，回 400「身分驗證失敗，請重新登入」：
+   - MockPnp 的 Console 有 Reason=InvalidSignature。
+   - Authorization Server 的 Console 有 Redeem failed ... StatusCode=401 和 Reason=RedeemFailed。

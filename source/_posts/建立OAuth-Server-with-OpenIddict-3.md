@@ -438,3 +438,247 @@ dotnet ef database update
 2. 第 3 步那筆的 ProviderId 是 pnp。
 3. <span style="color: red">access_token 的 payload 裡有 "idp": "pnp"。</span>
 4. <span style="color: red">refresh 回 200，拿到的新 access_token 裡也有 "idp": "pnp"。</span>
+#
+#
+#
+---
+## 建立 MockPnp 專案，模擬 PCBRepairNavi 的 /sso/bridge 和 Redeem API
+
+這一步在做什麼：建一個小專案跑在 https://localhost:16888，代替還沒實作的 PNP 端。做完之後：
+- /connect/authorize 導去 16888 時，終於有程式在接了。開著 Follow redirects，送一次 /connect/authorize 就會自動一路跑到拿到 code，不用再手動扮演 PNP。
+- Redeem API 會照剛才定的格式驗證 HMAC 簽章，也會比對 bridgeCode 是不是為這個 nonce 發的，補上之前提過的綁定漏洞。
+- 將來 PNP 團隊實作真正的端點時，可以拿這個專案當作 API 規格的參考。
+
+這一步 Authorization Server 完全不用改，RedeemAsync 還是 mock。
+
+1. 建立專案並加進方案
+
+在 D:\Homer\Project\OAuth 下執行：
+``` bash
+dotnet new web -n OAuth.MockPnp -f net10.0
+dotnet sln OAuth.slnx add OAuth.MockPnp
+```
+
+2. OAuth.MockPnp/Properties/launchSettings.json：把 https profile 的網址改成 16888
+``` json
+"https": {
+  "commandName": "Project",
+  "dotnetRunMessages": true,
+  "launchBrowser": false,
+  "applicationUrl": "https://localhost:16888",
+  "environmentVariables": {
+    "ASPNETCORE_ENVIRONMENT": "Development"
+  }
+}
+```
+
+3. OAuth.MockPnp/appsettings.json：加上 Sso 區塊
+``` json
+{
+  "Sso": {
+    "AllowedReturnUrls": [ "https://localhost:7280/connect/authorize/bridge-callback" ],
+    "TicketLifetimeSeconds": 43200
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+
+4. 產生 HMAC 共用密鑰，存進 user-secrets
+
+先產生一組隨機密鑰（Windows PowerShell 5.1 可用）：
+``` bash
+$b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
+
+把輸出的字串記下來，下一步 Authorization Server 也要設定同一組。然後在 OAuth.MockPnp 資料夾下執行：
+``` bash
+dotnet user-secrets init
+dotnet user-secrets set "Sso:HmacSecret" "<剛才產生的字串>"
+```
+
+5. OAuth.MockPnp/Program.cs：整個檔案換成下面這樣
+``` csharp
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.WebUtilities;
+
+// 模擬 PCBRepairNavi 的 SSO 端點，僅供本機開發測試 Authorization Server 使用。
+// 真正的 PNP 端（.NET Framework 4.7.2）實作時，以這裡的 API 格式為準。
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+//HMAC，OAuth.AuthorizationServer跟OAuth.MockPnp 共用同一個 secret
+var hmacSecret = builder.Configuration["Sso:HmacSecret"]
+    ?? throw new InvalidOperationException("找不到設定 'Sso:HmacSecret'");
+var allowedReturnUrls = builder.Configuration.GetSection("Sso:AllowedReturnUrls").Get<string[]>() ?? [];
+var ticketLifetime = TimeSpan.FromSeconds(builder.Configuration.GetValue("Sso:TicketLifetimeSeconds", 43200));
+
+// 一次性 bridge code，key 存 code 的 SHA256 而不是原值。真正的 PNP 端要存在 SQL Server（多主機共用）
+var bridgeCodes = new ConcurrentDictionary<string, BridgeCodeEntry>();
+
+app.MapGet("/sso/bridge", (string? return_url, string? nonce) =>
+{
+    // return_url 必須完全符合白名單（設計文件第4.1節）
+    if (string.IsNullOrEmpty(return_url) || !allowedReturnUrls.Contains(return_url, StringComparer.Ordinal))
+    {
+        app.Logger.LogWarning("Bridge rejected. Reason=ReturnUrlNotAllowed, ReturnUrl={ReturnUrl}.", return_url);
+        return Results.BadRequest("return_url 不在白名單內。");
+    }
+
+    if (string.IsNullOrEmpty(nonce))
+    {
+        return Results.BadRequest("缺少 nonce。");
+    }
+
+    // 真正的 PNP：FormsAuthentication.Decrypt(.ASPXAUTH) → IsTokenActive，沒登入就導去 /Account/Login
+    // Mock：一律視為 test\mockuser 已登入
+    var code = Base64Url(RandomNumberGenerator.GetBytes(32));
+    bridgeCodes[Sha256Hex(code)] = new BridgeCodeEntry(
+        Nonce: nonce,
+        ExpiresAt: DateTimeOffset.UtcNow.AddSeconds(60),
+        UserName: "test\\mockuser",
+        SiteCode: "AS",
+        TokenId: 1,
+        TicketExpiration: DateTimeOffset.UtcNow.Add(ticketLifetime));
+
+    app.Logger.LogInformation("Bridge succeeded. Nonce={Nonce}, bridge code issued.", nonce);
+
+    return Results.Redirect(QueryHelpers.AddQueryString(return_url, new Dictionary<string, string?>
+    {
+        ["bridgeCode"] = code,
+        ["nonce"] = nonce,
+    }));
+});
+
+app.MapPost("/api/internal/sso/redeem", async (HttpRequest request) =>
+{
+    // 簽章要對「原始 body」計算，所以先讀成字串，驗完簽章才反序列化
+    using var reader = new StreamReader(request.Body, Encoding.UTF8);
+    var body = await reader.ReadToEndAsync();
+
+    if (!VerifySignature(request, body))
+    {
+        return Results.Unauthorized();
+    }
+
+    var payload = JsonSerializer.Deserialize<RedeemRequest>(body, JsonSerializerOptions.Web);
+    if (payload is null || string.IsNullOrEmpty(payload.Code) || string.IsNullOrEmpty(payload.Nonce))
+    {
+        return Results.BadRequest("缺少 code 或 nonce。");
+    }
+
+    // TryRemove：取出的同時刪除，同一個 code 只有一個請求拿得到（單次使用）。
+    // 之後的檢查不論通過與否，這個 code 都已作廢
+    if (!bridgeCodes.TryRemove(Sha256Hex(payload.Code), out var entry))
+    {
+        app.Logger.LogWarning("Redeem rejected. Reason=CodeNotFoundOrUsed.");
+        return Results.BadRequest("code 無效或已使用。");
+    }
+
+    if (entry.ExpiresAt < DateTimeOffset.UtcNow)
+    {
+        app.Logger.LogWarning("Redeem rejected. Reason=CodeExpired.");
+        return Results.BadRequest("code 已過期。");
+    }
+
+    // code 必須是為這個 nonce 發的，防止別人的 code 被接到這個登入流程上
+    if (!string.Equals(entry.Nonce, payload.Nonce, StringComparison.Ordinal))
+    {
+        app.Logger.LogWarning("Redeem rejected. Reason=NonceMismatch.");
+        return Results.BadRequest("nonce 不符。");
+    }
+
+    app.Logger.LogInformation("Redeem succeeded. UserName={UserName}.", entry.UserName);
+
+    return Results.Ok(new RedeemResponse(
+        entry.UserName, entry.SiteCode, entry.TokenId, entry.TicketExpiration.ToUnixTimeSeconds()));
+});
+
+app.Run();
+
+// 驗證 X-Timestamp（±5秒）與 X-Signature（HMAC-SHA256）
+bool VerifySignature(HttpRequest request, string body)
+{
+    if (!long.TryParse(request.Headers["X-Timestamp"], out var timestamp))
+    {
+        app.Logger.LogWarning("Signature rejected. Reason=MissingTimestamp.");
+        return false;
+    }
+
+    if (Math.Abs(DateTimeOffset.UtcNow.ToUnixTimeSeconds() - timestamp) > 5)
+    {
+        app.Logger.LogWarning("Signature rejected. Reason=TimestampOutOfRange.");
+        return false;
+    }
+
+    var expected = ComputeSignature(hmacSecret, timestamp, request.Method, request.Path, body);
+    var actual = request.Headers["X-Signature"].ToString();
+
+    // 用固定時間比對，避免攻擊者從回應時間差一個字元一個字元猜出簽章
+    if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(expected), Encoding.ASCII.GetBytes(actual)))
+    {
+        app.Logger.LogWarning("Signature rejected. Reason=InvalidSignature.");
+        return false;
+    }
+
+    return true;
+}
+
+// 簽章內容：timestamp\nmethod\npath\nsha256(body)，兩端必須用完全相同的格式計算
+static string ComputeSignature(string secret, long timestamp, string method, string path, string body)
+{
+    var canonical = $"{timestamp}\n{method}\n{path}\n{Sha256Hex(body)}";
+    var signature = HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(canonical));
+    return Convert.ToBase64String(signature);
+}
+
+static string Sha256Hex(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+
+static string Base64Url(byte[] bytes) => Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');
+
+record BridgeCodeEntry(string Nonce, DateTimeOffset ExpiresAt, string UserName, string SiteCode, int TokenId, DateTimeOffset TicketExpiration);
+record RedeemRequest(string? Code, string? Nonce);
+record RedeemResponse(string UserName, string SiteCode, int TokenId, long TicketExpiration);
+```
+
+幾個重點說明：
+
+- /sso/bridge 跳過了真正的登入檢查：真正的 PNP 要解密 .ASPXAUTH、檢查 IsTokenActive，沒登入就導去登入頁。Mock 一律當作 test\mockuser 已經登入。要測試的是「Authorization Server 和 PNP 之間的對接」，不是 PNP 的登入本身。
+- bridgeCode 只存雜湊值：Dictionary 的 key 是 SHA256(code)，不是 code 原文，這是照設計文件第 7 節「Code（hash）」的做法。萬一 DB 外洩，拿到的也只是雜湊值，不能拿來 Redeem。
+- bridgeCode 和 nonce 綁在一起：發 code 時記下 nonce，Redeem 時要求兩者都送來，並且比對。這就是之前提過的「別人的 bridgeCode 接到這個登入流程上」的防護。
+- 簽章為什麼要包含 timestamp、method、path、body 雜湊：
+  - timestamp 加上 ±5 秒的限制：同一個請求被攔截後，過幾秒就不能再重送。
+  - method、path：簽章不能被挪去打別的 API。
+  - body 雜湊：body 被改過一個字元，簽章就對不上。
+- 為什麼要先讀原始 body 再驗簽：簽章是對「送出的原始文字」算的。先反序列化再序列化回去，空白、欄位順序都可能改變，算出來的雜湊就會不同。
+- CryptographicOperations.FixedTimeEquals：一般的字串比對遇到第一個不同的字元就停止，回應時間會因此有微小差異，攻擊者可能利用這個差異一個字元一個字元猜出簽章。固定時間比對可以避免這個問題。
+- 密鑰為什麼放 user-secrets：設計文件第 9.1 節規定不能把密鑰明文寫在設定檔裡。user-secrets 存在你 Windows 使用者目錄下，不在專案資料夾，不會被 commit 進 git。正式環境改用 KeyVault 等方案。
+- TicketLifetimeSeconds：預設 12 小時，跟真正的 PNP ticket 一樣。之後要測 refresh 的絕對上限時，改這個值就好，不用再改程式。
+- Mock 的資料存在記憶體：MockPnp 重啟後，還沒 Redeem 的 code 就不見了。真正的 PNP 要存在 SQL Server，多台主機才能共用。
+
+測試時要注意：兩個專案要同時跑。在各自的資料夾下執行 dotnet run --launch-profile https。
+
+1. 自動跑完整條鏈：Follow redirects 開著，送一次 /connect/authorize（跟之前的網址一樣）。
+2. 白名單：
+https://localhost:16888/sso/bridge?return_url=https%3A%2F%2Fevil.example%2Fcb&nonce=test
+3. 沒有簽章的 Redeem：用 POST 送 https://localhost:16888/api/internal/sso/redeem，body 選 JSON，內容填 {"code":"x","nonce":"y"}，不加任何 header。
+
+請執行後確認：
+1. 兩個專案都能正常啟動，MockPnp 顯示 Now listening on: https://localhost:16888。
+2. 第 1 項送一次就跑到底，最後的 Location 是 https://localhost:5055/callback?code=...。MockPnp 的 Console 有 Bridge succeeded。目前 Authorization Server 還是 mock Redeem，所以 MockPnp 不會出現 Redeem succeeded，這是正常的。
+{% asset_image mock_pnp_1.jpg mock_pnp_1 %}
+成功呼叫Mock_Pnp api [/sso/bridge]
+{% asset_image mock_pnp_2.jpg mock_pnp_2 %}
+
+3. 第 2 項回 400「return_url 不在白名單內」。
+4. 第 3 項回 401，MockPnp 的 Console 有 Reason=MissingTimestamp。
+
+**到目前為止。MockPnp 完成了：Bridge 能自動跑完整條鏈，白名單和簽章驗證也都正常擋下。**

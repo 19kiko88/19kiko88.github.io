@@ -140,7 +140,7 @@ private async Task RevokeTokenChainAsync(ClaimsPrincipal principal)
     var revokedCount = await _tokenManager.RevokeByAuthorizationIdAsync(authorizationId);
 
     _logger.LogWarning(
-        "RevokeTokenChain completed. UserName={UserName}, Auth, RevokedTokens={RevokedCount}.",
+        "RevokeTokenChain completed. UserName={UserName}, AuthorizationId={AuthorizationId}, RevokedTokens={RevokedCount}.",
         principal.GetClaim(Claims.Subject), authorizationId, revokedCount);
 }
 ```

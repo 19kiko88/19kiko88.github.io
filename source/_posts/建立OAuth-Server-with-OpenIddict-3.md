@@ -901,3 +901,166 @@ dotnet user-secrets set "IdentityProviders:Pnp:HmacSecret" "wrong-secret" --proj
 3. 第 2 項最後停在 bridge-callback，回 400「身分驗證失敗，請重新登入」：
    - MockPnp 的 Console 有 Reason=InvalidSignature。
    - Authorization Server 的 Console 有 Redeem failed ... StatusCode=401 和 Reason=RedeemFailed。
+
+**到此步驟為止：Redeem 已經改成真的呼叫 PNP，HMAC 兩端也對得上。**
+#
+#
+#
+---
+## 撤銷查詢（IsTokenActiveAsync）改成真的呼叫身分來源
+
+這一步在做什麼：refresh 的第 1 層檢查（設計文件第 4.3 節）是要問 PNP「這個 tokenId 的使用者是不是已經登出或被踢了」，但目前 IsTokenActiveAsync 是 mock，永遠回傳 true，所以這一層形同虛設。這次兩邊一起改：
+
+- MockPnp：新增撤銷查詢 API token-status，用同一套 HMAC 驗證。另外加一個只供測試用的 /dev/logout/{tokenId}，模擬「使用者在 PNP 登出或被踢」。每次 Bridge 也改成發一個新的 tokenId，模擬真正 PNP 每次登入都有自己的 UserToken。
+- Authorization Server：IdentityProviderClient 新增 IsTokenActiveAsync，refresh 時改呼叫它。
+
+撤銷查詢 API 的格式，比照 Redeem：
+POST https://localhost:16888/api/internal/sso/token-status
+X-Timestamp: 1793180718
+X-Signature: （和 Redeem 同一套算法）
+Content-Type: application/json
+
+{"tokenId":1}
+
+→ 200 {"active":true}
+
+1. MockPnp 的 Program.cs
+
+在 var bridgeCodes = ... 下面加上：
+``` csharp
+// 模擬 PNP 的 UserToken：每次登入發一個新的 tokenId；被登出/被踢的 tokenId 記在這裡
+var nextTokenId = 0;
+var revokedTokenIds = new ConcurrentDictionary<int, bool>();
+
+// /sso/bridge 裡建立 BridgeCodeEntry 那段，把 TokenId: 1 改掉，log 也一起帶出 tokenId：
+var tokenId = Interlocked.Increment(ref nextTokenId);
+var code = Base64Url(RandomNumberGenerator.GetBytes(32));
+bridgeCodes[Sha256Hex(code)] = new BridgeCodeEntry(
+    Nonce: nonce,
+    ExpiresAt: DateTimeOffset.UtcNow.AddSeconds(60),
+    UserName: "test\\mockuser",
+    SiteCode: "AS",
+    TokenId: tokenId,
+    TicketExpiration: DateTimeOffset.UtcNow.Add(ticketLifetime));
+
+app.Logger.LogInformation("Bridge succeeded. Nonce={Nonce}, TokenId={TokenId}, bridge code issued.", nonce, tokenId);
+```
+
+在 app.Run(); 前面加上兩個端點：
+``` csharp
+app.MapPost("/api/internal/sso/token-status", async (HttpRequest request) =>
+{
+    using var reader = new StreamReader(request.Body, Encoding.UTF8);
+    var body = await reader.ReadToEndAsync();
+
+    if (!VerifySignature(request, body))
+    {
+        return Results.Unauthorized();
+    }
+
+    var payload = JsonSerializer.Deserialize<TokenStatusRequest>(body, JsonSerializerOptions.Web);
+    if (payload is null)
+    {
+        return Results.BadRequest("缺少 tokenId。");
+    }
+
+    // 真正的 PNP：MSSQLDataContext.IsTokenActive(tokenId)，即 UserToken.LogoutTime IS NULL
+    var active = !revokedTokenIds.ContainsKey(payload.TokenId);
+    app.Logger.LogInformation("TokenStatus checked. TokenId={TokenId}, Active={Active}.", payload.TokenId, active);
+
+    return Results.Ok(new TokenStatusResponse(active));
+});
+
+// 僅供本機測試：模擬使用者在 PNP 登出或被踢（真正的 PNP 沒有這個端點）
+app.MapPost("/dev/logout/{tokenId:int}", (int tokenId) =>
+{
+    revokedTokenIds[tokenId] = true;
+    app.Logger.LogInformation("Dev logout. TokenId={TokenId} marked as logged out.", tokenId);
+    return Results.Ok($"tokenId {tokenId} 已標記為登出。");
+});
+```
+
+檔案最下面的 record 加上兩個：
+``` csharp
+record TokenStatusRequest(int TokenId);
+record TokenStatusResponse(bool Active);
+```
+
+2. Authorization Server 的 Services/IdentityProviderClient.cs
+在 RedeemAsync 下面新增方法：
+``` csharp
+/// <summary>
+/// 查詢身分來源端的登入狀態是否仍有效（設計文件第4.3節第1層）
+/// </summary>
+/// <returns>仍有效回傳 true；已登出/被踢，或查詢失敗（連不上、簽章錯誤等）一律回傳 false</returns>
+public async Task<bool> IsTokenActiveAsync(IdentityProvider provider, int tokenId)
+{
+    var body = JsonSerializer.Serialize(new { tokenId }, JsonSerializerOptions.Web);
+    using var request = CreateSignedRequest(provider, HttpMethod.Post, provider.RevocationCheckApiUrl, body);
+
+    try
+    {
+        using var response = await _httpClient.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            _logger.LogWarning("TokenStatus check failed. ProviderId={ProviderId}, TokenId={TokenId}, StatusCode={StatusCode}.",
+                provider.ProviderId, tokenId, (int)response.StatusCode);
+            return false;
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<TokenStatusResult>(JsonSerializerOptions.Web);
+        return result?.Active ?? false;
+    }
+    catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+    {
+        _logger.LogError(ex, "TokenStatus check failed. ProviderId={ProviderId}, TokenId={TokenId}, Reason=RequestError.",
+            provider.ProviderId, tokenId);
+        return false;
+    }
+}
+```
+
+檔案最下面的 record 加上：
+``` csharp
+public record TokenStatusResult(bool Active);
+```
+
+3. AuthorizationController.cs
+refresh 分支裡的第 1 層檢查改成：
+``` csharp
+// 第1層：向身分來源查詢 tokenId 是否已被登出/被踢（查詢失敗也視為未通過）
+var isActive = await _identityProviderClient.IsTokenActiveAsync(provider, int.Parse(tokenIdClaim));
+```
+
+然後把舊的 private static Task<bool> IsTokenActiveAsync(IdentityProvider provider, int tokenId) 整個方法刪掉。
+
+幾個重點說明：
+
+- 查詢失敗為什麼也回傳 false：這叫 fail closed（失敗時採取保守做法）。連不上 PNP，就無法確認使用者是不是已經被踢了，所以寧可拒絕。反過來的話，攻擊者只要讓 PNP 暫時連不上，就能繞過撤銷檢查。代價是 PNP 故障期間 refresh 都會失敗，使用者要重新登入。不過 PNP 故障時，重新登入本來就需要 PNP，所以這個代價本來就無法避免。
+- Interlocked.Increment(ref nextTokenId)：同時有多個請求進來時，保證每個人拿到的 tokenId 都不同。直接寫 nextTokenId++ 在並行時可能發出重複的號碼。
+- /dev/logout 不需要簽章：它只是測試工具，代替你去 PNP 網站按登出，真正的 PNP 不會有這個端點。它放在 MockPnp 裡，不會出現在 Authorization Server。
+- MockPnp 重啟後，登出紀錄和 tokenId 計數都會歸零：資料都存在記憶體。測試時如果中途重啟 MockPnp，要重新跑一次完整流程。
+- Refresh 之外，什麼時候會檢查撤銷：只有 refresh 時才會查。已經發出去的 access_token 在 30 分鐘到期前仍然有效，這是設計文件第 9.3 節接受的取捨：權限變更在下次 refresh 時才生效。
+
+測試時要注意：兩個專案都改完後都要重啟，Follow redirects 開著。
+
+1. 正常 refresh：跑一次完整流程，scope 含 offline_access，拿到 token 之後解開 access_token，看 token_id 是多少。再用 refresh_token 換一次。
+2. 模擬被踢：用 POST 送 https://localhost:16888/dev/logout/<上一步的 token_id>，然後用最新的 refresh_token 再換一次。
+    - 先依照正常流程來取得acess_token跟refresh_token
+    - 解開acess_token，取得token_id(4)
+    {% asset_image logout_test_1.jpg logout_test_1 %}
+    - 執行api [dev/logout] https://localhost:16888/dev/logout/<token_id>。
+    {% asset_image logout_test_2.jpg logout_test_2 %}
+    - 用步驟1.的refresh_token在執行一次 API [connect/token](grant_type為refresh_token)。
+    {% asset_image logout_test_3.jpg logout_test_3 %}
+
+請執行後確認：
+1. 兩個專案都能正常編譯、啟動。
+2. 第 1 項的 refresh 回 200，MockPnp 的 Console 有 TokenStatus checked. TokenId=N, Active=True。
+3. 第 2 項的 refresh 回 400 invalid_grant，error_description 是「PNP tokenId 已被登出/被踢。」。MockPnp 有 Active=False，Authorization Server 有 RevokeTokenChain completed。
+
+**MockPnp**
+{% asset_image logout_test_4.jpg logout_test_4 %}
+
+**Authorization Server**
+{% asset_image logout_test_5.jpg logout_test_5 %}

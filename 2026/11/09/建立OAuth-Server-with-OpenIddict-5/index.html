@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>建立OAuth Server with OpenIddict(5) | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="接續上一篇…">
+<meta property="og:type" content="article">
+<meta property="og:title" content="建立OAuth Server with OpenIddict(5)">
+<meta property="og:url" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="接續上一篇…">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E9%A1%9E%E5%88%A5.jpg">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/pfx_created.jpg">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_1.jpg">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_2.jpg">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_3.jpg">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E6%AF%94%E8%BC%83.jpg">
+<meta property="article:published_time" content="2026-11-09T06:17:50.000Z">
+<meta property="article:modified_time" content="2026-11-09T09:01:15.992Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="OAuth">
+<meta property="article:tag" content="OpenIddict">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E9%A1%9E%E5%88%A5.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-建立OAuth-Server-with-OpenIddict-5" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/" class="article-date">
+  <time class="dt-published" datetime="2026-11-09T06:17:50.000Z" itemprop="datePublished">2026-11-09</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      建立OAuth Server with OpenIddict(5)
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><span id="more"></span>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<h2 id="把開發用憑證換成固定的簽章和加密憑證（設計文件第-9-1、10-節）"><a href="#把開發用憑證換成固定的簽章和加密憑證（設計文件第-9-1、10-節）" class="headerlink" title="把開發用憑證換成固定的簽章和加密憑證（設計文件第 9.1、10 節）"></a>把開發用憑證換成固定的簽章和加密憑證（設計文件第 9.1、10 節）</h2><p>這一步在做什麼：Program.cs 目前用的是：<br>options.AddDevelopmentEncryptionCertificate()<br>       .AddDevelopmentSigningCertificate();</p>
+<p>OpenIddict 會在你這台電腦的 Windows 憑證存放區自動產生這兩張憑證。在你的電腦上它們是固定的，所以之前 kid 都沒變，但它有三個問題：</p>
+<ol>
+<li>換一台主機就不一樣：部署到正式機或多台主機時，每台各自產生一張，A 主機簽的 JWT，B 主機發布的 JWKS 裡就找不到公鑰。</li>
+<li>無法備份和輪替：設計文件第 9.1 節要求私鑰要有備援、版本控管，輪替時採「重疊式」，但開發憑證都辦不到。</li>
+<li>OpenIddict 官方說明它只能用在開發環境。</li>
+</ol>
+<p>這次改成：自己產生兩張憑證檔（.pfx），放在 repo 以外的地方，由設定指定路徑，密碼放在 user-secrets。將來正式環境只要把路徑和密碼改成指向金鑰管理機制提供的憑證，程式碼不用改。</p>
+<p>兩張憑證的用途：</p>
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E9%A1%9E%E5%88%A5.jpg" class="" title="憑證類別">
+
+<ul>
+<li><p><strong>簽章憑證</strong>：私鑰簽章，公鑰驗證。<span style="color: red;">證明資料來源(防止資料被竄改)，主要確認身分來源跟資料的完整性。</span><br>  應用場景(RS256)如下：以JWT傳輸為例</p>
+<ol>
+<li>OAuth Server： 使用自己的私鑰對 JWT 產生數位簽章。</li>
+<li>MCP Server： 從 OAuth Server 公開的 JWKS Endpoint（例如 &#x2F;.well-known&#x2F;jwks.json）取得公鑰。</li>
+<li>驗證 JWT： MCP Server 使用公鑰驗證 JWT 的數位簽章，確認簽章有效且內容未遭竄改。</li>
+</ol>
+<p>  <span style="color: red;">簽章憑證的重點不在資料加密，而在於驗證資料的完整性與簽發來源。</span></p>
+</li>
+<li><p><strong>加密憑證</strong>：公鑰加密，私鑰解密。<span style="color: red;">保護資料不被偷看(防止資料被偷看)，主要確認資料的機密性。</span><br>  應用場景(RSA)如下：假設 MCP Server 要傳送員工資料給 HR Server。</p>
+<ol>
+<li>HR Server 建立一組 RSA 金鑰。</li>
+<li>HR Server 將公鑰憑證提供給 MCP Server。</li>
+<li>MCP Server 使用 HR Server 的公鑰加密薪資資料。</li>
+<li>MCP Server 將密文傳送給 HR Server。</li>
+<li>HR Server 使用自己的私鑰解密，取得原始薪資資料。</li>
+</ol>
+<p>  <span style="color: red;">加密憑證（Encryption Certificate）的重點不在驗證資料來源，而在於保護資料的機密性，避免未經授權的人讀取資料內容。</span></p>
+</li>
+</ul>
+<p>看完簽章憑證跟加密憑證的差異後，開始進行把開發用憑證換成固定的簽章和加密憑證的流程</p>
+<ol>
+<li>產生兩張憑證檔</li>
+</ol>
+<p>先建立一個 repo 以外的資料夾，例如 D:\Homer\Secrets，然後在 PowerShell 執行。密碼請換成你自己的，兩張要記住各自的密碼：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$dir</span> = <span class="string">&#x27;D:\Homer\Secrets&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 簽章憑證（KeyUsage = DigitalSignature）</span></span><br><span class="line"><span class="variable">$cert</span> = New-SelfSignedCertificate -Subject <span class="string">&#x27;CN=OAuth AuthorizationServer Signing&#x27;</span> -KeyAlgorithm RSA -KeyLength 2048 -KeyUsage DigitalSignature -KeyExportPolicy Exportable -CertStoreLocation <span class="string">&#x27;Cert:\CurrentUser\My&#x27;</span> -NotAfter (Get-Date).AddYears(2)</span><br><span class="line">Export-PfxCertificate -Cert <span class="variable">$cert</span> -FilePath <span class="string">&quot;<span class="variable">$dir</span>\oauth-signing.pfx&quot;</span> -Password (ConvertTo-SecureString <span class="string">&#x27;換成簽章憑證密碼&#x27;</span> -AsPlainText -Force)</span><br><span class="line">Remove-Item <span class="string">&quot;Cert:\CurrentUser\My\$(<span class="variable">$cert</span>.Thumbprint)&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 加密憑證（KeyUsage = KeyEncipherment）</span></span><br><span class="line"><span class="variable">$cert</span> = New-SelfSignedCertificate -Subject <span class="string">&#x27;CN=OAuth AuthorizationServer Encryption&#x27;</span> -KeyAlgorithm RSA -KeyLength 2048 -KeyUsage KeyEncipherment -KeyExportPolicy Exportable -CertStoreLocation <span class="string">&#x27;Cert:\CurrentUser\My&#x27;</span> -NotAfter (Get-Date).AddYears(2)</span><br><span class="line">Export-PfxCertificate -Cert <span class="variable">$cert</span> -FilePath <span class="string">&quot;<span class="variable">$dir</span>\oauth-encryption.pfx&quot;</span> -Password (ConvertTo-SecureString <span class="string">&#x27;換成加密憑證密碼&#x27;</span> -AsPlainText -Force)</span><br><span class="line">Remove-Item <span class="string">&quot;Cert:\CurrentUser\My\$(<span class="variable">$cert</span>.Thumbprint)&quot;</span></span><br></pre></td></tr></table></figure>
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/pfx_created.jpg" class="" title="pfx_created">
+
+<ol start="2">
+<li>設定路徑和密碼<br>OAuth.AuthorizationServer&#x2F;appsettings.Development.json 加上路徑（路徑不是機密，可以放設定檔）：</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;Certificates&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;Signing&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;Path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;D:\\Homer\\Secrets\\oauth-signing.pfx&quot;</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;Encryption&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;Path&quot;</span><span class="punctuation">:</span> <span class="string">&quot;D:\\Homer\\Secrets\\oauth-encryption.pfx&quot;</span> <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;Logging&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;LogLevel&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;Default&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Information&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;Microsoft.AspNetCore&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Trace&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>密碼放 user-secrets（在 D:\Homer\Project\OAuth 下執行）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dotnet user-secrets <span class="built_in">set</span> <span class="string">&quot;Certificates:Signing:Password&quot;</span> <span class="string">&quot;換成簽章憑證密碼&quot;</span> --project OAuth.AuthorizationServer</span><br><span class="line">dotnet user-secrets <span class="built_in">set</span> <span class="string">&quot;Certificates:Encryption:Password&quot;</span> <span class="string">&quot;換成加密憑證密碼&quot;</span> --project OAuth.AuthorizationServer</span><br></pre></td></tr></table></figure>
+<p><span style="color: red;">這邊的密碼跟建立憑證時的密碼是一樣的</span></p>
+<ol start="3">
+<li>Program.cs：改用這兩張憑證</li>
+</ol>
+<p>最上面加上：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> System.Security.Cryptography.X509Certificates;</span><br></pre></td></tr></table></figure>
+
+<p>把原本這段：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 開發階段用的簽章/加密憑證：之後正式環境一定要換成</span></span><br><span class="line"><span class="comment">// 真正保管好的簽章憑證（見設計文件第9節注意事項2、第8.1節）</span></span><br><span class="line">options.AddDevelopmentEncryptionCertificate()</span><br><span class="line">       .AddDevelopmentSigningCertificate();</span><br></pre></td></tr></table></figure>
+
+<p>換成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 固定的簽章/加密憑證（設計文件第9.1、10節）：路徑由設定指定、密碼放在 user-secrets（正式環境改由金鑰管理機制提供）。</span></span><br><span class="line"><span class="comment">// 簽章憑證：簽 JWT（RS256），公鑰發布在 JWKS；加密憑證：加密 Authorization Code、refresh_token</span></span><br><span class="line">options.AddSigningCertificate(LoadCertificate(builder.Configuration, <span class="string">&quot;Certificates:Signing&quot;</span>))</span><br><span class="line">       .AddEncryptionCertificate(LoadCertificate(builder.Configuration, <span class="string">&quot;Certificates:Encryption&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>在檔案最下面、SeedDataAsync 的後面新增：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> X509Certificate2 <span class="title">LoadCertificate</span>(<span class="params">IConfiguration configuration, <span class="built_in">string</span> section</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> path = configuration[<span class="string">$&quot;<span class="subst">&#123;section&#125;</span>:Path&quot;</span>]</span><br><span class="line">        ?? <span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">$&quot;找不到設定 &#x27;<span class="subst">&#123;section&#125;</span>:Path&#x27;&quot;</span>);</span><br><span class="line">    <span class="keyword">var</span> password = configuration[<span class="string">$&quot;<span class="subst">&#123;section&#125;</span>:Password&quot;</span>]</span><br><span class="line">        ?? <span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">$&quot;找不到設定 &#x27;<span class="subst">&#123;section&#125;</span>:Password&#x27;&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> X509CertificateLoader.LoadPkcs12FromFile(path, password);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li>為什麼 KeyUsage 要分開設：憑證的 KeyUsage 規定這把金鑰「可以做什麼」。OpenIddict 會檢查：簽章憑證必須有 DigitalSignature，加密憑證必須有 KeyEncipherment，不符合就啟動失敗。</li>
+<li>為什麼產生後要從憑證存放區刪掉：New-SelfSignedCertificate 一定要先把憑證建在 Windows 憑證存放區裡，匯出成 .pfx 後就不需要了。刪掉可以確保程式真的是從檔案讀取，不是不小心從存放區讀到。</li>
+<li>.pfx 為什麼要放在 repo 外面：它包含私鑰。私鑰外洩的話，任何人都能簽出「看起來是我們發的」JWT。放在 repo 外面，就不會被 commit 進 git。</li>
+<li>X509CertificateLoader.LoadPkcs12FromFile：.NET 9 之後建議用的載入方式。舊的 new X509Certificate2(path, password) 已經被標記為過時。</li>
+<li>有效期 2 年：到期前要輪替。設計文件第 9.1 節的重疊式輪替（先發布新公鑰，再切換簽發用的私鑰），之後要用時再實作。</li>
+</ul>
+<p>⚠️ 換憑證之後，舊的 token 全部失效</p>
+<ul>
+<li>舊的 access_token：用舊私鑰簽的，JWKS 裡已經沒有對應的公鑰。</li>
+<li>舊的 Authorization Code、refresh_token：用舊憑證加密的，新憑證解不開。</li>
+</ul>
+<p>開發環境沒關係，重跑一次流程就好。但這也說明了為什麼正式環境一定要做重疊式輪替。</p>
+<p>測試時要注意：只動了 Authorization Server，MockPnp 不用改。</p>
+<ol>
+<li>重啟 Authorization Server，開啟 <a target="_blank" rel="noopener" href="https://localhost:7280/.well-known/jwks%EF%BC%8C%E8%A8%98%E4%B8%8B">https://localhost:7280/.well-known/jwks，記下</a> kid。</li>
+<li>再重啟一次，再看一次 kid。</li>
+<li>跑一次完整流程，加上 refresh。</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯，Server 正常啟動，沒有憑證相關的例外。</li>
+<li>第 1 步的 kid 和你之前看到的不同，代表換成了新的簽章憑證。</li>
+<li>第 2 步重啟後 kid 沒有變，代表憑證是固定的。</li>
+<li>第 3 步完整流程和 refresh 都正常。access_token Header 裡的 kid 和 JWKS 一致。</li>
+</ol>
+<p>.well-known&#x2F;jwks裡的kid</p>
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_1.jpg" class="" title="kid_check_1">
+
+<p>acess_token解碼出的jwt header。kid跟.well-known&#x2F;jwks裡的kid一樣。</p>
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_2.jpg" class="" title="kid_check_2">
+
+<p>refresh_token解碼出的jwt header。kid跟.well-known&#x2F;jwks裡的kid也是一樣。</p>
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_3.jpg" class="" title="kid_check_3">
+
+
+<p><strong>到這個步驟為止：改用我們自己產生、自己管理的固定憑證，取代 OpenIddict 自動產生的開發憑證。</strong></p>
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E6%AF%94%E8%BC%83.jpg" class="" title="憑證比較">
+
+<p>另外說明一點：<span style="color: red;">JWT 簽章用自簽憑證是正常的，正式環境也不需要向 CA 申請。</span>Resource Server 是靠 JWKS 公鑰驗簽，信任來自「JWKS 是從我們的 Authorization Server 拿的」，不是靠 CA 憑證鏈。這和網站 HTTPS 用的憑證不一樣，HTTPS 憑證才需要 CA 簽發。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/" data-id="cmw91808t0000isn167v04j88" data-title="建立OAuth Server with OpenIddict(5)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/11/06/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">建立OAuth Server with OpenIddict(4)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Google-Cloud/">Google Cloud</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Trouble-Shooting/">Trouble Shooting</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CDN/" rel="tag">CDN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-App-Script/" rel="tag">Google App Script</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Auth-Platform/" rel="tag">Google Auth Platform</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IAP/" rel="tag">IAP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MCP/" rel="tag">MCP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" rel="tag">物件導向</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 20px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 16px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 18px;">Angular</a> <a href="/tags/CDN/" style="font-size: 10px;">CDN</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 12px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Google-App-Script/" style="font-size: 12px;">Google App Script</a> <a href="/tags/Google-Auth-Platform/" style="font-size: 10px;">Google Auth Platform</a> <a href="/tags/IAP/" style="font-size: 10px;">IAP</a> <a href="/tags/MCP/" style="font-size: 10px;">MCP</a> <a href="/tags/OAuth/" style="font-size: 20px;">OAuth</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/OpenIddict/" style="font-size: 20px;">OpenIddict</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 14px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 14px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 14px;">docker</a> <a href="/tags/n8n/" style="font-size: 14px;">n8n</a> <a href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" style="font-size: 10px;">物件導向</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 12px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/11/">November 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/10/">October 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/">建立OAuth Server with OpenIddict(5)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/06/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-4/">建立OAuth Server with OpenIddict(4)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/">建立OAuth-Server-with-OpenIddict-3</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/02/PKCE-code-challenge-code-verifier%E9%96%93%E7%9A%84%E9%97%9C%E4%BF%82/">PKCE. code_challenge. code_verifier間的關係</a>
+          </li>
+        
+          <li>
+            <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/">建立OAuth Server with OpenIddict(2)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

@@ -8,6 +8,7 @@ tags:
   - OpenIddict
 ---
 ##### 接續上一篇...
+##### 這篇主要會著重在Mock的驗證服務(Mock_Pnp)這段。
 <!-- more -->
 #
 #

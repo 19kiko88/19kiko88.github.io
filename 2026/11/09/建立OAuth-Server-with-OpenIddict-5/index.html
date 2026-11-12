@@ -20,7 +20,7 @@
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_3.jpg">
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E6%AF%94%E8%BC%83.jpg">
 <meta property="article:published_time" content="2026-11-09T06:17:50.000Z">
-<meta property="article:modified_time" content="2026-11-09T09:01:15.992Z">
+<meta property="article:modified_time" content="2026-11-12T09:33:08.676Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -217,6 +217,63 @@
 <img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E6%AF%94%E8%BC%83.jpg" class="" title="憑證比較">
 
 <p>另外說明一點：<span style="color: red;">JWT 簽章用自簽憑證是正常的，正式環境也不需要向 CA 申請。</span>Resource Server 是靠 JWKS 公鑰驗簽，信任來自「JWKS 是從我們的 Authorization Server 拿的」，不是靠 CA 憑證鏈。這和網站 HTTPS 用的憑證不一樣，HTTPS 憑證才需要 CA 簽發。</p>
+<h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
+<h2 id="加上全域的-null-byte-攔截-middleware"><a href="#加上全域的-null-byte-攔截-middleware" class="headerlink" title="加上全域的 null byte 攔截 middleware"></a>加上全域的 null byte 攔截 middleware</h2><p>這一步在做什麼：之前只在 bridge-callback 檢查了 null byte。但 SECURITY.md 第 1 節要求的是全域檢查：每個請求的 QueryString 和 Form 欄位只要出現 \0，就直接回 400。這次寫一個 middleware，放在 pipeline 最前面，所有端點都會經過它，包括 OpenIddict 的 &#x2F;connect&#x2F;authorize、&#x2F;connect&#x2F;token。</p>
+<ol>
+<li>新增檔案 OAuth.AuthorizationServer&#x2F;Middleware&#x2F;RejectNullByteMiddleware.cs</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> Microsoft.Extensions.Primitives;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">OAuth.AuthorizationServer.Middleware</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 比照 PCBRepairNavi SECURITY.md 第1節：QueryString 或 Form ）時，直接回 400</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">RejectNullByteMiddleware</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">readonly</span> RequestDelegate _next;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">readonly</span> ILogger&lt;RejectNullByteMiddleware&gt; _logger;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RejectNullByteMiddleware</span>(<span class="params">RequestDelegate next, ILogger&lt;RejectNullByteMiddleware&gt; logger</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        _next = next;</span><br><span class="line">        _logger = logger;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">async</span> Task <span class="title">InvokeAsync</span>(<span class="params">HttpContext context</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">var</span> request = context.Request;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (ContainsNullByte(request.Query)</span><br><span class="line">            || (request.HasFormContentType &amp;&amp; ContainsNullByte(<span class="keyword">await</span> request.ReadFormAsync())))</span><br><span class="line">        &#123;</span><br><span class="line">            _logger.LogWarning(<span class="string">&quot;Request rejected. Path=&#123;Path&#125;, Reason=NullByte.&quot;</span>, request.Path);</span><br><span class="line">            context.Response.StatusCode = StatusCodes.Status400BadRequest;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">await</span> _next(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="built_in">bool</span> <span class="title">ContainsNullByte</span>(<span class="params">IEnumerable&lt;KeyValuePair&lt;<span class="built_in">string</span>, StringValues&gt;&gt; fields</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> fields.Any(f =&gt; f.Key.Contains(<span class="string">&#x27;\0&#x27;</span>) || f.Value.Any(v =&gt; v <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">null</span> &amp;&amp; v.Contains(<span class="string">&#x27;\0&#x27;</span>)));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Program.cs：註冊 middleware，並明確呼叫 UseAuthentication()</li>
+</ol>
+<p>最上面加上：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> OAuth.AuthorizationServer.Middleware;</span><br></pre></td></tr></table></figure>
+
+<p>把原本的：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">app.UseHttpsRedirection();</span><br><span class="line"></span><br><span class="line">app.UseAuthorization();</span><br></pre></td></tr></table></figure>
+
+<p>改成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 最前面先擋掉含 null byte 的請求（SECURITY.md 第1節），之後的 OpenIddict、Controller 都不會收到</span></span><br><span class="line">app.UseMiddleware&lt;RejectNullByteMiddleware&gt;();</span><br><span class="line"></span><br><span class="line">app.UseHttpsRedirection();</span><br><span class="line"></span><br><span class="line"><span class="comment">// 明確呼叫，讓 OpenIddict 排在 null byte 檢查之後才處理請求</span></span><br><span class="line">app.UseAuthentication();</span><br><span class="line">app.UseAuthorization();</span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li>middleware 是什麼：每個 HTTP 請求進來後，會依序經過一連串的處理元件（pipeline），最後才到 Controller。middleware 就是其中一個元件，可以檢查請求、決定要不要往下傳。這裡沒有呼叫 _next(context) 就直接 return，請求就到此為止，後面的元件都不會執行。</li>
+<li>為什麼要明確加上 app.UseAuthentication()：這是這一步最關鍵的地方。原本的程式沒有寫這行，但 OpenIddict 還是能運作，因為 .NET 偵測到有註冊認證服務時，會自動把 UseAuthentication() 加在 pipeline 的最前面，排在你寫的所有 middleware 之前。OpenIddict 就是掛在這個認證 middleware 裡處理 &#x2F;connect&#x2F;* 的。如果不明確寫出來，順序會是：<br>（自動加的）UseAuthentication → OpenIddict 先處理  ← null byte 還沒檢查<br>RejectNullByteMiddleware                         ← 太晚了<br>明確寫出來，.NET 就不會自動加，順序才會照你寫的：先檢查 null byte，再交給 OpenIddict。</li>
+<li>request.ReadFormAsync() 讀過之後，OpenIddict 還能讀嗎：可以。ASP.NET Core 讀取 Form 後會快取起來，之後 OpenIddict 再讀，拿到的是同一份資料。</li>
+<li>欄位名稱也要檢查：攻擊者也可能把 \0 放在參數名稱裡，例如 client%00_id&#x3D;…，所以 Key 和 Value 都要檢查。</li>
+<li>bridge-callback 原本的 IsValidCallbackParameter 要不要拿掉：保留。它還檢查了必填和長度，而且多一層防護也沒有壞處。</li>
+</ul>
+<p>測試時要注意：Insomnia 的 Form 欄位會把你輸入的 % 自動編碼成 %25，送出去會變成字面上的 %00 三個字元，不是 null byte。所以 POST 那項改用 curl.exe，它會原封不動送出。</p>
+<ol>
+<li>QueryString 含 null byte：用 GET 送出（Follow redirects 開關都可以）：<br><a target="_blank" rel="noopener" href="https://localhost:7280/connect/authorize?client_id=pnp-mcp-client%00&response_type=code">https://localhost:7280/connect/authorize?client_id=pnp-mcp-client%00&amp;response_type=code</a></li>
+<li>Form 含 null byte：<br>curl.exe -k -s -o NUL -w “%{http_code}\n” -X POST <a target="_blank" rel="noopener" href="https://localhost:7280/connect/token">https://localhost:7280/connect/token</a> –data-raw “grant_type&#x3D;refresh_token&amp;refresh_token&#x3D;abc%00def&amp;client_id&#x3D;pnp-mcp-client”</li>
+<li>正常流程：跑一次完整流程，換到 token。</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯。</li>
+<li>第 1 項和第 2 項都回 400，Authorization Server 的 Console 各有一行 Request rejected. Path&#x3D;…, Reason&#x3D;NullByte.，而且沒有 OpenIddict 的錯誤訊息。這就證明請求在進到 OpenIddict 之前就被擋下了。</li>
+<li>第 3 項正常換到 token。</li>
+</ol>
+<p>補充：</p>
+<ul>
+<li><strong>app.UseAuthentication()</strong>：確認「你是誰」<br>它會在 pipeline 裡加入認證 middleware，在每個請求進來時，呼叫已註冊的認證處理器，從請求中辨識身分。</li>
+</ul>
+<p>在這個專案裡，它有兩個作用：</p>
+<ol>
+<li>讓 OpenIddict Server 運作：OpenIddict 是掛在這個 middleware 裡的認證處理器。請求路徑是 &#x2F;connect&#x2F;authorize、&#x2F;connect&#x2F;token 時，由它先解析和驗證 OAuth 參數，再交給我們的 Controller。也因為這樣，Controller 裡才能用 HttpContext.GetOpenIddictServerRequest() 拿到請求。</li>
+<li>讓 OpenIddict Validation 運作：Program.cs 裡的 .AddValidation(…)，讓這個 App 可以驗證自己發出的 access_token，例如請求帶 Authorization: Bearer <JWT> 時。</li>
+</ol>
+<ul>
+<li><strong>app.UseAuthorization()</strong>：確認「你可以做什麼」<br>它會檢查 Controller 或 action 上的 [Authorize] 屬性，判斷目前的身分有沒有權限執行。例如某個 action 標了 [Authorize]，沒有帶有效 token 的請求就會被拒絕。</li>
+</ul>
+<p>在這個專案裡，目前沒有任何地方用到 [Authorize]，所以它實際上沒有作用。保留它是 ASP.NET Core 的慣例寫法，將來有端點需要保護時可以直接用，不影響現在的功能。</p>
+<p>順序一定是先 Authentication，再 Authorization</p>
+<p>UseAuthentication   → 先確認你是誰<br>UseAuthorization    → 再根據你是誰，判斷能不能存取</p>
+<p>反過來的話，Authorization 檢查時還不知道你是誰，所有需要權限的請求都會被拒絕。</p>
+<p>這一步為什麼要明確寫出 UseAuthentication()</p>
+<p>原本不寫也能運作，是因為 .NET 偵測到有註冊認證服務時，會自動把它加在 pipeline 最前面。但這樣它就排在 RejectNullByteMiddleware 之前，OpenIddict 會先處理到含 null byte 的請求。明確寫在 UseMiddleware<RejectNullByteMiddleware>() 後面，才能確保先擋 null byte，再交給 OpenIddict。</p>
 
       
     </div>

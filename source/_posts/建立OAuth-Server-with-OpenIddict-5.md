@@ -170,4 +170,135 @@ refresh_token解碼出的jwt header。kid跟.well-known/jwks裡的kid也是一�
 {% asset_image 憑證比較.jpg 憑證比較 %}
 
 另外說明一點：<span style="color: red;">JWT 簽章用自簽憑證是正常的，正式環境也不需要向 CA 申請。</span>Resource Server 是靠 JWKS 公鑰驗簽，信任來自「JWKS 是從我們的 Authorization Server 拿的」，不是靠 CA 憑證鏈。這和網站 HTTPS 用的憑證不一樣，HTTPS 憑證才需要 CA 簽發。
+#
+#
+#
+---
+## 加上全域的 null byte 攔截 middleware
 
+這一步在做什麼：之前只在 bridge-callback 檢查了 null byte。但 SECURITY.md 第 1 節要求的是全域檢查：每個請求的 QueryString 和 Form 欄位只要出現 \0，就直接回 400。這次寫一個 middleware，放在 pipeline 最前面，所有端點都會經過它，包括 OpenIddict 的 /connect/authorize、/connect/token。
+
+1. 新增檔案 OAuth.AuthorizationServer/Middleware/RejectNullByteMiddleware.cs
+``` csharp
+using Microsoft.Extensions.Primitives;
+
+namespace OAuth.AuthorizationServer.Middleware;
+
+/// <summary>
+/// 比照 PCBRepairNavi SECURITY.md 第1節：QueryString 或 Form ）時，直接回 400
+/// </summary>
+public class RejectNullByteMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger<RejectNullByteMiddleware> _logger;
+
+    public RejectNullByteMiddleware(RequestDelegate next, ILogger<RejectNullByteMiddleware> logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var request = context.Request;
+
+        if (ContainsNullByte(request.Query)
+            || (request.HasFormContentType && ContainsNullByte(await request.ReadFormAsync())))
+        {
+            _logger.LogWarning("Request rejected. Path={Path}, Reason=NullByte.", request.Path);
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        await _next(context);
+    }
+
+    private static bool ContainsNullByte(IEnumerable<KeyValuePair<string, StringValues>> fields)
+    {
+        return fields.Any(f => f.Key.Contains('\0') || f.Value.Any(v => v is not null && v.Contains('\0')));
+    }
+}
+```
+
+2. Program.cs：註冊 middleware，並明確呼叫 UseAuthentication()
+
+最上面加上：
+``` csharp
+using OAuth.AuthorizationServer.Middleware;
+```
+
+把原本的：
+``` csharp
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+```
+
+改成：
+``` csharp
+// 最前面先擋掉含 null byte 的請求（SECURITY.md 第1節），之後的 OpenIddict、Controller 都不會收到
+app.UseMiddleware<RejectNullByteMiddleware>();
+
+app.UseHttpsRedirection();
+
+// 明確呼叫，讓 OpenIddict 排在 null byte 檢查之後才處理請求
+app.UseAuthentication();
+app.UseAuthorization();
+```
+
+幾個重點說明：
+
+- middleware 是什麼：每個 HTTP 請求進來後，會依序經過一連串的處理元件（pipeline），最後才到 Controller。middleware 就是其中一個元件，可以檢查請求、決定要不要往下傳。這裡沒有呼叫 _next(context) 就直接 return，請求就到此為止，後面的元件都不會執行。
+- 為什麼要明確加上 app.UseAuthentication()：這是這一步最關鍵的地方。原本的程式沒有寫這行，但 OpenIddict 還是能運作，因為 .NET 偵測到有註冊認證服務時，會自動把 UseAuthentication() 加在 pipeline 的最前面，排在你寫的所有 middleware 之前。OpenIddict 就是掛在這個認證 middleware 裡處理 /connect/* 的。如果不明確寫出來，順序會是：
+（自動加的）UseAuthentication → OpenIddict 先處理  ← null byte 還沒檢查
+RejectNullByteMiddleware                         ← 太晚了
+  明確寫出來，.NET 就不會自動加，順序才會照你寫的：先檢查 null byte，再交給 OpenIddict。
+- request.ReadFormAsync() 讀過之後，OpenIddict 還能讀嗎：可以。ASP.NET Core 讀取 Form 後會快取起來，之後 OpenIddict 再讀，拿到的是同一份資料。
+- 欄位名稱也要檢查：攻擊者也可能把 \0 放在參數名稱裡，例如 client%00_id=...，所以 Key 和 Value 都要檢查。
+- bridge-callback 原本的 IsValidCallbackParameter 要不要拿掉：保留。它還檢查了必填和長度，而且多一層防護也沒有壞處。
+
+測試時要注意：Insomnia 的 Form 欄位會把你輸入的 % 自動編碼成 %25，送出去會變成字面上的 %00 三個字元，不是 null byte。所以 POST 那項改用 curl.exe，它會原封不動送出。
+
+1. QueryString 含 null byte：用 GET 送出（Follow redirects 開關都可以）：
+https://localhost:7280/connect/authorize?client_id=pnp-mcp-client%00&response_type=code
+2. Form 含 null byte：
+curl.exe -k -s -o NUL -w "%{http_code}\n" -X POST https://localhost:7280/connect/token --data-raw "grant_type=refresh_token&refresh_token=abc%00def&client_id=pnp-mcp-client"
+3. 正常流程：跑一次完整流程，換到 token。
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 第 1 項和第 2 項都回 400，Authorization Server 的 Console 各有一行 Request rejected. Path=..., Reason=NullByte.，而且沒有 OpenIddict 的錯誤訊息。這就證明請求在進到 OpenIddict 之前就被擋下了。
+{% asset_image null_byte_test.jpg null_byte_test%}
+3. 第 3 項正常換到 token。
+
+
+補充：
+
+- **觸發自動加入的條件**
+用 WebApplication.CreateBuilder 建立的專案（.NET 7 以後），在 builder.Build() 時會檢查：
+1. DI 裡有註冊認證服務（IAuthenticationSchemeProvider），而且你沒有自己呼叫 app.UseAuthentication() → 自動加上 UseAuthentication()。
+2. DI 裡有註冊授權服務（IAuthorizationHandlerProvider），而且你沒有自己呼叫 app.UseAuthorization() → 自動加上 UseAuthorization()。
+自動加入的位置在 pipeline 的最前面，排在你自己寫的 middleware 之前。
+
+- **app.UseAuthentication()**：確認「你是誰」
+它會在 pipeline 裡加入認證 middleware，在每個請求進來時，呼叫已註冊的認證處理器，從請求中辨識身分。
+
+在這個專案裡，它有兩個作用：
+1. 讓 OpenIddict Server 運作：OpenIddict 是掛在這個 middleware 裡的認證處理器。請求路徑是 /connect/authorize、/connect/token 時，由它先解析和驗證 OAuth 參數，再交給我們的 Controller。也因為這樣，Controller 裡才能用 HttpContext.GetOpenIddictServerRequest() 拿到請求。
+2. 讓 OpenIddict Validation 運作：Program.cs 裡的 .AddValidation(...)，讓這個 App 可以驗證自己發出的 access_token，例如請求帶 Authorization: Bearer <JWT> 時。
+
+- **app.UseAuthorization()**：確認「你可以做什麼」
+它會檢查 Controller 或 action 上的 [Authorize] 屬性，判斷目前的身分有沒有權限執行。例如某個 action 標了 [Authorize]，沒有帶有效 token 的請求就會被拒絕。
+
+在這個專案裡，目前沒有任何地方用到 [Authorize]，所以它實際上沒有作用。保留它是 ASP.NET Core 的慣例寫法，將來有端點需要保護時可以直接用，不影響現在的功能。
+
+順序一定是先 Authentication，再 Authorization
+
+UseAuthentication   → 先確認你是誰
+UseAuthorization    → 再根據你是誰，判斷能不能存取
+
+反過來的話，Authorization 檢查時還不知道你是誰，所有需要權限的請求都會被拒絕。
+
+這一步為什麼要明確寫出 UseAuthentication()
+
+原本不寫也能運作，是因為 .NET 偵測到有註冊認證服務時，會自動把它加在 pipeline 最前面。但這樣它就排在 RejectNullByteMiddleware 之前，OpenIddict 會先處理到含 null byte 的請求。明確寫在 UseMiddleware<RejectNullByteMiddleware>() 後面，才能確保先擋 null byte，再交給 OpenIddict。

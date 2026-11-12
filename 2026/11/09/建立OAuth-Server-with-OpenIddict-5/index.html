@@ -20,7 +20,7 @@
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/kid_check_3.jpg">
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E6%AF%94%E8%BC%83.jpg">
 <meta property="article:published_time" content="2026-11-09T06:17:50.000Z">
-<meta property="article:modified_time" content="2026-11-12T09:33:08.676Z">
+<meta property="article:modified_time" content="2026-11-12T09:37:38.824Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -257,6 +257,13 @@
 <li>第 3 項正常換到 token。</li>
 </ol>
 <p>補充：</p>
+<ul>
+<li><strong>觸發自動加入的條件</strong><br>用 WebApplication.CreateBuilder 建立的專案（.NET 7 以後），在 builder.Build() 時會檢查：</li>
+</ul>
+<ol>
+<li>DI 裡有註冊認證服務（IAuthenticationSchemeProvider），而且你沒有自己呼叫 app.UseAuthentication() → 自動加上 UseAuthentication()。</li>
+<li>DI 裡有註冊授權服務（IAuthorizationHandlerProvider），而且你沒有自己呼叫 app.UseAuthorization() → 自動加上 UseAuthorization()。<br>自動加入的位置在 pipeline 的最前面，排在你自己寫的 middleware 之前。</li>
+</ol>
 <ul>
 <li><strong>app.UseAuthentication()</strong>：確認「你是誰」<br>它會在 pipeline 裡加入認證 middleware，在每個請求進來時，呼叫已註冊的認證處理器，從請求中辨識身分。</li>
 </ul>

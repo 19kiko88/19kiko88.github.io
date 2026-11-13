@@ -8,7 +8,11 @@ tags:
   - OpenIddict
 ---
 ##### 接續上一篇...
+##### 此篇重點：把驗證到取得token的流程串接起來
 <!-- more -->
+- 建資料表，並把 client 綁定到身分來源，將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。
+- /connect/authorize 改成依 client_id 去 DB 查身分來源，取代 appsettings 裡寫死的 BridgeUrl
+- 讓「身分來源」跟著整個流程走，bridge-callback 和 refresh 都知道該找哪個身分來源
 #
 #
 #

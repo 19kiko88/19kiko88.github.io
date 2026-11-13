@@ -8,7 +8,15 @@ tags:
   - OpenIddict
 ---
 ##### 接續上一篇...
+##### 此篇重點：建置基礎服務相關API
 <!-- more -->
+- 資安加固 ：限定aud（audience）claim
+- refresh 被拒絕時，撤銷整條 refresh token 鏈
+- 第二次經過 /connect/authorize 時，檢查參數有沒有被竄改
+- 讓 PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立
+- 檢查 Discovery 和 JWKS 的內容，確認只允許 S256
+- 加固 bridge-callback，讓它和 /connect/authorize 第二次經過一樣嚴謹
+- 定期清除過期的 PendingAuthorizeRequests
 #
 #
 #

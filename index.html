@@ -105,6 +105,8 @@
 <li>把開發用憑證換成固定的簽章和加密憑證</li>
 <li>加上全域的 null byte 攔截 middleware</li>
 <li>所有回應加上安全標頭，並移除 Server 標頭</li>
+<li>未處理的例外不洩漏技術細節</li>
+<li>讓 Server 能同時載入多張簽章、加密憑證，實現重疊式輪替</li>
 </ul>
         
           <p class="article-more-link">

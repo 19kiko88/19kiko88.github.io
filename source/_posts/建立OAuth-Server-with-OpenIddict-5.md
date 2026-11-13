@@ -502,3 +502,39 @@ UPDATE "IdentityProviders" SET "RedeemApiUrl" = 'https://localhost:16888/api/int
 4. Authorization Server 的 Console 有 Unhandled exception. TraceId=...，TraceId 和回應的 trace_id 一樣，下面還有完整的例外訊息「身分來源 'pnp' 的 API 網址未設定或不是 HTTPS。」。
 {% asset_image https_error3.jpg https_error3 %}
 5. 改回來之後，正常流程恢復。
+#
+#
+#
+---
+## 初始資料（seed）只在開發環境執行
+
+這一步在做什麼：SeedDataAsync 會在 DB 是空的時候寫入 scope、身分來源和 client，但其中的網址都是開發用的 localhost。改成只在開發環境執行，正式環境的 DB 就不會被寫進錯誤的預設值。正式環境的資料依設計文件第 9.2 節，由管理員手動註冊。
+
+Program.cs：把第 145 行的
+``` csharp
+await SeedDataAsync(app);
+```
+改成
+``` csharp
+// 預設資料（scope、身分來源、client）只適用於開發環境：其中的網址都是 localhost。
+// 正式環境依設計文件第9.2節，由管理員依申請流程手動註冊
+if (app.Environment.IsDevelopment())
+{
+    await SeedDataAsync(app);
+}
+```
+
+幾個重點說明：
+
+- scope 也一起跳過：scope 本身和環境無關，但 SeedDataAsync 裡的 client 權限是依照 scope 清單建立的，三者是一組的。正式環境既然 client 要手動註冊，scope 也一起在那時建立，比較單純。
+- 正式環境需要的「手動註冊」還沒準備好：之後部署前要準備一份註冊腳本或管理工具，用正式的網址、redirect_uri 建立身分來源、scope 和 client。這是設計文件第 9.2 節提到的「新增 client 申請流程」，可以先列為待辦。
+- 開發環境的行為完全不變：你現在用 --launch-profile https 啟動，環境是 Development，seed 照常執行。DB 已經有資料，所以一樣會跳過新增。
+
+測試時要注意：這一步只要確認開發環境不受影響。
+
+1. 重啟 Authorization Server。
+2. 跑一次完整流程。
+
+請執行後確認：
+1. dotnet build 正常編譯，Server 正常啟動。
+2. 完整流程正常，可以換到 token。

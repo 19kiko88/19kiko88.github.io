@@ -302,3 +302,103 @@ UseAuthorization    → 再根據你是誰，判斷能不能存取
 這一步為什麼要明確寫出 UseAuthentication()
 
 原本不寫也能運作，是因為 .NET 偵測到有註冊認證服務時，會自動把它加在 pipeline 最前面。但這樣它就排在 RejectNullByteMiddleware 之前，OpenIddict 會先處理到含 null byte 的請求。明確寫在 UseMiddleware<RejectNullByteMiddleware>() 後面，才能確保先擋 null byte，再交給 OpenIddict。
+#
+#
+#
+---
+## 所有回應加上安全標頭，並移除 Server 標頭（SECURITY.md 第 6、8、11、14 節）
+
+下一步：所有回應加上安全標頭，並移除 Server 標頭（SECURITY.md 第 6、8、11、14 節）
+
+這一步在做什麼：資安掃描工具（AppScan、Checkmarx）會檢查每個回應有沒有帶特定的安全標頭，缺少的話就會列為弱點。PCBRepairNavi 在 HeaderFilter 和 Global.asax 裡做了這件事，Authorization Server 也要比照。這次加一個 middleware，讓所有回應都帶上這些標頭，包括 OpenIddict 回的 JSON、302 導轉、被 null byte 擋下的 400。
+
+{% asset_image remove_server_header.jpg remove_server_header%}
+
+1. 新增檔案 OAuth.AuthorizationServer/Middleware/SecurityHeadersMiddleware.cs
+``` csharp
+namespace OAuth.AuthorizationServer.Middleware;
+
+/// <summary>
+/// 比照 PCBRepairNavi SECURITY.md 第6、11節：所有回應加上安全標頭。
+/// Authorization Server 只回 JSON 與 302 導轉、不輸出 HTML，所以 CSP 採用最嚴格的 'none'
+/// </summary>
+public class SecurityHeadersMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public SecurityHeadersMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public Task InvokeAsync(HttpContext context)
+    {
+        // 在交給後面的 middleware 之前就先設定，後面不論在哪裡產生回應（OpenIddict、Controller、被擋下的400），都會帶著這些標頭
+        var headers = context.Response.Headers;
+        headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+        headers["Referrer-Policy"] = "no-referrer";
+        headers["X-Content-Type-Options"] = "nosniff";
+
+        return _next(context);
+    }
+}
+```
+
+2. Program.cs
+
+在 var builder = WebApplication.CreateBuilder(args); 下面加上：
+``` csharp
+// 不在回應中透露伺服器軟體（SECURITY.md 第8節）
+builder.WebHost.ConfigureKestrel(options => options.AddServerHeader = false);
+
+// HSTS：1年、含子網域，不採用 preload（SECURITY.md 第14.3節）
+builder.Services.AddHsts(options =>
+{
+    options.MaxAge = TimeSpan.FromDays(365);
+    options.IncludeSubDomains = true;
+});
+```
+
+pipeline 的部分改成：
+``` csharp
+// 所有回應加上安全標頭，放在最前面，連後面被擋下的請求也會帶著標頭
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// HSTS 只在非開發環境啟用，避免瀏覽器把 localhost 記成「只能用 HTTPS」，影響本機其他開發中的網站
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
+
+// 最前面先擋掉含 null byte 的請求（SECURITY.md 第1節），之後的 OpenIddict、Controller 都不會收到
+app.UseMiddleware<RejectNullByteMiddleware>();
+
+app.UseHttpsRedirection();
+
+// 明確呼叫，讓 OpenIddict 排在 null byte 檢查之後才處理請求
+app.UseAuthentication();
+app.UseAuthorization();
+```
+
+幾個重點說明：
+
+- 為什麼 CSP 和 SECURITY.md 的標準值不同：SECURITY.md 的 CSP 是給 PCBRepairNavi 這種會輸出 HTML 頁面的網站用的，要允許載入自己的 script、圖片、字型。Authorization Server 只回 JSON 和 302，瀏覽器根本不需要載入任何資源，所以全部設成 'none' 最安全。frame-ancestors、base-uri、form-action 不會繼承 default-src，所以要另外明確寫出來，這點 SECURITY.md 第 6.1 節也有提到。
+- 為什麼 Referrer-Policy 用 no-referrer，而不是 SECURITY.md 的 strict-origin-when-cross-origin：SECURITY.md 不選 no-referrer 的理由，是 PCBRepairNavi 有 IsAllowedReferer() 要靠 Referer 做白名單驗證。Authorization Server 沒有這個需求，而我們的網址上帶著 nonce、bridgeCode、Authorization Code 這些敏感值，完全不送 Referer 最安全。
+- HSTS 為什麼開發環境不加：瀏覽器收到 HSTS 後，會「記住」這個主機一年內只能用 HTTPS。如果對 localhost 加上 HSTS，你本機其他用 HTTP 跑的開發網站也會被強制改成 HTTPS，造成麻煩。ASP.NET Core 的 UseHsts() 本身也會自動略過 localhost。所以這個標頭在本機測不到，是正常的。
+- AddServerHeader = false 的限制：它只移除 Kestrel 自己加的 Server: Kestrel。如果正式環境放在 IIS 後面，IIS 會再加上自己的 Server 標頭，要在 IIS 那邊另外設定。
+- 中介軟體的順序：SecurityHeadersMiddleware 要排在 RejectNullByteMiddleware 前面，被 null byte 擋下的 400 回應才會帶到安全標頭。掃描工具常常就是故意送奇怪的請求，再檢查錯誤回應有沒有缺標頭。
+
+測試時要注意：用 curl 看回應標頭比較清楚。-D - 會把回應標頭印出來。
+
+1. 一般回應：
+curl.exe -k -s -D - -o NUL https://localhost:7280/.well-known/openid-configuration
+2. 被 null byte 擋下的回應：
+curl.exe -k -s -D - -o NUL "https://localhost:7280/connect/authorize?client_id=abc%00"
+3. 正常流程：跑一次完整流程，換到 token。
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 第 1、2 項的回應標頭都有 Content-Security-Policy、Referrer-Policy: no-referrer、X-Content-Type-Options: nosniff，而且沒有 Server: Kestrel。
+{% asset_image header_compare.jpg header_compare %}
+3. 沒有 Strict-Transport-Security，這是預期的，因為現在是開發環境。<span style="color: red;">(測試機沒有app.UseHsts();所以header不會有測試機沒有Strict-Transport-Security。)</span>
+4. 第 3 項正常流程不受影響。

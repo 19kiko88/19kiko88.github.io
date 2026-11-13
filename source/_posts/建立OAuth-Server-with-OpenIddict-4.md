@@ -9,10 +9,10 @@ tags:
 ---
 ##### 接續上一篇...
 ##### 此篇重點：繼上篇，用模擬方式把驗證到取得token的流程串起來。這邊把驗證服務的部分實體化成一個Mock專案(MockPnp)
-<!-- more -->
 - 建立 MockPnp 專案，模擬 PCBRepairNavi 的 /sso/bridge 和 Redeem API
 - Authorization Server 的 RedeemAsync 改成真的呼叫 Redeem API，並簽上 HMAC
 - 撤銷查詢（IsTokenActiveAsync）改成真的呼叫身分來源
+<!-- more -->
 #
 #
 #

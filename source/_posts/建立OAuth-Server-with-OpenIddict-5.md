@@ -9,10 +9,11 @@ tags:
 ---
 ##### 接續上一篇...
 ##### 此篇主要著重在資安補強的部分
-<!-- more -->
 - 把開發用憑證換成固定的簽章和加密憑證
 - 加上全域的 null byte 攔截 middleware
 - 所有回應加上安全標頭，並移除 Server 標頭
+- 未處理的例外不洩漏技術細節
+<!-- more -->
 #
 #
 #
@@ -406,3 +407,98 @@ curl.exe -k -s -D - -o NUL "https://localhost:7280/connect/authorize?client_id=a
 {% asset_image header_compare.jpg header_compare %}
 3. 沒有 Strict-Transport-Security，這是預期的，因為現在是開發環境。<span style="color: red;">(測試機沒有app.UseHsts();所以header不會有測試機沒有Strict-Transport-Security。)</span>
 4. 第 3 項正常流程不受影響。
+#
+#
+#
+---
+## 未處理的例外不洩漏技術細節（SECURITY.md 第 2.3 節）
+
+這一步在做什麼：程式裡如果發生沒有被 catch 的例外，例如 IdentityProviderClient 發現設定錯誤而丟出 InvalidOperationException，目前的行為是：
+- 開發環境：.NET 自動顯示「開發人員例外頁面」，完整列出例外訊息和 stack trace。開發時很方便。
+- 非開發環境：回 500，body 是空的。沒有洩漏細節，但呼叫端完全不知道發生什麼事，維運人員也很難從大量 log 裡找出是哪一次請求出錯。
+
+這次在非開發環境加上統一的錯誤處理：
+- 回應只給通用訊息和追蹤編號（trace_id），不透露例外內容。
+- 完整的例外記在 log 裡，也帶上同一個 trace_id。
+
+使用者或 MCP Client 回報問題時，只要提供 trace_id，維運人員就能直接在 log 裡找到那一筆。
+
+同時要修正上一步的 SecurityHeadersMiddleware：例外處理器在產生錯誤回應前，會清空所有已經設定的回應標頭，所以 500 回應會遺失安全標頭。要改成在「回應即將送出」那一刻才加標頭。
+
+1. SecurityHeadersMiddleware.cs：InvokeAsync 改成用 OnStarting
+``` csharp
+public Task InvokeAsync(HttpContext context)
+{
+    // 用 OnStarting 在「回應即將送出」時才加上標頭：
+    // 例外處理器產生500回應前會清空已設定的標頭，若在這裡直接設定，500回應就會缺少安全標頭
+    context.Response.OnStarting(() =>
+    {
+        var headers = context.Response.Headers;
+        headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
+        headers["Referrer-Policy"] = "no-referrer";
+        headers["X-Content-Type-Options"] = "nosniff";
+        return Task.CompletedTask;
+    });
+
+    return _next(context);
+}
+```
+
+2. Program.cs：在 pipeline 的最前面加上例外處理
+
+最上面加上：
+``` csharp
+using Microsoft.AspNetCore.Diagnostics;
+```
+
+在 var app = builder.Build(); 之後、app.UseMiddleware<SecurityHeadersMiddleware>(); 之前加上：
+``` csharp
+// 未處理的例外：回應只給通用訊息與追蹤編號，完整例外只寫進 log（SECURITY.md 第2.3節）。
+// 開發環境保留 .NET 內建的開發人員例外頁面，方便除錯
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+    {
+        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+        app.Logger.LogError(exception, "Unhandled exception. TraceId={TraceId}, Path={Path}.",
+            context.TraceIdentifier, context.Request.Path);
+
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(new
+        {
+            error = "server_error",
+            error_description = "伺服器發生錯誤，請稍後再試。",
+            trace_id = context.TraceIdentifier,
+        });
+    }));
+}
+```
+
+幾個重點說明：
+
+- 為什麼一定要放在 pipeline 最前面：例外會從發生的地方往外傳，只有排在它前面的 middleware 接得到。放在最前面，後面任何地方（OpenIddict、Controller、IdentityProviderClient）丟出的例外都會被它接住。
+- OnStarting：註冊一個「回應標頭即將送出時」才執行的動作。例外處理器清空標頭發生在送出之前，所以 OnStarting 會在清空之後才執行，500 回應也能帶到安全標頭。
+- context.TraceIdentifier：ASP.NET Core 為每個請求自動產生的唯一編號。同一次請求在回應和 log 裡看到的是同一個值。
+- error = "server_error"：這是 OAuth 標準裡「伺服器內部錯誤」的錯誤代碼。MCP Client 看到它，就知道是 Server 端的問題，不是自己的請求有錯。
+- log 會出現兩次：ASP.NET Core 的例外處理器本身也會記一筆 An unhandled exception has occurred...。我們自己再記一筆，是為了確保 TraceId 一定出現在 log 訊息裡，方便搜尋。
+- 我們自己回的 400（例如「無效或已過期的 nonce」）不受影響：那些是已經處理過的錯誤，不是例外。這一步只處理沒有被 catch 的例外。
+
+測試時要注意：這個處理器只在非開發環境啟用，所以要暫時讓它在開發環境也生效，再故意製造一個例外。測完兩處都要改回來。
+
+1. 暫時把 if (!app.Environment.IsDevelopment()) 改成 if (true)，重啟 Authorization Server。
+2. 暫時把 Redeem 網址改成 HTTP，讓 IdentityProviderClient 因為「不是 HTTPS」而丟出例外：
+UPDATE "IdentityProviders" SET "RedeemApiUrl" = 'http://localhost:16888/api/internal/sso/redeem' WHERE "ProviderId" = 'pnp';
+3. 開著 Follow redirects，送一次 /connect/authorize。最後會停在 bridge-callback，回 500。
+4. 改回來：
+UPDATE "IdentityProviders" SET "RedeemApiUrl" = 'https://localhost:16888/api/internal/sso/redeem' WHERE "ProviderId" = 'pnp';
+   if (true) 也改回 if (!app.Environment.IsDevelopment())，重啟。
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 第 3 步的回應是 500，body 只有 {"error":"server_error","error_description":"伺服器發生錯誤，請稍後再試。","trace_id":"..."}，沒有例外訊息或 stack trace。
+{% asset_image https_error1.jpg https_error1 %}
+3. 500 回應的標頭裡仍然有 Content-Security-Policy、Referrer-Policy、X-Content-Type-Options。
+{% asset_image https_error2.jpg https_error2 %}
+4. Authorization Server 的 Console 有 Unhandled exception. TraceId=...，TraceId 和回應的 trace_id 一樣，下面還有完整的例外訊息「身分來源 'pnp' 的 API 網址未設定或不是 HTTPS。」。
+{% asset_image https_error3.jpg https_error3 %}
+5. 改回來之後，正常流程恢復。

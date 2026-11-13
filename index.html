@@ -101,7 +101,11 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5>
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="此篇主要著重在資安補強的部分"><a href="#此篇主要著重在資安補強的部分" class="headerlink" title="此篇主要著重在資安補強的部分"></a>此篇主要著重在資安補強的部分</h5><ul>
+<li>把開發用憑證換成固定的簽章和加密憑證</li>
+<li>加上全域的 null byte 攔截 middleware</li>
+<li>所有回應加上安全標頭，並移除 Server 標頭</li>
+</ul>
         
           <p class="article-more-link">
             <a href="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/#more">Read More</a>
@@ -150,7 +154,11 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="這篇主要會著重在Mock的驗證服務-Mock-Pnp-這段。"><a href="#這篇主要會著重在Mock的驗證服務-Mock-Pnp-這段。" class="headerlink" title="這篇主要會著重在Mock的驗證服務(Mock_Pnp)這段。"></a>這篇主要會著重在Mock的驗證服務(Mock_Pnp)這段。</h5>
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="此篇重點：繼上篇，用模擬方式把驗證到取得token的流程串起來。這邊把驗證服務的部分實體化成一個Mock專案-MockPnp"><a href="#此篇重點：繼上篇，用模擬方式把驗證到取得token的流程串起來。這邊把驗證服務的部分實體化成一個Mock專案-MockPnp" class="headerlink" title="此篇重點：繼上篇，用模擬方式把驗證到取得token的流程串起來。這邊把驗證服務的部分實體化成一個Mock專案(MockPnp)"></a>此篇重點：繼上篇，用模擬方式把驗證到取得token的流程串起來。這邊把驗證服務的部分實體化成一個Mock專案(MockPnp)</h5><ul>
+<li>建立 MockPnp 專案，模擬 PCBRepairNavi 的 &#x2F;sso&#x2F;bridge 和 Redeem API</li>
+<li>Authorization Server 的 RedeemAsync 改成真的呼叫 Redeem API，並簽上 HMAC</li>
+<li>撤銷查詢（IsTokenActiveAsync）改成真的呼叫身分來源</li>
+</ul>
         
           <p class="article-more-link">
             <a href="/2026/11/06/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-4/#more">Read More</a>
@@ -199,7 +207,11 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5>
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="此篇重點：把驗證到取得token的流程串接起來"><a href="#此篇重點：把驗證到取得token的流程串接起來" class="headerlink" title="此篇重點：把驗證到取得token的流程串接起來"></a>此篇重點：把驗證到取得token的流程串接起來</h5><ul>
+<li>建資料表，並把 client 綁定到身分來源，將來能當「共用身分驗證服務」，讓其他部門的系統也接進來。</li>
+<li>&#x2F;connect&#x2F;authorize 改成依 client_id 去 DB 查身分來源，取代 appsettings 裡寫死的 BridgeUrl</li>
+<li>讓「身分來源」跟著整個流程走，bridge-callback 和 refresh 都知道該找哪個身分來源</li>
+</ul>
         
           <p class="article-more-link">
             <a href="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/#more">Read More</a>
@@ -297,7 +309,15 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5>
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="此篇重點：建置基礎服務相關API"><a href="#此篇重點：建置基礎服務相關API" class="headerlink" title="此篇重點：建置基礎服務相關API"></a>此篇重點：建置基礎服務相關API</h5><ul>
+<li>資安加固 ：限定aud（audience）claim</li>
+<li>refresh 被拒絕時，撤銷整條 refresh token 鏈</li>
+<li>第二次經過 &#x2F;connect&#x2F;authorize 時，檢查參數有沒有被竄改</li>
+<li>讓 PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立</li>
+<li>檢查 Discovery 和 JWKS 的內容，確認只允許 S256</li>
+<li>加固 bridge-callback，讓它和 &#x2F;connect&#x2F;authorize 第二次經過一樣嚴謹</li>
+<li>定期清除過期的 PendingAuthorizeRequests</li>
+</ul>
         
           <p class="article-more-link">
             <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/#more">Read More</a>

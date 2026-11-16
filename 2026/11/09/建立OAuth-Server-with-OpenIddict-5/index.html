@@ -30,7 +30,7 @@
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare.jpg">
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare_2.jpg">
 <meta property="article:published_time" content="2026-11-09T06:17:50.000Z">
-<meta property="article:modified_time" content="2026-11-16T07:00:35.773Z">
+<meta property="article:modified_time" content="2026-11-16T07:37:13.924Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -508,7 +508,7 @@
 <p>請執行後確認：</p>
 <ol>
 <li>dotnet build 正常編譯。</li>
-<li>第 1 階段：JWKS 只有一把公鑰，kid 和之前一樣；流程正常。&lt; style&#x3D;”color: red;”&gt;</li>
+<li>第 1 階段：JWKS 只有一把公鑰，kid 和之前一樣；流程正常。</li>
 <li>第 2 階段：JWKS 有兩把公鑰（兩個不同的 kid）；但新拿到的 access_token Header 裡的 kid 還是舊的，因為新憑證還沒生效。</li>
 <li>第 3 階段：<ul>
 <li>新的 access_token 的 kid 變成新憑證的。</li>

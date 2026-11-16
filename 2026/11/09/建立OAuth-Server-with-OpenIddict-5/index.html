@@ -30,7 +30,7 @@
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare.jpg">
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare_2.jpg">
 <meta property="article:published_time" content="2026-11-09T06:17:50.000Z">
-<meta property="article:modified_time" content="2026-11-16T03:40:20.308Z">
+<meta property="article:modified_time" content="2026-11-16T06:56:18.096Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -481,7 +481,9 @@
 <ol>
 <li>產生新憑證，同樣自動產生密碼並存進 user-secrets 的第 1(index：1) 個位置：</li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$b</span> = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes(<span class="variable">$b</span>)</span><br><span class="line"><span class="variable">$password</span> = [Convert]::ToBase64String(<span class="variable">$b</span>)</span><br><span class="line"><span class="variable">$cert</span> = New-SelfSignedCertificate -Subject <span class="string">&#x27;CN=OAuth AuthorizationServer Signing 2&#x27;</span> -KeyAlgorithm RSA -KeyLength 2048 -KeyUsage DigitalSignature -KeyExportPolicy Exportable -CertStoreLocation <span class="string">&#x27;Cert:\CurrentUser\My&#x27;</span> -NotBefore (Get-Date).AddMinutes(5) -NotAfter (Get-Date).AddYears(3)</span><br><span class="line">Export-PfxCertificate -Cert <span class="variable">$cert</span> -FilePath <span class="string">&#x27;D:\Homer\Secrets\oauth-signing-2.pfx&#x27;</span> -Password (ConvertTo-SecureString <span class="variable">$password</span> -AsPlainText -Force) | Out-Null</span><br><span class="line">Remove-Item <span class="string">&quot;Cert:\CurrentUser\My\$(<span class="variable">$cert</span>.Thumbprint)&quot;</span></span><br><span class="line">dotnet user-secrets <span class="built_in">set</span> <span class="string">&quot;Certificates:Signing:1:Password&quot;</span> <span class="variable">$password</span> --project <span class="string">&#x27;D:\Homer\Project\OAuth\OAuth.AuthorizationServer&#x27;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$b</span> = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes(<span class="variable">$b</span>)</span><br><span class="line"><span class="variable">$password</span> = [Convert]::ToBase64String(<span class="variable">$b</span>)</span><br><span class="line"><span class="variable">$cert</span> = New-SelfSignedCertificate -Subject <span class="string">&#x27;CN=OAuth AuthorizationServer Signing 2&#x27;</span> -KeyAlgorithm RSA -KeyLength 2048 -KeyUsage DigitalSignature -KeyExportPolicy Exportable -CertStoreLocation <span class="string">&#x27;Cert:\CurrentUser\My&#x27;</span> -NotBefore (Get-Date).AddMinutes(5) -NotAfter (Get-Date).AddYears(3)</span><br><span class="line">Export-PfxCertificate -Cert <span class="variable">$cert</span> -FilePath <span class="string">&#x27;D:\Homer\Secrets\oauth-signing-2.pfx&#x27;</span> -Password (ConvertTo-SecureString <span class="variable">$password</span> -AsPlainText -Force) | Out-Null</span><br><span class="line">Remove-Item <span class="string">&quot;Cert:\CurrentUser\My\$(<span class="variable">$cert</span>.Thumbprint)&quot;</span></span><br></pre></td></tr></table></figure>
+<p>自動產生密碼</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet user-secrets <span class="built_in">set</span> <span class="string">&quot;Certificates:Signing:1:Password&quot;</span> <span class="variable">$password</span> --project <span class="string">&#x27;D:\Homer\Project\OAuth\OAuth.AuthorizationServer&#x27;</span></span><br></pre></td></tr></table></figure>
 
 <img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E8%BC%AA%E6%9B%BF%E7%94%A8%E7%B0%BD%E7%AB%A0%E6%86%91%E8%AD%89.jpg" class="" title="輪替用簽章憑證">
 
@@ -506,7 +508,7 @@
 <p>請執行後確認：</p>
 <ol>
 <li>dotnet build 正常編譯。</li>
-<li>第 1 階段：JWKS 只有一把公鑰，kid 和之前一樣；流程正常。</li>
+<li>第 1 階段：JWKS 只有一把公鑰，kid 和之前一樣；流程正常。&lt; style&#x3D;”color: red;”&gt;</li>
 <li>第 2 階段：JWKS 有兩把公鑰（兩個不同的 kid）；但新拿到的 access_token Header 裡的 kid 還是舊的，因為新憑證還沒生效。</li>
 <li>第 3 階段：<ul>
 <li>新的 access_token 的 kid 變成新憑證的。</li>
@@ -515,6 +517,14 @@
 </li>
 </ol>
 <p>第 3 階段之後，可以把舊憑證從 Signing 陣列移除（新憑證要變成第 0 個，user-secrets 的索引也要一起調整）。這一步可以先不做</p>
+<p><strong>重點整理：</strong></p>
+<ol>
+<li>在舊憑證到期前，把新憑證加進設定（NotBefore 設在未來、NotAfter 比舊的晚）。新公鑰立刻出現在 JWKS，但還不會用來簽發。</li>
+<li>新憑證生效前：不論是用 Authorization Code 還是 refresh_token 換到的 access_token，kid 都是舊憑證的。</li>
+<li>新憑證生效、重啟之後：兩種方式換到的新 access_token，kid 都會變成新憑證的。</li>
+<li>重疊期間，JWKS 同時有新舊兩把公鑰。<span style="color: red;">新憑證負責簽發，舊憑證繼續驗證之前發出的 token，所以使用者不會被強制登出，達到無縫交替。</span></li>
+<li>等舊憑證簽的 token 都過期（refresh_token 最長 12 小時）之後，再把舊憑證從設定移除。</li>
+</ol>
 
       
     </div>

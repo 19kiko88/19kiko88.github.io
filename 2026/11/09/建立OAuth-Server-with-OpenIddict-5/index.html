@@ -26,8 +26,10 @@
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/https_error2.jpg">
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/https_error3.jpg">
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/%E6%86%91%E8%AD%89%E6%94%B9%E5%AD%98array.jpg">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare.jpg">
+<meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare_2.jpg">
 <meta property="article:published_time" content="2026-11-09T06:17:50.000Z">
-<meta property="article:modified_time" content="2026-11-13T10:21:40.274Z">
+<meta property="article:modified_time" content="2026-11-16T03:12:44.765Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -480,6 +482,9 @@
 </ol>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$b</span> = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes(<span class="variable">$b</span>)</span><br><span class="line"><span class="variable">$password</span> = [Convert]::ToBase64String(<span class="variable">$b</span>)</span><br><span class="line"><span class="variable">$cert</span> = New-SelfSignedCertificate -Subject <span class="string">&#x27;CN=OAuth AuthorizationServer Signing 2&#x27;</span> -KeyAlgorithm RSA -KeyLength 2048 -KeyUsage DigitalSignature -KeyExportPolicy Exportable -CertStoreLocation <span class="string">&#x27;Cert:\CurrentUser\My&#x27;</span> -NotBefore (Get-Date).AddMinutes(5) -NotAfter (Get-Date).AddYears(3)</span><br><span class="line">Export-PfxCertificate -Cert <span class="variable">$cert</span> -FilePath <span class="string">&#x27;D:\Homer\Secrets\oauth-signing-2.pfx&#x27;</span> -Password (ConvertTo-SecureString <span class="variable">$password</span> -AsPlainText -Force) | Out-Null</span><br><span class="line">Remove-Item <span class="string">&quot;Cert:\CurrentUser\My\$(<span class="variable">$cert</span>.Thumbprint)&quot;</span></span><br><span class="line">dotnet user-secrets <span class="built_in">set</span> <span class="string">&quot;Certificates:Signing:1:Password&quot;</span> <span class="variable">$password</span> --project <span class="string">&#x27;D:\Homer\Project\OAuth\OAuth.AuthorizationServer&#x27;</span></span><br></pre></td></tr></table></figure>
 <p>-NotAfter 設 3 年，比舊憑證的 2 年晚，生效後才會被優先選用。</p>
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare.jpg" class="" title="NotBefore_NotAfter_Compare">
+<img src="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare_2.jpg" class="" title="NotBefore_NotAfter_Compare_2">
+
 <ol start="2">
 <li>appsettings.Development.json 的 Signing 陣列加上第二筆：</li>
 </ol>

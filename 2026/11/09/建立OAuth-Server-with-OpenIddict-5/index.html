@@ -30,7 +30,7 @@
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare.jpg">
 <meta property="og:image" content="http://example.com/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/NotBefore_NotAfter_Compare_2.jpg">
 <meta property="article:published_time" content="2026-11-09T06:17:50.000Z">
-<meta property="article:modified_time" content="2026-11-16T06:56:18.096Z">
+<meta property="article:modified_time" content="2026-11-16T07:00:35.773Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -523,7 +523,7 @@
 <li>新憑證生效前：不論是用 Authorization Code 還是 refresh_token 換到的 access_token，kid 都是舊憑證的。</li>
 <li>新憑證生效、重啟之後：兩種方式換到的新 access_token，kid 都會變成新憑證的。</li>
 <li>重疊期間，JWKS 同時有新舊兩把公鑰。<span style="color: red;">新憑證負責簽發，舊憑證繼續驗證之前發出的 token，所以使用者不會被強制登出，達到無縫交替。</span></li>
-<li>等舊憑證簽的 token 都過期（refresh_token 最長 12 小時）之後，再把舊憑證從設定移除。</li>
+<li><span style="color: red;">等舊憑證簽的 token 都過期（refresh_token 最長 12 小時）之後，再把舊憑證從設定移除。</span></li>
 </ol>
 
       
@@ -540,6 +540,15 @@
   
     
 <nav id="article-nav">
+  
+    <a href="/2026/11/16/JWT%E3%80%81JWKS-%E8%88%87-kid-%E7%9A%84%E9%97%9C%E4%BF%82/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          JWT、JWKS 與 kid 的關係
+        
+      </div>
+    </a>
   
   
     <a href="/2026/11/06/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-4/" id="article-nav-older" class="article-nav-link-wrap">
@@ -603,6 +612,10 @@
       <ul>
         
           <li>
+            <a href="/2026/11/16/JWT%E3%80%81JWKS-%E8%88%87-kid-%E7%9A%84%E9%97%9C%E4%BF%82/">JWT、JWKS 與 kid 的關係</a>
+          </li>
+        
+          <li>
             <a href="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/">建立OAuth Server with OpenIddict(5)</a>
           </li>
         
@@ -616,10 +629,6 @@
         
           <li>
             <a href="/2026/11/02/PKCE-code-challenge-code-verifier%E9%96%93%E7%9A%84%E9%97%9C%E4%BF%82/">PKCE. code_challenge. code_verifier間的關係</a>
-          </li>
-        
-          <li>
-            <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/">建立OAuth Server with OpenIddict(2)</a>
           </li>
         
       </ul>

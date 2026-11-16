@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>建立OAuth Server with OpenIddict(6) | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="接續上一篇…此篇主要著重在資安補強的部分正式環境不跑 seed，所以需要一個工具，讓管理員依照「新增 client 申請流程」（設計文件第 9.2 節）核准之後，把資料寫進正式 DB：  身分來源（IdentityProviders） scope（含 Resources） client（redirect_uri、可用的 scope、綁定的身分來源）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="建立OAuth Server with OpenIddict(6)">
+<meta property="og:url" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="接續上一篇…此篇主要著重在資安補強的部分正式環境不跑 seed，所以需要一個工具，讓管理員依照「新增 client 申請流程」（設計文件第 9.2 節）核准之後，把資料寫進正式 DB：  身分來源（IdentityProviders） scope（含 Resources） client（redirect_uri、可用的 scope、綁定的身分來源）">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_manage.jpg">
+<meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/add_oauth_core.jpg">
+<meta property="article:published_time" content="2026-11-16T08:37:39.000Z">
+<meta property="article:modified_time" content="2026-11-16T10:30:35.975Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="OAuth">
+<meta property="article:tag" content="OpenIddict">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_manage.jpg">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-建立OAuth-Server-with-OpenIddict-6" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/" class="article-date">
+  <time class="dt-published" datetime="2026-11-16T08:37:39.000Z" itemprop="datePublished">2026-11-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      建立OAuth Server with OpenIddict(6)
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="此篇主要著重在資安補強的部分"><a href="#此篇主要著重在資安補強的部分" class="headerlink" title="此篇主要著重在資安補強的部分"></a>此篇主要著重在資安補強的部分</h5><p>正式環境不跑 seed，所以需要一個工具，讓管理員依照「新增 client 申請流程」（設計文件第 9.2 節）核准之後，把資料寫進正式 DB：</p>
+<ul>
+<li>身分來源（IdentityProviders）</li>
+<li>scope（含 Resources）</li>
+<li>client（redirect_uri、可用的 scope、綁定的身分來源）</li>
+</ul>
+<span id="more"></span>
+
+<p>我們的作法是：用一個 JSON 檔描述要註冊的內容，由工具讀檔後寫入 DB。</p>
+<ul>
+<li>每個環境一份 JSON，可以放進版本控制，申請、核准都有紀錄。</li>
+<li>重複執行結果相同：已存在就更新成檔案的內容，不存在就新增。</li>
+<li>先檢查所有內容（例如 client 綁定的身分來源存不存在、redirect_uri 是不是 HTTPS），全部通過才寫入，而且包在同一個交易裡，不會只寫一半。</li>
+<li>開發環境的 seed 之後也可以改成讀一份 registration.Development.json，把寫死在程式碼裡的 localhost 網址移出來。</li>
+</ul>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<p>先來看看為什麼建議現階段用 JSON，等到真的有需要時，再在同一套邏輯上加網頁。</p>
+<img src="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_manage.jpg" class="" title="client_manage">
+
+<p>為什麼現在適合 JSON</p>
+<ol>
+<li>符合設計文件的方向：第 9.2 節定的是「Client 註冊採手動管理，建立申請流程文件；不實作 Dynamic Client Registration」。JSON 加 git 就是這個流程最直接的實作。</li>
+<li>規模小：目前只有 1 個身分來源、3 個 scope、1 個 client。短期內就算增加，也是個位數，異動頻率很低。</li>
+<li>不增加攻擊面：Authorization Server 是整個系統安全的核心。管理網頁一旦有漏洞，攻擊者就能新增自己的 client，或修改 redirect_uri，衝擊比一般網站大得多。</li>
+</ol>
+<p>什麼時候該考慮網頁</p>
+<p>設計文件第 1 節的限制條件 4 提到，將來可能擴充成「共用身分驗證服務」，讓其他部門也接進來。如果真的走到這一步，例如：</p>
+<ul>
+<li>十幾個以上的 client，分屬不同部門。</li>
+<li>各部門希望自己管理 client，不想每次都等管理員改檔案。</li>
+</ul>
+<p>這時就值得做管理網頁。</p>
+<h1 id="-3"><a href="#-3" class="headerlink" title=""></a></h1><h1 id="-4"><a href="#-4" class="headerlink" title=""></a></h1><h1 id="-5"><a href="#-5" class="headerlink" title=""></a></h1><hr>
+<h2 id="定義註冊檔格式與驗證規則，建立-OAuth-Registration-專案（只驗證，不寫-DB）"><a href="#定義註冊檔格式與驗證規則，建立-OAuth-Registration-專案（只驗證，不寫-DB）" class="headerlink" title="定義註冊檔格式與驗證規則，建立 OAuth.Registration 專案（只驗證，不寫 DB）"></a>定義註冊檔格式與驗證規則，建立 OAuth.Registration 專案（只驗證，不寫 DB）</h2><p>這一步在做什麼：註冊檔由人編寫，最容易出錯的是打錯欄位名稱、網址寫成 HTTP、client 引用了不存在的 scope。這些錯誤都要在寫入 DB 之前全部找出來、一次列出，讓管理員修正後再執行。</p>
+<p>註冊檔的設計原則</p>
+<ul>
+<li>一個環境一份，例如 registration.Production.json，描述該環境完整的身分來源、scope、client，放進版本控制。</li>
+<li>檔案要自成一體：client 引用的身分來源和 scope，必須定義在同一份檔案裡（offline_access 例外，它是 OAuth 標準 scope）。這樣驗證時不需要連 DB，也能確保檔案完整描述了這個環境。</li>
+<li>只新增、更新，不刪除：檔案裡沒有的項目不會被刪掉。刪除的影響太大，要另外手動處理。</li>
+</ul>
+<ol>
+<li>Authorization Server：新增 Registration&#x2F;RegistrationManifest.cs</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> System.Text.Json;</span><br><span class="line"><span class="keyword">using</span> System.Text.Json.Serialization;</span><br><span class="line"><span class="keyword">using</span> OAuth.AuthorizationServer.Data;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">OAuth.AuthorizationServer.Registration</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 註冊檔（registration.*.json）的內容：某個環境要註冊的身分來源、scope、client（設計文件第9.2節）</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">RegistrationManifest</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> List&lt;IdentityProviderRegistration&gt; IdentityProviders &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = [];</span><br><span class="line">    <span class="keyword">public</span> List&lt;ScopeRegistration&gt; Scopes &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = [];</span><br><span class="line">    <span class="keyword">public</span> List&lt;ClientRegistration&gt; Clients &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">readonly</span> JsonSerializerOptions SerializerOptions = <span class="keyword">new</span>(JsonSerializerDefaults.Web)</span><br><span class="line">    &#123;</span><br><span class="line">        Converters = &#123; <span class="keyword">new</span> JsonStringEnumConverter() &#125;,   <span class="comment">// &quot;mode&quot;: &quot;Bridge&quot; 以字串表示</span></span><br><span class="line">        ReadCommentHandling = JsonCommentHandling.Skip,     <span class="comment">// 允許在註冊檔裡寫註解</span></span><br><span class="line">        AllowTrailingCommas = <span class="literal">true</span>,</span><br><span class="line">        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,   <span class="comment">// 欄位名稱打錯（如 redirectUri）直接報錯，不會被默默忽略</span></span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> RegistrationManifest <span class="title">Load</span>(<span class="params"><span class="built_in">string</span> path</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">using</span> <span class="keyword">var</span> stream = File.OpenRead(path);</span><br><span class="line">        <span class="keyword">return</span> JsonSerializer.Deserialize&lt;RegistrationManifest&gt;(stream, SerializerOptions)</span><br><span class="line">            ?? <span class="keyword">throw</span> <span class="keyword">new</span> JsonException(<span class="string">&quot;註冊檔內容為空。&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">IdentityProviderRegistration</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? ProviderId &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> IdentityProviderMode Mode &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? BridgeUrl &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? RedeemApiUrl &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? RevocationCheckApiUrl &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? HmacSecretRef &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">ScopeRegistration</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? Name &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? DisplayName &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> List&lt;<span class="built_in">string</span>&gt; Resources &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = [];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">ClientRegistration</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? ClientId &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? DisplayName &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">string</span>? IdentityProviderId &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    <span class="keyword">public</span> List&lt;<span class="built_in">string</span>&gt; RedirectUris &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = [];</span><br><span class="line">    <span class="keyword">public</span> List&lt;<span class="built_in">string</span>&gt; Scopes &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125; = [];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Authorization Server：新增 Registration&#x2F;RegistrationValidator.cs</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> OAuth.AuthorizationServer.Data;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">static</span> OpenIddict.Abstractions.OpenIddictConstants;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">OAuth.AuthorizationServer.Registration</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 寫入資料庫前檢查註冊檔：一次列出所有錯誤，全部通過才允許寫入</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title">RegistrationValidator</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> List&lt;<span class="built_in">string</span>&gt; <span class="title">Validate</span>(<span class="params">RegistrationManifest manifest</span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">var</span> errors = <span class="keyword">new</span> List&lt;<span class="built_in">string</span>&gt;();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ---------- 身分來源 ----------</span></span><br><span class="line">        <span class="keyword">var</span> providerIds = <span class="keyword">new</span> HashSet&lt;<span class="built_in">string</span>&gt;(StringComparer.Ordinal);</span><br><span class="line">        <span class="keyword">foreach</span> (<span class="keyword">var</span> p <span class="keyword">in</span> manifest.IdentityProviders)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> name = <span class="string">$&quot;identityProviders[<span class="subst">&#123;p.ProviderId&#125;</span>]&quot;</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrWhiteSpace(p.ProviderId))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">&quot;identityProviders：有一筆缺少 providerId。&quot;</span>);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!providerIds.Add(p.ProviderId))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：providerId 重複。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 目前只實作 Bridge 模式（設計文件第6節）</span></span><br><span class="line">            <span class="keyword">if</span> (p.Mode != IdentityProviderMode.Bridge)</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：目前只支援 Bridge 模式。&quot;</span>);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            RequireHttpsUrl(errors, name, <span class="string">&quot;bridgeUrl&quot;</span>, p.BridgeUrl);</span><br><span class="line">            RequireHttpsUrl(errors, name, <span class="string">&quot;redeemApiUrl&quot;</span>, p.RedeemApiUrl);</span><br><span class="line">            RequireHttpsUrl(errors, name, <span class="string">&quot;revocationCheckApiUrl&quot;</span>, p.RevocationCheckApiUrl);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrWhiteSpace(p.HmacSecretRef))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：缺少 hmacSecretRef。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ---------- scope ----------</span></span><br><span class="line">        <span class="keyword">var</span> scopeNames = <span class="keyword">new</span> HashSet&lt;<span class="built_in">string</span>&gt;(StringComparer.Ordinal);</span><br><span class="line">        <span class="keyword">foreach</span> (<span class="keyword">var</span> s <span class="keyword">in</span> manifest.Scopes)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> name = <span class="string">$&quot;scopes[<span class="subst">&#123;s.Name&#125;</span>]&quot;</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrWhiteSpace(s.Name))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">&quot;scopes：有一筆缺少 name。&quot;</span>);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (s.Name <span class="keyword">is</span> Scopes.OfflineAccess <span class="keyword">or</span> Scopes.OpenId)</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：OAuth/OIDC 標準 scope 由 OpenIddict 內建處理，不需註冊。&quot;</span>);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!scopeNames.Add(s.Name))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：name 重複。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 沒有 resource 的 scope 不會產生 aud，Resource Server 會拒收（設計文件第9.3節）</span></span><br><span class="line">            <span class="keyword">if</span> (s.Resources.Count == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：至少要有一個 resources。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ---------- client ----------</span></span><br><span class="line">        <span class="keyword">var</span> clientIds = <span class="keyword">new</span> HashSet&lt;<span class="built_in">string</span>&gt;(StringComparer.Ordinal);</span><br><span class="line">        <span class="keyword">foreach</span> (<span class="keyword">var</span> c <span class="keyword">in</span> manifest.Clients)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> name = <span class="string">$&quot;clients[<span class="subst">&#123;c.ClientId&#125;</span>]&quot;</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrWhiteSpace(c.ClientId))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">&quot;clients：有一筆缺少 clientId。&quot;</span>);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (!clientIds.Add(c.ClientId))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：clientId 重複。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 引用的身分來源必須定義在同一份註冊檔</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrWhiteSpace(c.IdentityProviderId) || !providerIds.Contains(c.IdentityProviderId))</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：identityProviderId &#x27;<span class="subst">&#123;c.IdentityProviderId&#125;</span>&#x27; 未定義在 identityProviders。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (c.RedirectUris.Count == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：至少要有一個 redirectUris。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">foreach</span> (<span class="keyword">var</span> uri <span class="keyword">in</span> c.RedirectUris)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span> (!IsAllowedRedirectUri(uri))</span><br><span class="line">                &#123;</span><br><span class="line">                    errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：redirectUri &#x27;<span class="subst">&#123;uri&#125;</span>&#x27; 必須是 HTTPS，或 http 的 loopback 位址（127.0.0.1、[::1]、localhost），且不可含 #fragment。&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (c.Scopes.Count == <span class="number">0</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：至少要有一個 scopes。&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">foreach</span> (<span class="keyword">var</span> scope <span class="keyword">in</span> c.Scopes)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="comment">// 引用的 scope 必須定義在同一份註冊檔（offline_access 為標準 scope，例外）</span></span><br><span class="line">                <span class="keyword">if</span> (scope != Scopes.OfflineAccess &amp;&amp; !scopeNames.Contains(scope))</span><br><span class="line">                &#123;</span><br><span class="line">                    errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：scope &#x27;<span class="subst">&#123;scope&#125;</span>&#x27; 未定義在 scopes。&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> errors;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">RequireHttpsUrl</span>(<span class="params">List&lt;<span class="built_in">string</span>&gt; errors, <span class="built_in">string</span> name, <span class="built_in">string</span> field, <span class="built_in">string</span>? <span class="keyword">value</span></span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (!Uri.TryCreate(<span class="keyword">value</span>, UriKind.Absolute, <span class="keyword">out</span> <span class="keyword">var</span> uri) || uri.Scheme != Uri.UriSchemeHttps)</span><br><span class="line">        &#123;</span><br><span class="line">            errors.Add(<span class="string">$&quot;<span class="subst">&#123;name&#125;</span>：<span class="subst">&#123;field&#125;</span> 必須是 HTTPS 網址。&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// OAuth 2.1：redirect_uri 必須是 HTTPS；原生應用程式（如 MCP client）可用 http 的 loopback 位址接收回呼</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="built_in">bool</span> <span class="title">IsAllowedRedirectUri</span>(<span class="params"><span class="built_in">string</span> <span class="keyword">value</span></span>)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (!Uri.TryCreate(<span class="keyword">value</span>, UriKind.Absolute, <span class="keyword">out</span> <span class="keyword">var</span> uri) || !<span class="built_in">string</span>.IsNullOrEmpty(uri.Fragment))</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> uri.Scheme == Uri.UriSchemeHttps</span><br><span class="line">            || (uri.Scheme == Uri.UriSchemeHttp &amp;&amp; uri.IsLoopback);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>建立 console 專案<br>在 D:\Homer\Project\OAuth 下執行：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">dotnet new console -n OAuth.Registration -f net10.0</span><br><span class="line">dotnet sln OAuth.slnx add OAuth.Registration</span><br><span class="line">dotnet add OAuth.Registration reference OAuth.AuthorizationServer</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>OAuth.Registration&#x2F;Program.cs：整個檔案換成</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> System.Text.Json;</span><br><span class="line"><span class="keyword">using</span> OAuth.AuthorizationServer.Registration;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 正式環境註冊工具（設計文件第9.2節）：讀取註冊檔，驗證後寫入 Authorization Server 的資料庫</span></span><br><span class="line"><span class="comment">// 用法：dotnet run -- &lt;註冊檔路徑&gt;</span></span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">args</span>.Length != <span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    Console.Error.WriteLine(<span class="string">&quot;用法：OAuth.Registration &lt;註冊檔路徑&gt;&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">RegistrationManifest manifest;</span><br><span class="line"><span class="keyword">try</span></span><br><span class="line">&#123;</span><br><span class="line">    manifest = RegistrationManifest.Load(<span class="keyword">args</span>[<span class="number">0</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">catch</span> (Exception ex) <span class="keyword">when</span> (ex <span class="keyword">is</span> IOException <span class="keyword">or</span> JsonException)</span><br><span class="line">&#123;</span><br><span class="line">    Console.Error.WriteLine(<span class="string">$&quot;無法讀取註冊檔：<span class="subst">&#123;ex.Message&#125;</span>&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> errors = RegistrationValidator.Validate(manifest);</span><br><span class="line"><span class="keyword">if</span> (errors.Count &gt; <span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">    Console.Error.WriteLine(<span class="string">$&quot;註冊檔驗證失敗，共 <span class="subst">&#123;errors.Count&#125;</span> 項：&quot;</span>);</span><br><span class="line">    <span class="keyword">foreach</span> (<span class="keyword">var</span> error <span class="keyword">in</span> errors)</span><br><span class="line">    &#123;</span><br><span class="line">        Console.Error.WriteLine(<span class="string">$&quot;  - <span class="subst">&#123;error&#125;</span>&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Console.WriteLine(<span class="string">$&quot;驗證通過：身分來源 <span class="subst">&#123;manifest.IdentityProviders.Count&#125;</span> 筆、scope <span class="subst">&#123;manifest.Scopes.Count&#125;</span> 筆、client <span class="subst">&#123;manifest.Clients.Count&#125;</span> 筆。&quot;</span>);</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>新增 OAuth.Registration&#x2F;registration.Development.json<br>內容和目前 seed 寫入的資料相同：</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="comment">// 開發環境的註冊內容（與目前 Program.cs 的 SeedDataAsync 相同）</span></span><br><span class="line">  <span class="attr">&quot;identityProviders&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;providerId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pnp&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;mode&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Bridge&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;bridgeUrl&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://localhost:16888/sso/bridge&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;redeemApiUrl&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://localhost:16888/api/internal/sso/redeem&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;revocationCheckApiUrl&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://localhost:16888/api/internal/sso/token-status&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;hmacSecretRef&quot;</span><span class="punctuation">:</span> <span class="string">&quot;IdentityProviders:Pnp:HmacSecret&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;scopes&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ucs.sn-info.read&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;displayName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SN 資料讀取&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;resources&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;urn:pnp:ucs-mcp&quot;</span> <span class="punctuation">]</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ucs.ecn-rcn-info.read&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;displayName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;UCS ECN/RCN 資料讀取&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;resources&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;urn:pnp:ucs-mcp&quot;</span> <span class="punctuation">]</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pnp.L1-L2-previous-rma-info.read&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;displayName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;SN自動開啟點圖 讀取&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;resources&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;urn:pnp:ucs-mcp&quot;</span> <span class="punctuation">]</span> <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;clients&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;clientId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pnp-mcp-client&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;displayName&quot;</span><span class="punctuation">:</span> <span class="string">&quot;PNP UcsService MCP Client&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;identityProviderId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pnp&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;redirectUris&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;https://localhost:5055/callback&quot;</span> <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;scopes&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;ucs.sn-info.read&quot;</span><span class="punctuation">,</span> <span class="string">&quot;ucs.ecn-rcn-info.read&quot;</span><span class="punctuation">,</span> <span class="string">&quot;pnp.L1-L2-previous-rma-info.read&quot;</span><span class="punctuation">,</span> <span class="string">&quot;offline_access&quot;</span> <span class="punctuation">]</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span>   </span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明：</p>
+<ul>
+<li>UnmappedMemberHandling &#x3D; Disallow：這是這一步最實用的設定。預設情況下，JSON 裡出現 C# 類別沒有的欄位（例如把 redirectUris 打成 redirectUri），會被默默忽略，結果 client 就沒有 redirect_uri，而且沒有任何錯誤訊息。設成 Disallow 後，打錯欄位名稱會直接報錯。</li>
+<li>為什麼驗證是「收集所有錯誤」，不是遇到第一個就停：註冊檔可能有好幾個錯誤。一次全部列出，管理員可以一次修完；遇到第一個就停，要反覆執行好幾次才能修完。</li>
+<li>redirect_uri 為什麼允許 http 的 loopback：MCP Client（例如 Claude Desktop）是安裝在使用者電腦上的程式，它會在本機開一個臨時的 port，例如 <a target="_blank" rel="noopener" href="http://127.0.0.1:5055/callback%EF%BC%8C%E4%BE%86%E6%8E%A5%E6%94%B6">http://127.0.0.1:5055/callback，來接收</a> Authorization Code。這個請求不會離開使用者的電腦，所以 OAuth 2.1 允許這種情況用 http，其他情況一律要 HTTPS。uri.IsLoopback 會判斷主機是不是 127.0.0.1、[::1] 或 localhost。</li>
+<li>不允許 #fragment：OAuth 規範禁止 redirect_uri 帶 #，因為 Authorization Code 是放在 query string 上傳回的。</li>
+<li>為什麼 offline_access、openid 不能放在 scopes 區塊：它們是標準 scope，OpenIddict 本身就認得。client 的 scopes 可以直接引用 offline_access。</li>
+<li>回傳碼（exit code）：成功回傳 0，失敗回傳 1。將來放進部署腳本時，腳本可以依回傳碼判斷要不要繼續。</li>
+</ul>
+<p>測試時要注意：這一步不連 DB，只看驗證結果。</p>
+<ol>
+<li>正確的註冊檔：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run --project OAuth.Registration -- OAuth.Registration\registration.Development.json</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>故意寫錯的註冊檔：複製一份 OAuth.Registration\registration.Bad.json，內容如下：</li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;identityProviders&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;providerId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;pnp&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;mode&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Bridge&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;bridgeUrl&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http://pnp/sso/bridge&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;redeemApiUrl&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://pnp/api/internal/sso/redeem&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;revocationCheckApiUrl&quot;</span><span class="punctuation">:</span> <span class="string">&quot;https://pnp/api/internal/sso/token-status&quot;</span> <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;scopes&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;ucs.sn-info.read&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;resources&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span> <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;clients&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;clientId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;bad-client&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;identityProviderId&quot;</span><span class="punctuation">:</span> <span class="string">&quot;nope&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;redirectUris&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;http://evil.example/callback&quot;</span> <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;scopes&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span> <span class="string">&quot;ucs.unknown.read&quot;</span><span class="punctuation">,</span> <span class="string">&quot;offline_access&quot;</span> <span class="punctuation">]</span> <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>執行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run --project OAuth.Registration -- OAuth.Registration\registration.Bad.json</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>欄位名稱打錯：把 registration.Bad.json 裡的 “redirectUris” 改成 “redirectUri”，再執行一次。</li>
+</ol>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build 正常編譯。</li>
+<li>第 1 項印出「驗證通過：身分來源 1 筆、scope 3 筆、client 1 筆。」。</li>
+<li>第 2 項一次列出 6 項錯誤：<ul>
+<li>bridgeUrl 不是 HTTPS</li>
+<li>缺少 hmacSecretRef</li>
+<li>scope 沒有 resources</li>
+<li>identityProviderId ‘nope’ 未定義</li>
+<li>redirectUri 不是 HTTPS 也不是 loopback</li>
+<li>scope ‘ucs.unknown.read’ 未定義</li>
+</ul>
+</li>
+<li>第 3 項印出「無法讀取註冊檔」，訊息裡提到 redirectUri 這個無法對應的欄位。</li>
+</ol>
+<h1 id="-6"><a href="#-6" class="headerlink" title=""></a></h1><h1 id="-7"><a href="#-7" class="headerlink" title=""></a></h1><h1 id="-8"><a href="#-8" class="headerlink" title=""></a></h1><hr>
+<h2 id="建立-OAuth-Core-共用專案，把資料模型、migration-和註冊邏輯搬過去"><a href="#建立-OAuth-Core-共用專案，把資料模型、migration-和註冊邏輯搬過去" class="headerlink" title="建立 OAuth.Core 共用專案，把資料模型、migration 和註冊邏輯搬過去"></a>建立 OAuth.Core 共用專案，把資料模型、migration 和註冊邏輯搬過去</h2><p>這一步在做什麼：建立一個類別庫 OAuth.Core，把「資料結構」和「註冊規則」這些與網站無關的程式碼移進去。Authorization Server 和註冊工具都改成引用它：</p>
+<img src="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/add_oauth_core.jpg" class="" title="add_oauth_core">
+
+<ol>
+<li>建立 OAuth.Core 專案，加入方案並安裝套件<br>在 D:\Homer\Project\OAuth 下執行：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dotnet new classlib -n OAuth.Core -f net10.0</span><br><span class="line">Remove-Item OAuth.Core\Class1.cs</span><br><span class="line">dotnet sln OAuth.slnx add OAuth.Core</span><br><span class="line"></span><br><span class="line">dotnet add OAuth.Core package Npgsql.EntityFrameworkCore.PostgreSQL --version 10.0.3</span><br><span class="line">dotnet add OAuth.Core package OpenIddict.EntityFrameworkCore --version 7.7.2</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>調整專案引用</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Authorization Server 改為引用 Core</span></span><br><span class="line">dotnet add OAuth.AuthorizationServer reference OAuth.Core</span><br><span class="line"></span><br><span class="line"><span class="comment"># 註冊工具：拿掉對網站專案的引用，改為引用 Core</span></span><br><span class="line">dotnet remove OAuth.Registration reference OAuth.AuthorizationServer\OAuth.AuthorizationServer.csproj</span><br><span class="line">dotnet add OAuth.Registration reference OAuth.Core</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>搬移檔案<br>Data 和 Migrations 已經在 git 裡，用 git mv 搬，git 會記錄成「移動」而不是「刪除＋新增」，保留檔案歷史：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">mv</span> OAuth.AuthorizationServer/Data OAuth.Core/Data</span><br><span class="line">git <span class="built_in">mv</span> OAuth.AuthorizationServer/Migrations OAuth.Core/Migrations</span><br></pre></td></tr></table></figure>
+
+<p>註冊的兩個檔案還沒 commit，用一般的移動。順便把 Registration.cs 改名為 RegistrationValidator.cs，讓檔名和類別名稱一致：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">New-Item -ItemType Directory OAuth.Core\Registration | Out-Null</span><br><span class="line">Move-Item OAuth.AuthorizationServer\Registration.cs OAuth.Core\Registration\RegistrationValidator.cs</span><br><span class="line">Move-Item OAuth.AuthorizationServer\RegistrationManifest.cs OAuth.Core\Registration\RegistrationManifest.cs</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>修改 namespace<br>搬過去的檔案，namespace 都還是 OAuth.AuthorizationServer.Data、.Migrations、.Registration，要改成 OAuth.Core.*。總共 17 個檔案（其中 migration 就有 11 個），用下面的指令一次替換：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$utf8</span> = New-Object Text.UTF8Encoding(<span class="variable">$false</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># OAuth.Core 裡的檔案：namespace 與 using 全部改成 OAuth.Core.*</span></span><br><span class="line">Get-ChildItem OAuth.Core -Recurse -Filter *.cs | Where-Object &#123; <span class="variable">$_</span>.FullName -notmatch <span class="string">&#x27;\\(bin|obj)\\&#x27;</span> &#125; | ForEach-Object &#123;</span><br><span class="line">    <span class="variable">$text</span> = [IO.File]::ReadAllText(<span class="variable">$_</span>.FullName)</span><br><span class="line">    <span class="variable">$new</span> = <span class="variable">$text</span>.Replace(<span class="string">&#x27;OAuth.AuthorizationServer.&#x27;</span>, <span class="string">&#x27;OAuth.Core.&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span> (<span class="variable">$new</span> -ne <span class="variable">$text</span>) &#123; [IO.File]::WriteAllText(<span class="variable">$_</span>.FullName, <span class="variable">$new</span>, <span class="variable">$utf8</span>); <span class="string">&quot;已更新 <span class="subst">$($_.Name)</span>&quot;</span> &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 網站與註冊工具：只改 using</span></span><br><span class="line">foreach (<span class="variable">$dir</span> <span class="keyword">in</span> <span class="string">&#x27;OAuth.AuthorizationServer&#x27;</span>, <span class="string">&#x27;OAuth.Registration&#x27;</span>) &#123;</span><br><span class="line">    Get-ChildItem <span class="variable">$dir</span> -Recurse -Filter *.cs | Where-Object &#123; <span class="variable">$_</span>.FullName -notmatch <span class="string">&#x27;\\(bin|obj)\\&#x27;</span> &#125; | ForEach-Object &#123;</span><br><span class="line">        <span class="variable">$text</span> = [IO.File]::ReadAllText(<span class="variable">$_</span>.FullName)</span><br><span class="line">        <span class="variable">$new</span> = <span class="variable">$text</span>.Replace(<span class="string">&#x27;using OAuth.AuthorizationServer.Data;&#x27;</span>, <span class="string">&#x27;using OAuth.Core.Data;&#x27;</span>).Replace(<span class="string">&#x27;using OAuth.AuthorizationServer.Registration;&#x27;</span>, <span class="string">&#x27;using OAuth.Core.Registration;&#x27;</span>)</span><br><span class="line">        <span class="keyword">if</span> (<span class="variable">$new</span> -ne <span class="variable">$text</span>) &#123; [IO.File]::WriteAllText(<span class="variable">$_</span>.FullName, <span class="variable">$new</span>, <span class="variable">$utf8</span>); <span class="string">&quot;已更新 <span class="subst">$($_.Name)</span>&quot;</span> &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>預期會列出：</p>
+<ul>
+<li>OAuth.Core：3 個 Data 檔、11 個 Migrations 檔、2 個 Registration 檔。</li>
+<li>網站：AuthorizationController.cs、Program.cs、IdentityProviderClient.cs、PendingAuthorizeRequestCleanupService.cs。</li>
+<li>註冊工具：Program.cs。</li>
+</ul>
+<ol start="5">
+<li>之後的 dotnet ef 指令寫法<br>DbContext 和 migration 現在在 OAuth.Core，但連線字串、設定在 Authorization Server。所以之後所有 dotnet ef 指令都要指定兩個專案：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dotnet ef migrations add &lt;名稱&gt; --project OAuth.Core --startup-project OAuth.AuthorizationServer</span><br><span class="line">dotnet ef database update --project OAuth.Core --startup-project OAuth.AuthorizationServer</span><br></pre></td></tr></table></figure>
+<p><span style="color: red;">連線相關設定在OAuth.AuthorizationServer，Migration檔案在OAuth.Core。dotnet ef 會執行 OAuth.AuthorizationServer 的 Program.cs，取得連線設定；再到 OAuth.Core 讀取 migration。兩個專案你都要指定，至於裡面的檔案，它會自己找到。!!</span></p>
+<p>幾個重點說明：</p>
+<ul>
+<li><p>為什麼用 PowerShell 的 [IO.File]::ReadAllText &#x2F; WriteAllText，不用 Get-Content &#x2F; Set-Content：Windows PowerShell 5.1 的 Set-Content 預設用系統的 ANSI 編碼寫檔，會把程式碼裡的中文註解變成亂碼。[IO.File] 加上指定 UTF-8 才能安全地保留中文。<br>幾個重點說明：</p>
+</li>
+<li><p>為什麼用 PowerShell 的 [IO.File]::ReadAllText &#x2F; WriteAllText，不用 Get-Content &#x2F; Set-Content：Windows PowerShell 5.1 的 Set-Content 預設用系統的 ANSI 編碼寫檔，會把程式碼裡的中文註解變成亂碼。[IO.File] 加上指定 UTF-8 才能安全地保留中文。</p>
+</li>
+<li><p>migration 的 namespace 改了，DB 會不會以為是新的 migration：不會。DB 的 __EFMigrationsHistory 表只記錄 migration 的 ID，例如 20261021030433_InitialCreate，不包含 namespace。ID 寫在每個 .Designer.cs 的 [Migration(“…”)] 裡，這次沒有動到。</p>
+</li>
+<li><p>為什麼不用另外設定 migration 的位置：EF Core 預設把 migration 放在<strong>DbContext 所在的組件</strong>。DbContext 搬到 OAuth.Core，migration 也在 OAuth.Core，兩者一致，不用額外設定。</p>
+</li>
+<li><p>OAuth.Core 為什麼要裝 Npgsql：migration 裡有 PostgreSQL 專用的設定（例如 Npgsql.EntityFrameworkCore.PostgreSQL.Metadata），所以 migration 所在的專案必須引用 Npgsql。Authorization Server 原本的 Npgsql、OpenIddict.EntityFrameworkCore 套件可以保留，重複引用不會出問題。</p>
+</li>
+<li><p>Microsoft.EntityFrameworkCore.Design 留在 Authorization Server：dotnet ef 需要的是 startup project 裡有這個套件，也就是 –startup-project 指定的那個專案。</p>
+</li>
+<li><p>IdentityProviderClient、PendingAuthorizeRequestCleanupService 留在 Authorization Server：它們分別負責「呼叫外部 API」和「網站的背景工作」，屬於網站的執行邏輯，不是共用的資料結構。</p>
+</li>
+</ul>
+<p>測試時要注意：這一步不改任何功能，所以要確認「搬完之後和原本完全一樣」。</p>
+<ol>
+<li>編譯整個方案：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet build OAuth.slnx</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>確認 EF 認得搬過去的 migration，而且 DB 已經全部套用：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet ef migrations list --project OAuth.Core --startup-project OAuth.AuthorizationServer</span><br></pre></td></tr></table></figure>
+<p>3.確認 model 和 migration 的 snapshot 一致，搬移沒有讓 EF 誤以為模型變了：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet ef migrations has-pending-model-changes --project OAuth.Core --startup-project OAuth.AuthorizationServer</span><br></pre></td></tr></table></figure>
+<ol start="4">
+<li>啟動 Authorization Server 和 MockPnp，跑一次完整流程。</li>
+<li>執行註冊工具的驗證：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dotnet run --project OAuth.Registration -- OAuth.Registration\registration.Development.json</span><br></pre></td></tr></table></figure>
+
+<p>請執行後確認：</p>
+<ol>
+<li>第 1 項編譯成功，沒有錯誤。</li>
+<li>第 2 項列出 5 個 migration（InitialCreate 到 AddProviderIdToPendingAuthorizeRequest），而且都沒有標示 (Pending)。</li>
+<li>第 3 項顯示沒有待處理的 model 變更（No changes have been made to the model since the last migration.）。</li>
+<li>第 4 項完整流程正常。</li>
+<li>第 5 項印出「驗證通過」。</li>
+<li>git status 裡，Data、Migrations 的檔案顯示為 renamed（R），不是一堆刪除和新增。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/" data-id="cmwj4igqj0000ewn147948y0q" data-title="建立OAuth Server with OpenIddict(6)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/11/16/JWT%E3%80%81JWKS-%E8%88%87-kid-%E7%9A%84%E9%97%9C%E4%BF%82/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">JWT、JWKS 與 kid 的關係</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Google-Cloud/">Google Cloud</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Trouble-Shooting/">Trouble Shooting</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CDN/" rel="tag">CDN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-App-Script/" rel="tag">Google App Script</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Auth-Platform/" rel="tag">Google Auth Platform</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IAP/" rel="tag">IAP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JWKS/" rel="tag">JWKS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JWT/" rel="tag">JWT</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MCP/" rel="tag">MCP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" rel="tag">物件導向</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 18.33px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 15px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 16.67px;">Angular</a> <a href="/tags/CDN/" style="font-size: 10px;">CDN</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 11.67px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Google-App-Script/" style="font-size: 11.67px;">Google App Script</a> <a href="/tags/Google-Auth-Platform/" style="font-size: 10px;">Google Auth Platform</a> <a href="/tags/IAP/" style="font-size: 10px;">IAP</a> <a href="/tags/JWKS/" style="font-size: 10px;">JWKS</a> <a href="/tags/JWT/" style="font-size: 10px;">JWT</a> <a href="/tags/MCP/" style="font-size: 10px;">MCP</a> <a href="/tags/OAuth/" style="font-size: 20px;">OAuth</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/OpenIddict/" style="font-size: 20px;">OpenIddict</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 13.33px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 13.33px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 13.33px;">docker</a> <a href="/tags/n8n/" style="font-size: 13.33px;">n8n</a> <a href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" style="font-size: 10px;">物件導向</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 11.67px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/11/">November 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/10/">October 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/">建立OAuth Server with OpenIddict(6)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/16/JWT%E3%80%81JWKS-%E8%88%87-kid-%E7%9A%84%E9%97%9C%E4%BF%82/">JWT、JWKS 與 kid 的關係</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/">建立OAuth Server with OpenIddict(5)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/06/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-4/">建立OAuth Server with OpenIddict(4)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/03/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-3/">建立OAuth-Server-with-OpenIddict(3)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

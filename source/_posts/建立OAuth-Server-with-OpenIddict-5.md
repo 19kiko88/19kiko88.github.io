@@ -13,6 +13,7 @@ tags:
 - 加上全域的 null byte 攔截 middleware
 - 所有回應加上安全標頭，並移除 Server 標頭
 - 未處理的例外不洩漏技術細節
+- 讓 Server 能同時載入多張簽章、加密憑證，實現重疊式輪替
 <!-- more -->
 #
 #
@@ -538,3 +539,164 @@ if (app.Environment.IsDevelopment())
 請執行後確認：
 1. dotnet build 正常編譯，Server 正常啟動。
 2. 完整流程正常，可以換到 token。
+#
+#
+#
+---
+## 讓 Server 能同時載入多張簽章、加密憑證，實現重疊式輪替（設計文件第 9.1 節）
+
+先確認了 OpenIddict 7.7.2 在登記多張憑證時怎麼選用（從套件的 API 文件）：
+- 優先用到期日最晚的 X.509 憑證。
+- 還沒生效（NotBefore 在未來）的憑證永遠不會被優先選用。
+
+這兩條規則剛好能做出重疊式輪替，不用自己寫切換邏輯。
+
+---
+
+這一步在做什麼：目前設定只能指定一張簽章憑證。要換憑證時，只能直接把舊的換成新的，會有兩個問題：
+1. 舊的 access_token 立刻失效：JWKS 裡只剩新公鑰，Resource Server 找不到舊 kid 對應的公鑰，驗簽失敗。
+2. 舊的 refresh_token 也失效：refresh_token 是用簽章憑證簽、再用加密憑證加密的，換掉任何一張都解不開。
+
+重疊式輪替的做法：
+
+階段 1：設定裡同時放「舊憑證」和「新憑證（NotBefore 設在幾天後）」，部署
+        → JWKS 同時發布新舊兩把公鑰，Resource Server 有時間抓到新公鑰
+        → 新憑證還沒生效，所以簽發仍然用舊的
+階段 2：新憑證生效後重啟（或下次部署）
+        → OpenIddict 改用新憑證簽發（到期日較晚，且已生效）
+        → 舊憑證還在，舊 token 仍然能驗證
+階段 3：等舊憑證簽的 token 都過期（refresh_token 最長 12 小時）後，把舊憑證從設定移除
+
+這一步把設定從「一張」改成「一個陣列」，程式就能同時載入多張。
+
+1. 把 user-secrets 的密碼移到陣列的 key
+
+設定改成陣列後，密碼的 key 從 Certificates:Signing:Password 變成 Certificates:Signing:0:Password（0 代表陣列第一個）。下面這段會把現有的密碼搬過去，不會印在畫面上：
+``` bash
+$p = 'D:\Homer\Project\OAuth\OAuth.AuthorizationServer'
+$list = dotnet user-secrets list --project $p
+foreach ($name in 'Signing', 'Encryption') {
+    $pwd = ($list | Where-Object { $_ -like "Certificates:${name}:Password = *" }) -replace '^.*? = ', ''
+    dotnet user-secrets set "Certificates:${name}:0:Password" $pwd --project $p
+    dotnet user-secrets remove "Certificates:${name}:Password" --project $p
+}
+```
+{% asset_image 憑證改存array.jpg 憑證改存array %}
+
+2. appsettings.Development.json：改成陣列
+``` json
+"Certificates": {
+  "Signing": [
+    { "Path": "D:\\Homer\\Secrets\\oauth-signing.pfx" }
+  ],
+  "Encryption": [
+    { "Path": "D:\\Homer\\Secrets\\oauth-encryption.pfx" }
+  ]
+},
+```
+
+3. Program.cs：改成逐一載入
+把原本這段：
+``` csharp
+options.AddSigningCertificate(LoadCertificate(builder.Configuration, "Certificates:Signing"))
+       .AddEncryptionCertificate(LoadCertificate(builder.Configuration, "Certificates:Encryption"));
+```
+
+換成：
+``` csharp
+// 可登記多張憑證以支援重疊式輪替（設計文件第9.1節）。OpenIddict 會自動選用「已生效且到期日最晚」的憑證簽發/加密，
+// 其餘仍用於驗證/解密舊 token；簽章憑證的公鑰全部發布在 JWKS
+foreach (var certificate in LoadCertificates(builder.Configuration, "Certificates:Signing"))
+{
+    options.AddSigningCertificate(certificate);
+}
+
+foreach (var certificate in LoadCertificates(builder.Configuration, "Certificates:Encryption"))
+{
+    options.AddEncryptionCertificate(certificate);
+}
+static IEnumerable<X509Certificate2> LoadCertificates(IConfiguration configuration, string section)
+{
+    var entries = configuration.GetSection(section).GetChildren().ToList();
+    if (entries.Count == 0)
+    {
+        throw new InvalidOperationException($"找不到設定 '{section}'");
+    }
+
+    foreach (var entry in entries)
+    {
+        var path = entry["Path"]
+            ?? throw new InvalidOperationException($"找不到設定 '{entry.Path}:Path'");
+        var password = entry["Password"]
+            ?? throw new InvalidOperationException($"找不到設定 '{entry.Path}:Password'");
+
+        yield return X509CertificateLoader.LoadPkcs12FromFile(path, password);
+    }
+}
+```
+
+幾個重點說明：
+
+- appsettings 的陣列和 user-secrets 怎麼合併：.NET 的設定系統會把 JSON 陣列攤平成 Certificates:Signing:0:Path、Certificates:Signing:1:Path 這種 key。user-secrets 的 Certificates:Signing:0:Password 會合併到同一個索引，所以第 0 張憑證同時拿得到 Path 和 Password。
+- entry.Path：這是設定區段自己的完整路徑，例如 Certificates:Signing:0，不是憑證檔案的路徑。錯誤訊息用它，可以直接指出是第幾張憑證少了設定。
+- 加密憑證也能輪替：機制相同，但它不會發布出去，只有 Authorization Server 自己用。換新的加密憑證時，舊的要保留到所有用舊憑證加密的 refresh_token 都過期，最長 12 小時。
+- 為什麼要重啟才會切換：OpenIddict 在啟動時就把憑證排好順序。新憑證生效的那一刻，不一定會馬上改用它，所以流程裡安排「生效後重啟或部署」，這樣切換的時間點比較明確。
+- NotBefore 要設多久：至少要大於 Resource Server 快取 JWKS 的時間，加上 access_token 的效期（30 分鐘）。正式環境建議幾天，讓所有 Resource Server 都確定抓到新公鑰。測試時設 5 分鐘就好。
+
+測試時要注意：分三個階段做，每個階段都要重啟 Authorization Server。
+
+第 1 階段：改成陣列後，行為不變
+1. 重啟，開啟 https://localhost:7280/.well-known/jwks。
+2. 跑一次完整流程。
+
+第 2 階段：加入一張 5 分鐘後才生效的新簽章憑證
+1. 產生新憑證，同樣自動產生密碼並存進 user-secrets 的第 1(index：1) 個位置：
+``` bash
+$b = New-Object byte[] 24; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+$password = [Convert]::ToBase64String($b)
+$cert = New-SelfSignedCertificate -Subject 'CN=OAuth AuthorizationServer Signing 2' -KeyAlgorithm RSA -KeyLength 2048 -KeyUsage DigitalSignature -KeyExportPolicy Exportable -CertStoreLocation 'Cert:\CurrentUser\My' -NotBefore (Get-Date).AddMinutes(5) -NotAfter (Get-Date).AddYears(3)
+Export-PfxCertificate -Cert $cert -FilePath 'D:\Homer\Secrets\oauth-signing-2.pfx' -Password (ConvertTo-SecureString $password -AsPlainText -Force) | Out-Null
+Remove-Item "Cert:\CurrentUser\My\$($cert.Thumbprint)"
+```
+自動產生密碼
+``` bash
+dotnet user-secrets set "Certificates:Signing:1:Password" $password --project 'D:\Homer\Project\OAuth\OAuth.AuthorizationServer'
+```
+
+{% asset_image  輪替用簽章憑證.jpg 輪替用簽章憑證 %}
+
+-NotAfter 設 3 年，比舊憑證的 2 年晚，生效後才會被優先選用。
+{% asset_image  NotBefore_NotAfter_Compare.jpg NotBefore_NotAfter_Compare %}
+{% asset_image  NotBefore_NotAfter_Compare_2.jpg NotBefore_NotAfter_Compare_2 %}
+
+2. appsettings.Development.json 的 Signing 陣列加上第二筆：
+``` json
+"Signing": [
+  { "Path": "D:\\Homer\\Secrets\\oauth-signing.pfx" },
+  { "Path": "D:\\Homer\\Secrets\\oauth-signing-2.pfx" }
+],
+```
+
+3. 5 分鐘內重啟，看 JWKS，再跑一次完整流程。把這次拿到的 refresh_token 留著。
+
+第 3 階段：新憑證生效後
+1. 等第 2 階段產生憑證超過 5 分鐘後，重啟。
+2. 跑一次完整流程，看新的 access_token。
+3. 用第 2 階段留下的舊 refresh_token refresh 一次。
+
+請執行後確認：
+1. dotnet build 正常編譯。
+2. 第 1 階段：JWKS 只有一把公鑰，kid 和之前一樣；流程正常。
+3. 第 2 階段：JWKS 有兩把公鑰（兩個不同的 kid）；但新拿到的 access_token Header 裡的 kid 還是舊的，因為新憑證還沒生效。
+4. 第 3 階段：
+   - 新的 access_token 的 kid 變成新憑證的。
+   - 第 2 階段的舊 refresh_token 仍然能 refresh 成功，代表舊憑證還在負責驗證，輪替期間不會讓使用者被登出。
+
+第 3 階段之後，可以把舊憑證從 Signing 陣列移除（新憑證要變成第 0 個，user-secrets 的索引也要一起調整）。這一步可以先不做
+
+**重點整理：**
+1. 在舊憑證到期前，把新憑證加進設定（NotBefore 設在未來、NotAfter 比舊的晚）。新公鑰立刻出現在 JWKS，但還不會用來簽發。
+2. 新憑證生效前：不論是用 Authorization Code 還是 refresh_token 換到的 access_token，kid 都是舊憑證的。
+3. 新憑證生效、重啟之後：兩種方式換到的新 access_token，kid 都會變成新憑證的。
+4. 重疊期間，JWKS 同時有新舊兩把公鑰。<span style="color: red;">新憑證負責簽發，舊憑證繼續驗證之前發出的 token，所以使用者不會被強制登出，達到無縫交替。</span>
+5. <span style="color: red;">等舊憑證簽的 token 都過期（refresh_token 最長 12 小時）之後，再把舊憑證從設定移除。</span>

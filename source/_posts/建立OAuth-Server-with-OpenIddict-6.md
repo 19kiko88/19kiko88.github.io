@@ -9,7 +9,7 @@ tags:
 ---
 ##### 接續上一篇...
 ##### 此篇主要再把Client註冊的部分，抽出交由OAuth.Registration處理。
-正式環境不跑 seed，所以需要一個工具，讓管理員依照「新增 client 申請流程」（設計文件第 9.2 節）核准之後，把資料寫進正式 DB：
+正式環境不跑 seed(DEV環境的Client測試資料，在seed產生並存入DB)，所以需要一個工具，讓管理員依照「新增 client 申請流程」（設計文件第 9.2 節）核准之後，把資料寫進正式 DB：
 <!-- more -->
 
 我們的作法是：用一個 JSON 檔描述要註冊的內容，由工具讀檔後寫入 DB。
@@ -353,6 +353,8 @@ return 0;
 ``` bash
 dotnet run --project OAuth.Registration -- OAuth.Registration\registration.Development.json
 ```
+{% asset_image oauth_registration_run.jpg oauth_registration_run %}
+
 2. 故意寫錯的註冊檔：複製一份 OAuth.Registration\registration.Bad.json，內容如下：
 ``` json
 {
@@ -505,3 +507,357 @@ dotnet run --project OAuth.Registration -- OAuth.Registration\registration.Devel
 4. 第 4 項完整流程正常。
 5. 第 5 項印出「驗證通過」。
 6. git status 裡，Data、Migrations 的檔案顯示為 renamed（R），不是一堆刪除和新增。
+#
+#
+#
+---
+## 註冊工具寫入 DB，並把連線字串移出 appsettings.json
+這一步在做什麼：
+1. OAuth.Core 統一「怎麼連 DB」：新增 AddAuthorizationServerDb(...)，網站和註冊工具都用它註冊 DbContext 和 OpenIddict Core。
+2. OAuth.Core 新增寫入邏輯 RegistrationService：依註冊檔新增或更新身分來源、scope、client，全部包在同一個交易裡。
+3. 註冊工具連上 DB：驗證通過後呼叫 RegistrationService，印出每一筆是「新增」還是「更新」。
+4. 連線字串改放 user-secrets：網站和註冊工具各自從自己的 user-secrets 讀取，appsettings.json 裡不再有密碼。
+
+1. OAuth.Core：新增 ServiceCollectionExtensions.cs。<span style="color: red;">讓OAuth.AuthorizationServer/Program.cs跟OAuth.Registration/Program.cs可以共用，不用重複寫</span>
+``` csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using OAuth.Core.Data;
+
+namespace OAuth.Core;
+
+public static class ServiceCollectionExtensions
+{
+    /// <summary>
+    /// 註冊 Authorization Server 的資料庫與 OpenIddict Core（Application/Authorization/Scope/Token 的管理服務）。
+    /// 連線字串由呼叫端（網站、註冊工具）從各自的設定讀取後傳入
+    /// </summary>
+    public static IServiceCollection AddAuthorizationServerDb(this IServiceCollection services, string connectionString)
+    {
+        services.AddDbContext<AuthorizationServerDbContext>(options => options.UseNpgsql(connectionString));
+
+        services.AddOpenIddict()
+            .AddCore(options =>
+            {
+                // 告訴 OpenIddict 用我們的 DbContext 存 Applications/Authorizations/Scopes/Tokens
+                options.UseEntityFrameworkCore()
+                       .UseDbContext<AuthorizationServerDbContext>();
+            });
+
+        return services;
+    }
+}
+```
+
+2. OAuth.Core：新增 Registration/RegistrationService.cs
+``` csharp
+using System.Text.Json;
+using OAuth.Core.Data;
+using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
+
+namespace OAuth.Core.Registration;
+
+/// <summary>
+/// 依註冊檔新增或更新身分來源、scope、client（只新增/更新，不刪除）。
+/// 全部在同一個交易內完成，任何一筆失敗就全部還原，不會只寫入一半
+/// </summary>
+public class RegistrationService
+{
+    private readonly AuthorizationServerDbContext _db;
+    private readonly IOpenIddictApplicationManager _applicationManager;
+    private readonly IOpenIddictScopeManager _scopeManager;
+
+    public RegistrationService(
+        AuthorizationServerDbContext db,
+        IOpenIddictApplicationManager applicationManager,
+        IOpenIddictScopeManager scopeManager)
+    {
+        _db = db;
+        _applicationManager = applicationManager;
+        _scopeManager = scopeManager;
+    }
+
+    /// <summary>
+    /// 呼叫前必須先通過 RegistrationValidator.Validate
+    /// </summary>
+    /// <returns>每一筆的處理結果（新增/更新），供操作者確認與留存</returns>
+    public async Task<List<string>> ApplyAsync(RegistrationManifest manifest)
+    {
+        var results = new List<string>();
+
+        // OpenIddict 的 manager 與這裡使用同一個 DbContext（同一個 DI scope），所以會一起納入這個交易
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
+        // ---------- 身分來源 ----------
+        foreach (var p in manifest.IdentityProviders)
+        {
+            var entity = await _db.IdentityProviders.FindAsync(p.ProviderId);
+            if (entity is null)
+            {
+                entity = new IdentityProvider { ProviderId = p.ProviderId! };
+                _db.IdentityProviders.Add(entity);
+                results.Add($"新增 身分來源 {p.ProviderId}");
+            }
+            else
+            {
+                results.Add($"更新 身分來源 {p.ProviderId}");
+            }
+
+            entity.Mode = p.Mode;
+            entity.BridgeUrl = p.BridgeUrl;
+            entity.RedeemApiUrl = p.RedeemApiUrl;
+            entity.RevocationCheckApiUrl = p.RevocationCheckApiUrl;
+            entity.HmacSecretRef = p.HmacSecretRef;
+        }
+        await _db.SaveChangesAsync();
+
+        // ---------- scope ----------
+        foreach (var s in manifest.Scopes)
+        {
+            var descriptor = new OpenIddictScopeDescriptor
+            {
+                Name = s.Name,
+                DisplayName = s.DisplayName,
+            };
+            descriptor.Resources.UnionWith(s.Resources);
+
+            var existing = await _scopeManager.FindByNameAsync(s.Name!);
+            if (existing is null)
+            {
+                await _scopeManager.CreateAsync(descriptor);
+                results.Add($"新增 scope {s.Name}");
+            }
+            else
+            {
+                await _scopeManager.UpdateAsync(existing, descriptor);
+                results.Add($"更新 scope {s.Name}");
+            }
+        }
+
+        // ---------- client ----------
+        foreach (var c in manifest.Clients)
+        {
+            // 依設計文件第9.2節：一律為 public client、自動核准（Implicit consent），只開放 authorization_code 與 refresh_token
+            var descriptor = new OpenIddictApplicationDescriptor
+            {
+                ClientId = c.ClientId,
+                ClientType = ClientTypes.Public,
+                ConsentType = ConsentTypes.Implicit,
+                DisplayName = c.DisplayName,
+            };
+
+            foreach (var uri in c.RedirectUris)
+            {
+                descriptor.RedirectUris.Add(new Uri(uri));
+            }
+
+            descriptor.Permissions.UnionWith(
+            [
+                Permissions.Endpoints.Authorization,
+                Permissions.Endpoints.Token,
+                Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
+                Permissions.ResponseTypes.Code,
+            ]);
+            foreach (var scope in c.Scopes)
+            {
+                descriptor.Permissions.Add(Permissions.Prefixes.Scope + scope);
+            }
+
+            // 綁定身分來源（設計文件第6節）
+            descriptor.Properties[IdentityProvider.ApplicationPropertyName] = JsonSerializer.SerializeToElement(c.IdentityProviderId);
+
+            var existing = await _applicationManager.FindByClientIdAsync(c.ClientId!);
+            if (existing is null)
+            {
+                await _applicationManager.CreateAsync(descriptor);
+                results.Add($"新增 client {c.ClientId}");
+            }
+            else
+            {
+                await _applicationManager.UpdateAsync(existing, descriptor);
+                results.Add($"更新 client {c.ClientId}");
+            }
+        }
+
+        await transaction.CommitAsync();
+        return results;
+    }
+}
+```
+
+3. OAuth.AuthorizationServer/Program.cs：改用 AddAuthorizationServerDb
+
+最上面加上 using OAuth.Core;
+
+把原本的：
+``` csharp
+builder.Services.AddDbContext<AuthorizationServerDbContext>(options =>
+{
+    options.UseNpgsql(connectionString);
+});
+
+builder.Services.AddOpenIddict()
+    .AddCore(options =>
+    {
+        // 告訴 OpenIddict 用我們的 DbContext 存 Applications/Authorizations/Scopes/Tokens
+        options.UseEntityFrameworkCore()
+               .UseDbContext<AuthorizationServerDbContext>();
+    })
+    .AddServer(options =>
+```
+改成：
+``` csharp
+// 資料庫與 OpenIddict Core（與註冊工具共用同一套設定）
+builder.Services.AddAuthorizationServerDb(connectionString);
+
+builder.Services.AddOpenIddict()
+    .AddServer(options =>
+```
+.AddServer(...) 和 .AddValidation(...) 的內容都不用改。
+
+4. 註冊工具：安裝套件，Program.cs 加上寫入
+``` bash
+dotnet add OAuth.Registration package Microsoft.Extensions.Hosting
+```
+
+OAuth.Registration/Program.cs 整個檔案換成：
+``` csharp
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using OAuth.Core;
+using OAuth.Core.Registration;
+
+// 正式環境註冊工具（設計文件第9.2節）：讀取註冊檔，驗證後寫入 Authorization Server 的資料庫
+// 用法：dotnet run -- <註冊檔路徑>
+if (args.Length != 1)
+{
+    Console.Error.WriteLine("用法：OAuth.Registration <註冊檔路徑>");
+    return 1;
+}
+
+RegistrationManifest manifest;
+try
+{
+    manifest = RegistrationManifest.Load(args[0]);
+}
+catch (Exception ex) when (ex is IOException or JsonException)
+{
+    Console.Error.WriteLine($"無法讀取註冊檔：{ex.Message}");
+    return 1;
+}
+
+var errors = RegistrationValidator.Validate(manifest);
+if (errors.Count > 0)
+{
+    Console.Error.WriteLine($"註冊檔驗證失敗，共 {errors.Count} 項：");
+    foreach (var error in errors)
+    {
+        Console.Error.WriteLine($"  - {error}");
+    }
+    return 1;
+}
+
+Console.WriteLine($"驗證通過：身分來源 {manifest.IdentityProviders.Count} 筆、scope {manifest.Scopes.Count} 筆、client {manifest.Clients.Count} 筆。");
+
+var builder = Host.CreateApplicationBuilder();
+
+// 開發環境的連線字串放在 user-secrets；正式環境由環境變數 ConnectionStrings__AuthorizationServerDb 提供
+builder.Configuration.AddUserSecrets<Program>(optional: true);
+builder.Logging.SetMinimumLevel(LogLevel.Warning);   // 不顯示 EF 的 SQL log，只留警告與錯誤
+
+var connectionString = builder.Configuration.GetConnectionString("AuthorizationServerDb");
+if (string.IsNullOrEmpty(connectionString))
+{
+    Console.Error.WriteLine("找不到連線字串 'ConnectionStrings:AuthorizationServerDb'。");
+    return 1;
+}
+
+builder.Services.AddAuthorizationServerDb(connectionString);
+builder.Services.AddScoped<RegistrationService>();
+
+using var host = builder.Build();
+using var scope = host.Services.CreateScope();
+
+var results = await scope.ServiceProvider.GetRequiredService<RegistrationService>().ApplyAsync(manifest);
+
+Console.WriteLine("寫入完成：");
+foreach (var result in results)
+{
+    Console.WriteLine($"  - {result}");
+}
+Console.WriteLine("提醒：Authorization Server 會快取 client 資料，請重啟後再使用新的設定。");
+return 0;
+```
+
+5. 連線字串改放 user-secrets
+先從 OAuth.AuthorizationServer/appsettings.json 複製目前的連線字串，然後在 D:\Homer\Project\OAuth 下執行（字串用單引號包住，裡面的 @ 才不會被 PowerShell 解讀）：
+
+# 網站
+``` bash
+dotnet user-secrets set "ConnectionStrings:AuthorizationServerDb" '<連線字串>' --project OAuth.AuthorizationServer
+```
+
+# 註冊工具
+``` bash
+dotnet user-secrets init --project OAuth.Registration
+dotnet user-secrets set "ConnectionStrings:AuthorizationServerDb" '<連線字串>' --project OAuth.Registration
+```
+
+連線字串改好後可以確認一下是否更新成功(開頭要包含Host=)
+``` bash
+dotnet user-secrets list --project OAuth.AuthorizationServer
+dotnet user-secrets list --project OAuth.Registration
+```
+最後把 OAuth.AuthorizationServer/appsettings.json 裡整個 "ConnectionStrings": { ... } 區塊刪掉。
+
+幾個重點說明：
+
+- 為什麼 OpenIddict Core 也放進 AddAuthorizationServerDb：註冊工具要用 IOpenIddictApplicationManager、IOpenIddictScopeManager 寫入 client 和 scope，它們屬於 OpenIddict Core。網站和註冊工具都需要，所以和 DbContext 一起放在共用的方法裡。
+- 網站呼叫兩次 AddOpenIddict() 沒關係嗎：沒關係。OpenIddict 的設計允許多次呼叫，每次拿到的是同一組設定，分別加上 Core、Server、Validation 就好。
+- 交易怎麼包住 OpenIddict 的寫入：RegistrationService 注入的 _db，和 OpenIddict manager 內部使用的 DbContext，在同一個 DI scope 裡是同一個實例。所以在 _db 上開的交易，OpenIddict 的 CreateAsync、UpdateAsync 也會包含在內。最後 CommitAsync() 之前有任何例外，await using 會自動還原。
+- UpdateAsync(existing, descriptor) 是「以檔案為準」：它會把 DB 裡的 client 整個改成 descriptor 的內容，包括 RedirectUris、Permissions。所以從註冊檔拿掉某個 redirect_uri 後再執行一次，DB 裡的也會被拿掉。只有「整個 client 從檔案裡刪掉」時，DB 裡的那筆才不會被刪除。
+- 為什麼要提醒重啟 Authorization Server：之前測試身分來源綁定時發現過，OpenIddict 會把 client 資料快取在記憶體裡。註冊工具改了 DB，執行中的網站不一定馬上看得到。
+- Host.CreateApplicationBuilder() 不傳 args：args 會被當成設定來源（例如 --Key=Value）。我們的參數是註冊檔路徑，不是設定值，所以不傳進去。
+- AddUserSecrets<Program>(optional: true)：一般 console 程式只有在環境設成 Development 時才會讀 user-secrets。這裡明確加上，開發時就不用另外設定環境。正式機上沒有 user-secrets 檔案，optional: true 讓它直接略過，改用環境變數。
+- 舊的密碼還留在 git 歷史裡：刪掉 appsettings.json 的連線字串之後，之前的 commit 裡仍然看得到它。這是本機開發用的資料庫，風險不大，但建議之後換一組密碼。正式環境的 DB 密碼從一開始就不要出現在任何檔案裡。
+
+測試時要注意：用一份測試用的註冊檔，確認「新增」和「更新」兩種情況。
+
+1. 網站改從 user-secrets 讀連線字串：重啟 Authorization Server，跑一次完整流程。
+2. 既有資料全部是「更新」：
+dotnet run --project OAuth.Registration -- OAuth.Registration\registration.Development.json
+3. 新增 client：複製一份 registration.Development.json，存成 OAuth.Registration\registration.Test.json，在 clients 陣列加上第二筆：
+``` json
+{
+  "clientId": "test-client",
+  "displayName": "註冊工具測試用",
+  "identityProviderId": "pnp",
+  "redirectUris": [ "http://127.0.0.1:8080/callback" ],
+  "scopes": [ "ucs.sn-info.read" ]
+}
+```
+   執行兩次：
+``` bash   
+dotnet run --project OAuth.Registration -- OAuth.Registration\registration.Test.json
+```
+4. 到 DB 確認 test-client 的內容：
+``` sql
+SELECT "ClientId", "ClientType", "ConsentType", "RedirectUris", "Permissions", "Properties"
+FROM "OpenIddictApplications" WHERE "ClientId" = 'test-client';
+```
+5. 測完刪掉測試用的 client：
+``` sql
+DELETE FROM "OpenIddictApplications" WHERE "ClientId" = 'test-client';
+```
+
+請執行後確認：
+1. dotnet build OAuth.slnx 正常編譯。
+2. 第 1 項：appsettings.json 沒有連線字串，完整流程照樣能換到 token。
+3. 第 2 項：5 筆全部是「更新」（身分來源 1、scope 3、client 1）。
+4. 第 3 項：第一次執行，test-client 是「新增」，其他是「更新」；第二次執行全部是「更新」。
+5. 第 4 項：test-client 是 public、implicit，RedirectUris 是 ["http://127.0.0.1:8080/callback"]，Permissions 包含 scp:ucs.sn-info.read，Properties 是 {"identity_provider_id":"pnp"}。

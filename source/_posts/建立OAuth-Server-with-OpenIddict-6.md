@@ -8,11 +8,8 @@ tags:
   - OpenIddict
 ---
 ##### 接續上一篇...
-##### 此篇主要著重在資安補強的部分
+##### 此篇主要再把Client註冊的部分，抽出交由OAuth.Registration處理。
 正式環境不跑 seed，所以需要一個工具，讓管理員依照「新增 client 申請流程」（設計文件第 9.2 節）核准之後，把資料寫進正式 DB：
-- 身分來源（IdentityProviders）
-- scope（含 Resources）
-- client（redirect_uri、可用的 scope、綁定的身分來源）
 <!-- more -->
 
 我們的作法是：用一個 JSON 檔描述要註冊的內容，由工具讀檔後寫入 DB。

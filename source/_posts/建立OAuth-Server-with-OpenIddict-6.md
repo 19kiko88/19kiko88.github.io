@@ -861,3 +861,85 @@ DELETE FROM "OpenIddictApplications" WHERE "ClientId" = 'test-client';
 3. 第 2 項：5 筆全部是「更新」（身分來源 1、scope 3、client 1）。
 4. 第 3 項：第一次執行，test-client 是「新增」，其他是「更新」；第二次執行全部是「更新」。
 5. 第 4 項：test-client 是 public、implicit，RedirectUris 是 ["http://127.0.0.1:8080/callback"]，Permissions 包含 scp:ucs.sn-info.read，Properties 是 {"identity_provider_id":"pnp"}。
+#
+#
+#
+---
+## 開發環境的 seed 改成讀 registration.Development.json
+這一步在做什麼：Authorization Server 的 SeedDataAsync 目前把開發用的身分來源、scope、client 寫死在程式碼裡，而且邏輯和註冊工具是兩套。這次改成：
+- 開發資料移到 registration.Development.json。
+- seed 改成呼叫和註冊工具同一套的 RegistrationValidator 和 RegistrationService。
+
+完成後，開發和正式環境的註冊方式就一致了，差別只在讀哪一份檔案、由誰觸發：
+{% asset_image registration_json_compare.jpg registration_json_compare %}
+
+1. 把 registration.Development.json 移到網站專案
+開發資料是給網站用的，所以檔案移到網站專案的資料夾。註冊工具執行時本來就是用參數指定路徑，所以不受影響。
+Move-Item OAuth.Registration\registration.Development.json OAuth.AuthorizationServer\registration.Development.json
+如果這個檔案已經 commit 過，改用 git mv。
+
+2. OAuth.AuthorizationServer/Program.cs
+最上面加上：
+``` csharp
+using OAuth.Core.Registration;
+```
+在 builder.Services.AddAuthorizationServerDb(connectionString); 下面加上：
+``` csharp
+// 註冊邏輯：開發環境的 seed 使用（正式環境由 OAuth.Registration 工具執行同一套邏輯）
+builder.Services.AddScoped<RegistrationService>();
+```
+
+把整個 SeedDataAsync 方法換成：
+``` csharp
+static async Task SeedDataAsync(WebApplication app)
+{
+    // 開發環境的預設資料：與正式環境使用同一套註冊邏輯（設計文件第9.2節），內容來自 registration.Development.json
+    var path = Path.Combine(app.Environment.ContentRootPath, "registration.Development.json");
+    var manifest = RegistrationManifest.Load(path);
+
+    var errors = RegistrationValidator.Validate(manifest);
+    if (errors.Count > 0)
+    {
+        throw new InvalidOperationException($"registration.Development.json 驗證失敗：{string.Join("；", errors)}");
+    }
+
+    //program.cs沒有建構子  無法透過建構子注入。直接向DI容器要，取得RegistrationService
+    using var scope = app.Services.CreateScope();    
+    var results = await scope.ServiceProvider.GetRequiredService<RegistrationService>().ApplyAsync(manifest);
+
+    app.Logger.LogInformation("Development seed applied. {Results}", string.Join("、", results));
+}
+```
+
+呼叫 SeedDataAsync 的地方（if (app.Environment.IsDevelopment()) 那段）不用改。
+
+改完之後，Program.cs 最上面原本給舊 seed 用的 using System.Text.Json;，如果 Visual Studio 顯示為灰色（沒有被使用），就可以刪掉。using static OpenIddict.Abstractions.OpenIddictConstants; 還要保留，關掉 plain 的 CodeChallengeMethods.Plain 會用到它。
+
+幾個重點說明：
+
+- app.Environment.ContentRootPath：網站的「內容根目錄」。用 dotnet run 或 Visual Studio 執行時，就是 OAuth.AuthorizationServer 專案資料夾，所以放在那裡的 registration.Development.json 不用另外設定複製到輸出資料夾。
+- 驗證失敗為什麼直接丟例外：開發資料有錯，代表專案裡的檔案被改壞了，應該立刻讓開發者知道，而不是帶著錯誤的資料繼續跑。Server 會啟動失敗，訊息裡會列出所有錯誤。
+- 行為和舊的 seed 有一點不同：舊的 seed 是「不存在才新增」，新的是「每次啟動都更新成檔案的內容」。所以如果你手動改了開發 DB 的 client 或身分來源（例如之前測試時改 BridgeUrl），重啟後會被改回檔案的值。要改開發資料，請改 registration.Development.json。
+- RegistrationService 為什麼註冊成 Scoped：它依賴 DbContext，DbContext 是 Scoped。seed 裡用 CreateScope() 開一個 scope 取得它，用完就釋放，和背景清除服務是同樣的做法。
+
+測試時要注意：
+
+1. 正常啟動：重啟 Authorization Server。
+2. 確認 seed 真的是讀檔案：
+   - 暫時把 registration.Development.json 裡 pnp-mcp-client 的 displayName 改成 PNP MCP Client (from json)，重啟。
+   - 到 DB 查：
+SELECT "ClientId", "DisplayName" FROM "OpenIddictApplications";
+   - 改回原本的值，再重啟一次。
+3. 驗證失敗時無法啟動：暫時把 redirectUris 改成 [ "http://evil.example/callback" ]，重啟。測完改回來。
+
+<span style="color: red; font: bold;">dev環境才會每次從registration.Development.json更新client資訊，prd環境必須透過執行OAuth.Registration來手動更新</span>
+
+請執行後確認：
+1. dotnet build OAuth.slnx 正常編譯。
+2. 第 1 項：Console 出現 Development seed applied. 更新 身分來源 pnp、更新 scope ...、更新 client pnp-mcp-client，完整流程正常。
+3. 第 2 項：DB 的 DisplayName 變成 PNP MCP Client (from json)，改回來後也恢復。
+4. 第 3 項：Server 啟動失敗，例外訊息是「registration.Development.json 驗證失敗：clients[pnp-mcp-client]：redirectUri 'http://evil.example/callback' 必須是 HTTPS...」。
+{% asset_image client_invalidate.jpg client_invalidate%}
+
+完成上面步驟後，目前的Client註冊方式為：
+{% asset_image client_register.jpg client_register %}

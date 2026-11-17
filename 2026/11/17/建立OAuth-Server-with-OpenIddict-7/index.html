@@ -14,8 +14,9 @@
 <meta property="og:description" content="單元測試">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="http://example.com/2026/11/17/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-7/test_items.jpg">
+<meta property="og:image" content="http://example.com/2026/11/17/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-7/db_oauth_test.jpg">
 <meta property="article:published_time" content="2026-11-17T09:37:09.000Z">
-<meta property="article:modified_time" content="2026-11-17T09:43:57.540Z">
+<meta property="article:modified_time" content="2026-11-17T10:11:42.038Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -116,7 +117,7 @@
 <ol>
 <li>建立測試專案<br>在 D:\Homer\Project\OAuth 下執行：</li>
 </ol>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dotnet new xunit -n OAuth.Tests -f net10.0</span><br><span class="line">dotnet sln OAuth.slnx add OAuth.Tests</span><br><span class="line">dotnet add OAuth.Tests reference OAuth.AuthorizationServer</span><br><span class="line">dotnet add OAuth.Tests package Microsoft.AspNetCore.Mvc.Testing</span><br><span class="line">Remove-Item OAuth.Tests\UnitTest1.cs</span><br></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">dotnet new xunit -n OAuth.Tests -f net10.0</span><br><span class="line">dotnet sln OAuth.slnx add OAuth.Tests</span><br><span class="line">dotnet add OAuth.Tests reference OAuth.AuthorizationServer</span><br><span class="line">dotnet add OAuth.Tests package Microsoft.AspNetCore.Mvc.Testing --version 10.0.3</span><br><span class="line">Remove-Item OAuth.Tests\UnitTest1.cs</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
 <li>測試資料庫的連線字串放在測試專案的 user-secrets<br>資料庫名稱一定要包含 test，測試程式會檢查，避免誤刪開發資料庫：</li>
@@ -174,6 +175,8 @@
 <li>編譯並執行測試：<br>dotnet test OAuth.Tests</li>
 <li>到 DB 確認多了一個 OAuth_Test 資料庫，開發用的 OAuth 資料庫沒有被動到。</li>
 </ol>
+<img src="/2026/11/17/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-7/db_oauth_test.jpg" class="" title="db_oauth_test">
+
 <p>請執行後確認：</p>
 <ol>
 <li>dotnet build OAuth.slnx 正常編譯。</li>

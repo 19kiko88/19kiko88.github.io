@@ -16,8 +16,11 @@
 <meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_manage.jpg">
 <meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/oauth_registration_run.jpg">
 <meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/add_oauth_core.jpg">
+<meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/registration_json_compare.jpg">
+<meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_invalidate.jpg">
+<meta property="og:image" content="http://example.com/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_register.jpg">
 <meta property="article:published_time" content="2026-11-16T08:37:39.000Z">
-<meta property="article:modified_time" content="2026-11-17T07:59:45.862Z">
+<meta property="article:modified_time" content="2026-11-17T09:11:26.903Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="OAuth">
 <meta property="article:tag" content="OpenIddict">
@@ -381,8 +384,54 @@
 <li>開發資料移到 registration.Development.json。</li>
 <li>seed 改成呼叫和註冊工具同一套的 RegistrationValidator 和 RegistrationService。</li>
 </ul>
-<p>完成後，開發和正式環境的註冊方式就一致了，差別只在讀哪一份檔案、由誰觸發：<br>┌──────────┬────────────────────────────────────────────────────────┬──────────────────────────────┐<br>│          │                        開發環境                        │           正式環境           │<br>├──────────┼────────────────────────────────────────────────────────┼──────────────────────────────┤<br>│ 註冊檔   │ registration.Development.json                          │ registration.Production.json │<br>├──────────┼────────────────────────────────────────────────────────┼──────────────────────────────┤<br>│ 誰觸發   │ 網站啟動時自動執行                                     │ 管理員手動執行註冊工具       │<br>├──────────┼────────────────────────────────────────────────────────┼──────────────────────────────┤<br>│ 註冊邏輯 │ RegistrationValidator ＋ RegistrationService（同一套） │ 同左                         │<br>└──────────┴────────────────────────────────────────────────────────┴──────────────────────────────┘</p>
+<p>完成後，開發和正式環境的註冊方式就一致了，差別只在讀哪一份檔案、由誰觸發：</p>
+<img src="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/registration_json_compare.jpg" class="" title="registration_json_compare">
 
+<ol>
+<li><p>把 registration.Development.json 移到網站專案<br>開發資料是給網站用的，所以檔案移到網站專案的資料夾。註冊工具執行時本來就是用參數指定路徑，所以不受影響。<br>Move-Item OAuth.Registration\registration.Development.json OAuth.AuthorizationServer\registration.Development.json<br>如果這個檔案已經 commit 過，改用 git mv。</p>
+</li>
+<li><p>OAuth.AuthorizationServer&#x2F;Program.cs<br>最上面加上：</p>
+</li>
+</ol>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> OAuth.Core.Registration;</span><br></pre></td></tr></table></figure>
+<p>在 builder.Services.AddAuthorizationServerDb(connectionString); 下面加上：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 註冊邏輯：開發環境的 seed 使用（正式環境由 OAuth.Registration 工具執行同一套邏輯）</span></span><br><span class="line">builder.Services.AddScoped&lt;RegistrationService&gt;();</span><br></pre></td></tr></table></figure>
+
+<p>把整個 SeedDataAsync 方法換成：</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">async</span> Task <span class="title">SeedDataAsync</span>(<span class="params">WebApplication app</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 開發環境的預設資料：與正式環境使用同一套註冊邏輯（設計文件第9.2節），內容來自 registration.Development.json</span></span><br><span class="line">    <span class="keyword">var</span> path = Path.Combine(app.Environment.ContentRootPath, <span class="string">&quot;registration.Development.json&quot;</span>);</span><br><span class="line">    <span class="keyword">var</span> manifest = RegistrationManifest.Load(path);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> errors = RegistrationValidator.Validate(manifest);</span><br><span class="line">    <span class="keyword">if</span> (errors.Count &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">$&quot;registration.Development.json 驗證失敗：<span class="subst">&#123;<span class="built_in">string</span>.Join(<span class="string">&quot;；&quot;</span>, errors)&#125;</span>&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//program.cs沒有建構子  無法透過建構子注入。直接向DI容器要，取得RegistrationService</span></span><br><span class="line">    <span class="keyword">using</span> <span class="keyword">var</span> scope = app.Services.CreateScope();    </span><br><span class="line">    <span class="keyword">var</span> results = <span class="keyword">await</span> scope.ServiceProvider.GetRequiredService&lt;RegistrationService&gt;().ApplyAsync(manifest);</span><br><span class="line"></span><br><span class="line">    app.Logger.LogInformation(<span class="string">&quot;Development seed applied. &#123;Results&#125;&quot;</span>, <span class="built_in">string</span>.Join(<span class="string">&quot;、&quot;</span>, results));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>呼叫 SeedDataAsync 的地方（if (app.Environment.IsDevelopment()) 那段）不用改。</p>
+<p>改完之後，Program.cs 最上面原本給舊 seed 用的 using System.Text.Json;，如果 Visual Studio 顯示為灰色（沒有被使用），就可以刪掉。using static OpenIddict.Abstractions.OpenIddictConstants; 還要保留，關掉 plain 的 CodeChallengeMethods.Plain 會用到它。</p>
+<p>幾個重點說明：</p>
+<ul>
+<li>app.Environment.ContentRootPath：網站的「內容根目錄」。用 dotnet run 或 Visual Studio 執行時，就是 OAuth.AuthorizationServer 專案資料夾，所以放在那裡的 registration.Development.json 不用另外設定複製到輸出資料夾。</li>
+<li>驗證失敗為什麼直接丟例外：開發資料有錯，代表專案裡的檔案被改壞了，應該立刻讓開發者知道，而不是帶著錯誤的資料繼續跑。Server 會啟動失敗，訊息裡會列出所有錯誤。</li>
+<li>行為和舊的 seed 有一點不同：舊的 seed 是「不存在才新增」，新的是「每次啟動都更新成檔案的內容」。所以如果你手動改了開發 DB 的 client 或身分來源（例如之前測試時改 BridgeUrl），重啟後會被改回檔案的值。要改開發資料，請改 registration.Development.json。</li>
+<li>RegistrationService 為什麼註冊成 Scoped：它依賴 DbContext，DbContext 是 Scoped。seed 裡用 CreateScope() 開一個 scope 取得它，用完就釋放，和背景清除服務是同樣的做法。</li>
+</ul>
+<p>測試時要注意：</p>
+<ol>
+<li>正常啟動：重啟 Authorization Server。</li>
+<li>確認 seed 真的是讀檔案：<ul>
+<li>暫時把 registration.Development.json 裡 pnp-mcp-client 的 displayName 改成 PNP MCP Client (from json)，重啟。</li>
+<li>到 DB 查：<br>SELECT “ClientId”, “DisplayName” FROM “OpenIddictApplications”;</li>
+<li>改回原本的值，再重啟一次。</li>
+</ul>
+</li>
+<li>驗證失敗時無法啟動：暫時把 redirectUris 改成 [ “<a target="_blank" rel="noopener" href="http://evil.example/callback">http://evil.example/callback</a>“ ]，重啟。測完改回來。</li>
+</ol>
+<p><span style="color: red; font: bold;">dev環境才會每次從registration.Development.json更新client資訊，prd環境必須透過執行OAuth.Registration來手動更新</span></p>
+<p>請執行後確認：</p>
+<ol>
+<li>dotnet build OAuth.slnx 正常編譯。</li>
+<li>第 1 項：Console 出現 Development seed applied. 更新 身分來源 pnp、更新 scope …、更新 client pnp-mcp-client，完整流程正常。</li>
+<li>第 2 項：DB 的 DisplayName 變成 PNP MCP Client (from json)，改回來後也恢復。</li>
+<li>第 3 項：Server 啟動失敗，例外訊息是「registration.Development.json 驗證失敗：clients[pnp-mcp-client]：redirectUri ‘<a target="_blank" rel="noopener" href="http://evil.example/callback">http://evil.example/callback</a>‘ 必須是 HTTPS…」。</li>
+</ol>
+<img src="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_invalidate.jpg" class="" title="client_invalidate">
+
+<p>完成上面步驟後，目前的Client註冊方式為：</p>
+<img src="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/client_register.jpg" class="" title="client_register">
       
     </div>
     <footer class="article-footer">

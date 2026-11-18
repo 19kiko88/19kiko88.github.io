@@ -209,7 +209,7 @@ public class RejectNullByteMiddleware
         var request = context.Request;
 
         if (ContainsNullByte(request.Query)
-            || (request.HasFormContentType && ContainsNullByte(await request.ReadFormAsync())))
+            || (request.HasFormContentType && await FormContainsNullByteAsync(request)))
         {
             _logger.LogWarning("Request rejected. Path={Path}, Reason=NullByte.", request.Path);
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -223,6 +223,20 @@ public class RejectNullByteMiddleware
     {
         return fields.Any(f => f.Key.Contains('\0') || f.Value.Any(v => v is not null && v.Contains('\0')));
     }
+
+    private static async Task<bool> FormContainsNullByteAsync(HttpRequest request)
+    {
+        try
+        {
+            return ContainsNullByte(await request.ReadFormAsync());
+        }
+        catch (InvalidDataException)
+        {
+            // ASP.NET Core 解析 Form 時，遇到 %00 會直接丟出例外（The form value contains invalid characters），
+            // 不會把 null byte 交給我們檢查；這種情況同樣視為含 null byte，回 400 而不是讓例外變成 500
+            return true;
+        }
+    }    
 }
 ```
 

@@ -764,3 +764,266 @@ dotnet test OAuth.Tests
 請執行後確認：
 1. 第 1 項：通過: 11，失敗: 0（上一個步驟的 2 個，加上這次的 9 個）。
 2. 第 2 項：Resume網址參數被竄改_拒絕且原始網址也作廢 這個測試失敗，其他測試仍然通過。這證明測試真的能抓到「參數比對被拿掉」這種錯誤。
+#
+#
+#
+---
+## 註冊規則的單元測試，以及資安加固的測試
+這一步在做什麼：前兩步的測試都是整合測試，會啟動整個 Server、連測試 DB。這次加兩類：
+{% asset_image unit_test_case_2.jpg unit_test_case_2 %}
+
+1. 新增 OAuth.Tests/RegistrationValidatorTests.cs
+``` csharp
+using System.Text.Json;
+using OAuth.Core.Data;
+using OAuth.Core.Registration;
+
+namespace OAuth.Tests;
+
+/// <summary>
+/// RegistrationValidator 的單元測試：不需要啟動 Server，也不需要資料庫
+/// </summary>
+public class RegistrationValidatorTests
+{
+    // 一份完全合法的註冊檔，每個測試只修改要驗證的那個欄位
+    private static RegistrationManifest CreateValidManifest() => new()
+    {
+        IdentityProviders =
+        [
+            new IdentityProviderRegistration
+            {
+                ProviderId = "pnp",
+                Mode = IdentityProviderMode.Bridge,
+                BridgeUrl = "https://pnp.example/sso/bridge",
+                RedeemApiUrl = "https://pnp.example/api/internal/sso/redeem",
+                RevocationCheckApiUrl = "https://pnp.example/api/internal/sso/token-status",
+                HmacSecretRef = "IdentityProviders:Pnp:HmacSecret",
+            },
+        ],
+        Scopes =
+        [
+            new ScopeRegistration { Name = "ucs.sn-info.read", Resources = ["urn:pnp:ucs-mcp"] },
+        ],
+        Clients =
+        [
+            new ClientRegistration
+            {
+                ClientId = "client",
+                IdentityProviderId = "pnp",
+                RedirectUris = ["https://client.example/callback"],
+                Scopes = ["ucs.sn-info.read", "offline_access"],
+            },
+        ],
+    };
+
+    [Fact]
+    public void 合法的註冊檔_沒有錯誤()
+    {
+        Assert.Empty(RegistrationValidator.Validate(CreateValidManifest()));
+    }
+
+    [Theory]
+    [InlineData("https://client.example/callback", true)]
+    [InlineData("http://127.0.0.1:5055/callback", true)]
+    [InlineData("http://localhost:5055/callback", true)]
+    [InlineData("http://[::1]:5055/callback", true)]
+    [InlineData("http://evil.example/callback", false)]
+    [InlineData("https://client.example/callback#fragment", false)]
+    [InlineData("not-a-url", false)]
+    public void RedirectUri_只允許HTTPS或http的loopback(string redirectUri, bool allowed)
+    {
+        var manifest = CreateValidManifest();
+        manifest.Clients[0].RedirectUris = [redirectUri];
+
+        var errors = RegistrationValidator.Validate(manifest);
+
+        Assert.Equal(allowed, errors.Count == 0);
+    }
+
+    [Fact]
+    public void 身分來源網址不是HTTPS_報錯()
+    {
+        var manifest = CreateValidManifest();
+        manifest.IdentityProviders[0].BridgeUrl = "http://pnp.example/sso/bridge";
+
+        Assert.Contains(RegistrationValidator.Validate(manifest), e => e.Contains("bridgeUrl"));
+    }
+
+    [Fact]
+    public void Client引用未定義的身分來源_報錯()
+    {
+        var manifest = CreateValidManifest();
+        manifest.Clients[0].IdentityProviderId = "nope";
+
+        Assert.Contains(RegistrationValidator.Validate(manifest), e => e.Contains("'nope'"));
+    }
+
+    [Fact]
+    public void Client引用未定義的scope_報錯()
+    {
+        var manifest = CreateValidManifest();
+        manifest.Clients[0].Scopes = ["ucs.unknown.read"];
+
+        Assert.Contains(RegistrationValidator.Validate(manifest), e => e.Contains("'ucs.unknown.read'"));
+    }
+
+    [Fact]
+    public void Scope沒有resources_報錯()
+    {
+        var manifest = CreateValidManifest();
+        manifest.Scopes[0].Resources = [];
+
+        Assert.Contains(RegistrationValidator.Validate(manifest), e => e.Contains("resources"));
+    }
+
+    [Fact]
+    public void 註冊OAuth標準scope_報錯()
+    {
+        var manifest = CreateValidManifest();
+        manifest.Scopes.Add(new ScopeRegistration { Name = "offline_access", Resources = ["urn:pnp:ucs-mcp"] });
+
+        Assert.Contains(RegistrationValidator.Validate(manifest), e => e.Contains("offline_access"));
+    }
+
+    [Fact]
+    public void 多個錯誤_一次全部列出()
+    {
+        var manifest = CreateValidManifest();
+        manifest.IdentityProviders[0].BridgeUrl = "http://pnp.example/sso/bridge";
+        manifest.Clients[0].IdentityProviderId = "nope";
+        manifest.Clients[0].Scopes = ["ucs.unknown.read"];
+
+        Assert.Equal(3, RegistrationValidator.Validate(manifest).Count);
+    }
+
+    [Fact]
+    public void 註冊檔欄位名稱打錯_無法讀取()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            // redirectUris 打成 redirectUri
+            File.WriteAllText(path, """{ "clients": [ { "clientId": "client", "redirectUri": [ "https://client.example/callback" ] } ] }""");
+
+            Assert.Throws<JsonException>(() => RegistrationManifest.Load(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+}
+```
+
+2. 新增 OAuth.Tests/SecurityTests.cs
+``` csharp
+using System.Net;
+using OAuth.Tests.Infrastructure;
+
+namespace OAuth.Tests;
+
+/// <summary>
+/// 資安加固（設計文件第9.5節）的整合測試
+/// </summary>
+[Collection(AuthServerCollection.Name)]
+public class SecurityTests
+{
+    private readonly OAuthTestClient _client;
+
+    public SecurityTests(AuthServerFactory factory)
+    {
+        _client = new OAuthTestClient(factory);
+    }
+
+    [Fact]
+    public async Task QueryString含NullByte_回400()
+    {
+        var response = await _client.Http.GetAsync("/connect/authorize?client_id=pnp-mcp-client%00");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Form含NullByte_回400()
+    {
+        var response = await _client.Http.PostAsync("/connect/token", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["grant_type"] = "refresh_token",
+            ["refresh_token"] = "abc\0def",
+            ["client_id"] = OAuthTestClient.ClientId,
+        }));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("/.well-known/openid-configuration")]   // 一般回應
+    [InlineData("/connect/authorize?client_id=x%00")]   // 被 null byte 擋下的 400
+    public async Task 回應都帶有安全標頭(string url)
+    {
+        var response = await _client.Http.GetAsync(url);
+
+        Assert.Equal("default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+            response.Headers.GetValues("Content-Security-Policy").Single());
+        Assert.Equal("no-referrer", response.Headers.GetValues("Referrer-Policy").Single());
+        Assert.Equal("nosniff", response.Headers.GetValues("X-Content-Type-Options").Single());
+    }
+}
+```
+
+幾個重點說明：
+
+- RegistrationValidatorTests 沒有 [Collection]、沒有 fixture：它不需要 Server 和 DB，xUnit 會把它和其他測試平行執行，不會互相干擾。
+- CreateValidManifest() 的寫法：先建一份「完全合法」的註冊檔，每個測試只改一個欄位。測試失敗時，就能確定是被改的那個欄位造成的，不會被其他錯誤干擾。
+- [Theory] + [InlineData]：同一個測試邏輯，用多組資料各跑一次。測試結果裡會顯示成 7 個獨立的測試，哪一組失敗一目了然。redirect_uri 的規則有好幾種邊界情況，用它比寫 7 個 [Fact] 簡潔。
+- """..."""：C# 11 的原始字串常值，裡面的 " 不用跳脫，適合直接寫 JSON。
+- FormUrlEncodedContent 裡的 "abc\0def"：\0 就是 null byte，FormUrlEncodedContent 送出時會自動編碼成 %00，和之前用 curl.exe 送的效果一樣。
+- 為什麼沒有測「沒有 Server 標頭」：Server: Kestrel 是 Kestrel 加的，但 TestServer 根本不經過 Kestrel，所以測試裡永遠不會有這個標頭。就算拿掉 AddServerHeader = false，測試也一樣會通過，這種測試沒有意義。這一項要靠實際啟動 Server 來確認，之前手動測過了。
+
+測試時要注意：
+
+1. 執行全部測試：
+dotnet test OAuth.Tests
+2. 只執行單元測試，感受一下速度差異：
+dotnet test OAuth.Tests --filter "FullyQualifiedName~RegistrationValidatorTests"
+
+請執行後確認：
+1. 第 1 項：通過: 30，失敗: 0。
+   - 原本 11 個。
+   - RegistrationValidatorTests 15 個（[Theory] 的 7 組資料各算一個）。
+   - SecurityTests 4 個（[Theory] 的 2 組資料各算一個）。
+2. 第 2 項：只跑 15 個，而且明顯比全部測試快很多，因為不用啟動 Server、不用重建 DB。
+#
+#
+#
+---
+## 補充
+{% asset_image unit_test_compare.jpg unit_test_compare%}
+
+
+單元測試和整合測試的差別
+
+- 單元測試：只測一小塊程式本身的邏輯，不碰外部資源。RegistrationValidator.Validate() 是純粹的判斷：給一個 manifest、回傳錯誤清單，跟 DB、網路都沒關係，所以適合寫單元測試。
+- 整合測試：測多個元件組合在一起是否正確。例如 Store 的「原子性回填」，正確與否取決於 PostgreSQL 實際怎麼執行那條 UPDATE。如果不連真的 DB，就測不出 race condition 有沒有被擋住，所以一定要接上真的 DB。
+
+為什麼 Store 測試不算單元測試
+
+雖然它也是「直接呼叫一個類別的方法」，但它需要真的資料庫才能執行。只要依賴了外部資源（DB、檔案系統、網路），通常就歸類為整合測試。
+
+端對端的那幾個，有沒有完全「端對端」
+
+不是百分之百。有兩個地方是替身：
+- PNP：用 FakePnpHandler 取代，沒有真的連到 PCBRepairNavi。
+- 網路與 Kestrel：用 TestServer 在記憶體中處理請求。所以 Server 標頭那類只有 Kestrel 才會產生的行為測不到。
+
+除此之外，middleware、OpenIddict、Controller、DB 全部都是真的。
+
+這幾種測試的比例
+
+常見的說法是「測試金字塔」：
+
+        ▲   端對端整合測試：少量，最接近真實情境，但慢、失敗時較難定位
+       ▲▲▲  元件整合測試：中等數量
+     ▲▲▲▲▲  單元測試：大量，執行快、失敗時一看就知道是哪裡出錯
+
+目前專案的狀況是端對端測試比較多，這對 Authorization Server 是合理的：它最重要的是「整個流程串起來是否安全、正確」，而這只有端對端測試驗證得了。之後如果有更多純邏輯的程式碼（例如參數比對、claim 組裝），可以再抽出來補單元測試。

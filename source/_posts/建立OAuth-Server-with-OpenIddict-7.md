@@ -506,3 +506,261 @@ dotnet test OAuth.Tests
 1. dotnet build OAuth.slnx 正常編譯。
 2. dotnet test 顯示 通過! - 失敗: 0，通過: 2（或英文的 Passed!  - Failed: 0, Passed: 2）。
 3. OAuth_Test 資料庫存在，裡面有 pnp-mcp-client；開發用的 OAuth 資料庫資料不變。
+#
+#
+#
+---
+## 把之前手動測過的流程情境寫成自動化測試
+這一步在做什麼：之前每一步改完，你都要開 Insomnia、PowerShell 手動驗證。這次把那些情境寫成測試，之後只要執行 dotnet test，幾秒內就能全部重新驗證一次。這些測試也是搬移 DB 邏輯時的安全網。
+{% asset_image unit_test_case.jpg unit_test_case %}
+
+1. OAuthTestClient.cs：新增兩個輔助方法
+在 ExchangeCodeAsync 下面加上：
+
+``` csharp
+/// <summary>
+/// 跑完整流程並換到 token，回傳 token 回應的 JSON
+/// </summary>
+public async Task<JsonElement> GetTokensAsync(TimeSpan? ticketLifetime = null)
+{
+    var (verifier, challenge) = CreatePkce();
+    var code = await GetAuthorizationCodeAsync(challenge, ticketLifetime);
+
+    var response = await ExchangeCodeAsync(code, verifier);
+    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    return await ReadJsonAsync(response);
+}
+```
+
+在 GetQueryValue 下面加上：
+``` csharp
+/// <summary>
+/// 把網址中某個 query 參數換成新值（用來模擬竄改）
+/// </summary>
+public static string ReplaceQueryValue(Uri uri, string name, string newValue)
+{
+    var absolute = uri.IsAbsoluteUri ? uri : new Uri(BaseAddress, uri);
+    var query = QueryHelpers.ParseQuery(absolute.Query).ToDictionary(p => p.Key, p => (string?)p.Value.ToString());
+    query[name] = newValue;
+    return QueryHelpers.AddQueryString(absolute.AbsolutePath, query);
+}
+```
+
+2. AuthServerFactory.cs：新增查詢 DB 狀態的輔助方法
+檔案最上面加上：
+``` csharp
+using OpenIddict.EntityFrameworkCore.Models;
+```
+
+在 InitializeAsync 下面加上：
+``` csharp
+/// <summary>
+/// 取得最近一次建立的 Authorization（測試依序執行，即剛才那個測試的登入）及其底下所有 token 的狀態
+/// </summary>
+public async Task<(string? Status, List<string?> TokenStatuses)> GetLatestAuthorizationAsync()
+{
+    using var scope = Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AuthorizationServerDbContext>();
+
+    var authorization = await db.Set<OpenIddictEntityFrameworkCoreAuthorization>()
+        .OrderByDescending(a => a.CreationDate)
+        .FirstAsync();
+
+    var tokenStatuses = await db.Set<OpenIddictEntityFrameworkCoreToken>()
+        .Where(t => t.Authorization!.Id == authorization.Id)
+        .Select(t => t.Status)
+        .ToListAsync();
+
+    return (authorization.Status, tokenStatuses);
+}
+```
+
+3. AuthorizationFlowTests.cs：新增授權流程的測試
+建構子改成同時保存 factory：
+``` csharp
+private readonly AuthServerFactory _factory;
+private readonly OAuthTestClient _client;
+
+public AuthorizationFlowTests(AuthServerFactory factory)
+{
+    _factory = factory;
+    _client = new OAuthTestClient(factory);
+}
+```
+
+在原本兩個測試下面加上：
+``` csharp
+[Fact]
+public async Task Resume網址參數被竄改_拒絕且原始網址也作廢()
+{
+    var (_, challenge) = OAuthTestClient.CreatePkce();
+    var nonce = await _client.StartAuthorizeAsync(challenge);
+    var callback = await _client.BridgeCallbackAsync(nonce, _factory.Pnp.IssueBridgeCode(nonce));
+    var resumeUrl = callback.Headers.Location!;
+
+    // 攻擊者把 code_challenge 換成自己的
+    var (_, attackerChallenge) = OAuthTestClient.CreatePkce();
+    var tampered = await _client.Http.GetAsync(OAuthTestClient.ReplaceQueryValue(resumeUrl, "code_challenge", attackerChallenge));
+    Assert.Equal(HttpStatusCode.BadRequest, tampered.StatusCode);
+
+    // 原始網址也不能再用
+    var original = await _client.Http.GetAsync(resumeUrl);
+    Assert.Equal(HttpStatusCode.BadRequest, original.StatusCode);
+}
+
+[Fact]
+public async Task 同一個Resume網址平行送出_只有一個成功()
+{
+    var (_, challenge) = OAuthTestClient.CreatePkce();
+    var nonce = await _client.StartAuthorizeAsync(challenge);
+    var callback = await _client.BridgeCallbackAsync(nonce, _factory.Pnp.IssueBridgeCode(nonce));
+    var resumeUrl = callback.Headers.Location!;
+
+    var responses = await Task.WhenAll(Enumerable.Range(0, 5).Select(_ => _client.Http.GetAsync(resumeUrl)));
+
+    Assert.Equal(1, responses.Count(r => r.StatusCode == HttpStatusCode.Redirect));
+    Assert.Equal(4, responses.Count(r => r.StatusCode == HttpStatusCode.BadRequest));
+}
+
+[Fact]
+public async Task BridgeCallback同一個nonce送兩次_第二次不能覆蓋身分()
+{
+    var (_, challenge) = OAuthTestClient.CreatePkce();
+    var nonce = await _client.StartAuthorizeAsync(challenge);
+
+    var first = await _client.BridgeCallbackAsync(nonce, _factory.Pnp.IssueBridgeCode(nonce));
+    var second = await _client.BridgeCallbackAsync(nonce, _factory.Pnp.IssueBridgeCode(nonce));
+
+    Assert.Equal(HttpStatusCode.Redirect, first.StatusCode);
+    Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+}
+
+[Fact]
+public async Task BridgeCode是為別的nonce發的_Redeem失敗()
+{
+    var (_, challenge) = OAuthTestClient.CreatePkce();
+    var nonce = await _client.StartAuthorizeAsync(challenge);
+
+    // 這個 bridgeCode 是為另一個登入流程發的
+    var otherCode = _factory.Pnp.IssueBridgeCode("another-nonce");
+    var response = await _client.BridgeCallbackAsync(nonce, otherCode);
+
+    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+}
+
+[Fact]
+public async Task PKCE使用plain_不會導向Bridge()
+{
+    var response = await _client.Http.GetAsync(OAuthTestClient.AuthorizeUrl("plain-challenge-plain-challenge-plain-challenge", "plain"));
+
+    var redirectedToBridge = response.StatusCode == HttpStatusCode.Redirect
+        && response.Headers.Location!.ToString().Contains("/sso/bridge");
+    Assert.False(redirectedToBridge);
+}
+
+[Fact]
+public async Task Discovery_PKCE只宣告S256()
+{
+    var discovery = await OAuthTestClient.ReadJsonAsync(await _client.Http.GetAsync("/.well-known/openid-configuration"));
+
+    var methods = discovery.GetProperty("code_challenge_methods_supported").EnumerateArray().Select(m => m.GetString());
+    Assert.Equal(["S256"], methods);
+}
+```
+
+4. 新增 OAuth.Tests/RefreshTokenTests.cs
+``` csharp
+using System.Net;
+using OAuth.Tests.Infrastructure;
+using static OpenIddict.Abstractions.OpenIddictConstants;
+using OpenIddict.Server;
+
+namespace OAuth.Tests;
+
+[Collection(AuthServerCollection.Name)]
+public class RefreshTokenTests
+{
+    private readonly AuthServerFactory _factory;
+    private readonly OAuthTestClient _client;
+
+    public RefreshTokenTests(AuthServerFactory factory)
+    {
+        _factory = factory;
+        _client = new OAuthTestClient(factory);
+    }
+
+    [Fact]
+    public async Task PNP已登出_拒絕並撤銷整條鏈()
+    {
+        var tokens = await _client.GetTokensAsync();
+        var tokenId = int.Parse(OAuthTestClient.DecodeJwtPayload(tokens.GetProperty("access_token").GetString()!)
+            .GetProperty("token_id").GetString()!);
+
+        _factory.Pnp.Logout(tokenId);
+        var response = await _client.RefreshAsync(tokens.GetProperty("refresh_token").GetString()!);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(Errors.InvalidGrant, (await OAuthTestClient.ReadJsonAsync(response)).GetProperty("error").GetString());
+        await AssertLatestChainRevokedAsync();
+    }
+
+    [Fact]
+    public async Task TicketExpiration已過期_拒絕並撤銷整條鏈()
+    {
+        // PNP ticket 在一分鐘前就已到期
+        var tokens = await _client.GetTokensAsync(ticketLifetime: TimeSpan.FromMinutes(-1));
+
+        var response = await _client.RefreshAsync(tokens.GetProperty("refresh_token").GetString()!);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(Errors.InvalidGrant, (await OAuthTestClient.ReadJsonAsync(response)).GetProperty("error").GetString());
+        await AssertLatestChainRevokedAsync();
+    }
+
+    [Fact]
+    public async Task 重用已兌換的RefreshToken_被拒絕()
+    {
+        var tokens = await _client.GetTokensAsync();
+        var oldRefreshToken = tokens.GetProperty("refresh_token").GetString()!;
+
+        var first = await _client.RefreshAsync(oldRefreshToken);
+        Assert.Equal(HttpStatusCode.OK, first.StatusCode);
+
+        // 舊的 refresh_token 已經換過一次，再用就是重用
+        var reused = await _client.RefreshAsync(oldRefreshToken);
+        Assert.Equal(HttpStatusCode.BadRequest, reused.StatusCode);
+    }
+
+    private async Task AssertLatestChainRevokedAsync()
+    {
+        var (status, tokenStatuses) = await _factory.GetLatestAuthorizationAsync();
+
+        Assert.Equal(Statuses.Revoked, status);
+        Assert.NotEmpty(tokenStatuses);
+        Assert.All(tokenStatuses, s => Assert.Equal(Statuses.Revoked, s));
+    }
+}
+```
+
+
+幾個重點說明：
+
+- 測試的結構：每個測試都分成三段，這是常見的 Arrange / Act / Assert（準備 → 執行 → 驗證）寫法：
+  - 準備：跑到需要的狀態，例如拿到 token、拿到 resume 網址。
+  - 執行：做這個測試要檢查的那個動作。
+  - 驗證：用 Assert 檢查結果。
+- Task.WhenAll 平行送出：和之前用 curl.exe -Z 一樣，5 個請求同時送出。TestServer 在記憶體裡也會平行處理它們，所以 race condition 一樣測得到。
+- ticketLifetime: TimeSpan.FromMinutes(-1)：讓 FakePnpHandler 發出一個「一分鐘前就已經到期」的 ticket。之前手動測試要把 MockPnp 設成 1 分鐘、再等 1 分鐘，這裡不用等。
+- 怎麼確認「整條鏈被撤銷」：直接查測試 DB，找到這次登入的 Authorization，確認它和底下所有 token 的 Status 都是 revoked，和之前手動到 DB 查的方式一樣。因為同一個 collection 的測試是依序執行的，「最新的一筆 Authorization」一定是剛才那個測試的。
+- plain 那個測試為什麼不直接斷言 400：OpenIddict 拒絕時，有可能回 400，也有可能導回 redirect_uri 並帶上 error=invalid_request。我們真正要確認的是「不會進到我們的流程、導向 Bridge」，所以就斷言這件事。
+- Statuses.Revoked、Errors.InvalidGrant：OpenIddict 定義的常數，值分別是 "revoked"、"invalid_grant"。用常數比寫字串不容易拼錯。
+
+測試時要注意：
+
+1. 執行全部測試：
+dotnet test OAuth.Tests
+2. 確認測試真的能抓到問題：暫時把 AuthorizationController.cs 裡 MatchesOriginalRequest(...) 那段參數比對的 if 註解掉，再執行一次 dotnet test。測完記得改回來。
+
+請執行後確認：
+1. 第 1 項：通過: 11，失敗: 0（上一個步驟的 2 個，加上這次的 9 個）。
+2. 第 2 項：Resume網址參數被竄改_拒絕且原始網址也作廢 這個測試失敗，其他測試仍然通過。這證明測試真的能抓到「參數比對被拿掉」這種錯誤。

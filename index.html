@@ -75,6 +75,60 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-建立OAuth-Server-with-OpenIddict-9" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/" class="article-date">
+  <time class="dt-published" datetime="2026-11-20T03:14:20.000Z" itemprop="datePublished">2026-11-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/">建立OAuth Server with OpenIddict(9)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="第-1-步（上）HMAC-簽章的核心邏輯與單元測試"><a href="#第-1-步（上）HMAC-簽章的核心邏輯與單元測試" class="headerlink" title="第 1 步（上）HMAC 簽章的核心邏輯與單元測試"></a>第 1 步（上）HMAC 簽章的核心邏輯與單元測試</h5><p>這一步在做什麼</p>
+<p>把第 1 步拆成兩半：</p>
+<ul>
+<li>這一半：寫一個純邏輯的 static class，負責計算和驗證簽章。它不碰 HttpContext，也不讀 web.config，所以可以完全用單元測試驗證。</li>
+<li>下一半：再用 ActionFilter 把它接到 MVC 上。</li>
+</ul>
+        
+          <p class="article-more-link">
+            <a href="/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/" data-id="cmwof19cj00005sn15old8ub3" data-title="建立OAuth Server with OpenIddict(9)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-PKCE、HTTPS、HMAC-的用途與差異" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/" class="article-date">
@@ -101,7 +155,9 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="PKCE、HTTPS、HMAC-的用途與差異"><a href="#PKCE、HTTPS、HMAC-的用途與差異" class="headerlink" title="PKCE、HTTPS、HMAC 的用途與差異"></a>PKCE、HTTPS、HMAC 的用途與差異</h1><blockquote>
+        <span id="more"></span>
+
+<blockquote>
 <p>本文件整理本專案用到的三種安全機制：各自保護什麼、在專案中的哪裡使用、彼此如何分工。相關規格見 <code>OAuth2.1-MCP-AuthServer-Design.md</code> 第4.2、4.4節，HMAC 與 PNP 的實作細節見 <code>Handoff-ResourceServer.md</code> 第8.3節。</p>
 </blockquote>
 <hr>
@@ -746,63 +802,6 @@
 
 
   
-    <article id="post-建立OAuth-Server-with-OpenIddict-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/" class="article-date">
-  <time class="dt-published" datetime="2026-10-27T09:44:03.000Z" itemprop="datePublished">2026-10-27</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/">建立OAuth Server with OpenIddict(2)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="此篇重點：建置基礎服務相關API"><a href="#此篇重點：建置基礎服務相關API" class="headerlink" title="此篇重點：建置基礎服務相關API"></a>此篇重點：建置基礎服務相關API</h5><ul>
-<li>資安加固 ：限定aud（audience）claim</li>
-<li>refresh 被拒絕時，撤銷整條 refresh token 鏈</li>
-<li>第二次經過 &#x2F;connect&#x2F;authorize 時，檢查參數有沒有被竄改</li>
-<li>讓 PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立</li>
-<li>檢查 Discovery 和 JWKS 的內容，確認只允許 S256</li>
-<li>加固 bridge-callback，讓它和 &#x2F;connect&#x2F;authorize 第二次經過一樣嚴謹</li>
-<li>定期清除過期的 PendingAuthorizeRequests</li>
-</ul>
-        
-          <p class="article-more-link">
-            <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/" data-id="cmvqi1tj7000070n1eh0da8jd" data-title="建立OAuth Server with OpenIddict(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -860,6 +859,10 @@
       <ul>
         
           <li>
+            <a href="/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/">建立OAuth Server with OpenIddict(9)</a>
+          </li>
+        
+          <li>
             <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/">PKCE、HTTPS、HMAC 的用途與差異</a>
           </li>
         
@@ -873,10 +876,6 @@
         
           <li>
             <a href="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/">建立OAuth Server with OpenIddict(6)</a>
-          </li>
-        
-          <li>
-            <a href="/2026/11/16/JWT%E3%80%81JWKS-%E8%88%87-kid-%E7%9A%84%E9%97%9C%E4%BF%82/">JWT、JWKS 與 kid 的關係</a>
           </li>
         
       </ul>

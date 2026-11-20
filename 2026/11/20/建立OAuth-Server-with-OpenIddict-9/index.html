@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>建立OAuth Server with OpenIddict(9) | HaoAreYou~</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="第 1 步（上）HMAC 簽章的核心邏輯與單元測試這一步在做什麼 把第 1 步拆成兩半：  這一半：寫一個純邏輯的 static class，負責計算和驗證簽章。它不碰 HttpContext，也不讀 web.config，所以可以完全用單元測試驗證。 下一半：再用 ActionFilter 把它接到 MVC 上。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="建立OAuth Server with OpenIddict(9)">
+<meta property="og:url" content="http://example.com/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/index.html">
+<meta property="og:site_name" content="HaoAreYou~">
+<meta property="og:description" content="第 1 步（上）HMAC 簽章的核心邏輯與單元測試這一步在做什麼 把第 1 步拆成兩半：  這一半：寫一個純邏輯的 static class，負責計算和驗證簽章。它不碰 HttpContext，也不讀 web.config，所以可以完全用單元測試驗證。 下一半：再用 ActionFilter 把它接到 MVC 上。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-20T03:14:20.000Z">
+<meta property="article:modified_time" content="2026-11-20T03:24:11.502Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="OAuth">
+<meta property="article:tag" content="OpenIddict">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="HaoAreYou~" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">HaoAreYou~</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">菜鳥工程師，如文章內容有誤請來信指教修正，避免誤人子弟...</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-建立OAuth-Server-with-OpenIddict-9" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/" class="article-date">
+  <time class="dt-published" datetime="2026-11-20T03:14:20.000Z" itemprop="datePublished">2026-11-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      建立OAuth Server with OpenIddict(9)
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="第-1-步（上）HMAC-簽章的核心邏輯與單元測試"><a href="#第-1-步（上）HMAC-簽章的核心邏輯與單元測試" class="headerlink" title="第 1 步（上）HMAC 簽章的核心邏輯與單元測試"></a>第 1 步（上）HMAC 簽章的核心邏輯與單元測試</h5><p>這一步在做什麼</p>
+<p>把第 1 步拆成兩半：</p>
+<ul>
+<li>這一半：寫一個純邏輯的 static class，負責計算和驗證簽章。它不碰 HttpContext，也不讀 web.config，所以可以完全用單元測試驗證。</li>
+<li>下一半：再用 ActionFilter 把它接到 MVC 上。</li>
+</ul>
+<span id="more"></span>
+<p>這樣拆的原因：</p>
+<ul>
+<li>你沒有本機 PNP，如果簽章格式和 Authorization Server／MockPnp 有一個字元不同，部署到測試機後只會看到一片 401，很難查出原因。先在本機用測試證明「算出來的簽章和 .NET 10 版完全一樣」，之後部署出問題時，就能排除格式問題。</li>
+</ul>
+<h1 id=""><a href="#" class="headerlink" title=""></a></h1><h1 id="-1"><a href="#-1" class="headerlink" title=""></a></h1><h1 id="-2"><a href="#-2" class="headerlink" title=""></a></h1><hr>
+<h2 id="第-1-步（上）HMAC-簽章的核心邏輯與單元測試-1"><a href="#第-1-步（上）HMAC-簽章的核心邏輯與單元測試-1" class="headerlink" title="第 1 步（上）HMAC 簽章的核心邏輯與單元測試"></a>第 1 步（上）HMAC 簽章的核心邏輯與單元測試</h2><p>新增檔案 1：PCBRepairNavi&#x2F;Helpers&#x2F;InternalApiSignature.cs</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> System;</span><br><span class="line"><span class="keyword">using</span> System.Globalization;</span><br><span class="line"><span class="keyword">using</span> System.Runtime.CompilerServices;</span><br><span class="line"><span class="keyword">using</span> System.Security.Cryptography;</span><br><span class="line"><span class="keyword">using</span> System.Text;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">PCBRepairNavi.Helpers</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 驗證結果。詳細原因只寫入 log，不回傳給呼叫端（SECURITY.md §2.3）</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">enum</span> InternalApiSignatureResult</span><br><span class="line">    &#123;</span><br><span class="line">        Valid,</span><br><span class="line">        MissingTimestamp,</span><br><span class="line">        TimestampOutOfRange,</span><br><span class="line">        MissingSignature,</span><br><span class="line">        InvalidSignature</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 伺服器對伺服器內部 API 的 HMAC-SHA256 簽章（OAuth 設計文件第4.4節）。</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> X-Timestamp = Unix 秒數；X-Signature = Base64(HMAC-SHA256(secret, &quot;timestamp\nmethod\npath\nsha256(body)小寫16進位&quot;))。</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 格式必須與 OAuth.MockPnp、Authorization Server、PCBRepairNavi.MCP 完全一致。</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> </span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 簽章方：OAuth Server. MCP Server</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 驗章方：PNP</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title">InternalApiSignature</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">const</span> <span class="built_in">int</span> AllowedClockSkewSeconds = <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="built_in">string</span> <span class="title">ComputeSignature</span>(<span class="params"><span class="built_in">string</span> secret, <span class="built_in">long</span> timestamp, <span class="built_in">string</span> method, <span class="built_in">string</span> path, <span class="built_in">string</span> body</span>)</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrEmpty(secret))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> ArgumentException(<span class="string">&quot;HMAC secret is required.&quot;</span>, <span class="keyword">nameof</span>(secret));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="built_in">string</span> canonical = timestamp.ToString(CultureInfo.InvariantCulture) + <span class="string">&quot;\n&quot;</span></span><br><span class="line">                             + method + <span class="string">&quot;\n&quot;</span></span><br><span class="line">                             + path + <span class="string">&quot;\n&quot;</span></span><br><span class="line">                             + Sha256Hex(body ?? <span class="built_in">string</span>.Empty);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">using</span> (<span class="keyword">var</span> hmac = <span class="keyword">new</span> HMACSHA256(Encoding.UTF8.GetBytes(secret)))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(canonical)));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name=&quot;nowUnixSeconds&quot;&gt;</span>目前時間；由呼叫端傳入，方便單元測試固定時間<span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> InternalApiSignatureResult <span class="title">Verify</span>(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="built_in">string</span> secret, <span class="built_in">string</span> timestampHeader, <span class="built_in">string</span> signatureHeader,</span></span></span><br><span class="line"><span class="params"><span class="function">            <span class="built_in">string</span> method, <span class="built_in">string</span> path, <span class="built_in">string</span> body, <span class="built_in">long</span> nowUnixSeconds</span>)</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="comment">// NumberStyles.None：不接受正負號、空白、小數點；長度上限避免異常輸入</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrEmpty(timestampHeader) || timestampHeader.Length &gt; <span class="number">19</span> ||</span><br><span class="line">                !<span class="built_in">long</span>.TryParse(timestampHeader, NumberStyles.None, CultureInfo.InvariantCulture, <span class="keyword">out</span> <span class="built_in">long</span> timestamp))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> InternalApiSignatureResult.MissingTimestamp;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (Math.Abs(nowUnixSeconds - timestamp) &gt; AllowedClockSkewSeconds)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> InternalApiSignatureResult.TimestampOutOfRange;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">string</span>.IsNullOrEmpty(signatureHeader))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> InternalApiSignatureResult.MissingSignature;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="built_in">string</span> expected = ComputeSignature(secret, timestamp, method, path, body);</span><br><span class="line">            <span class="keyword">if</span> (!FixedTimeEquals(Encoding.UTF8.GetBytes(expected), Encoding.UTF8.GetBytes(signatureHeader)))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> InternalApiSignatureResult.InvalidSignature;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> InternalApiSignatureResult.Valid;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="built_in">string</span> <span class="title">Sha256Hex</span>(<span class="params"><span class="built_in">string</span> <span class="keyword">value</span></span>)</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">using</span> (<span class="keyword">var</span> sha = SHA256.Create())</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="built_in">byte</span>[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(<span class="keyword">value</span>));</span><br><span class="line">                <span class="keyword">return</span> BitConverter.ToString(hash).Replace(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;&quot;</span>).ToLowerInvariant();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> 固定時間比較（.NET Framework 沒有 CryptographicOperations.FixedTimeEquals）。</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> 迴圈中不可提早 return；NoOptimization 避免 JIT 把迴圈最佳化成提早結束</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        [<span class="meta">MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)</span>]</span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="built_in">bool</span> <span class="title">FixedTimeEquals</span>(<span class="params"><span class="built_in">byte</span>[] a, <span class="built_in">byte</span>[] b</span>)</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (a == <span class="literal">null</span> || b == <span class="literal">null</span> || a.Length != b.Length)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="built_in">int</span> diff = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">for</span> (<span class="built_in">int</span> i = <span class="number">0</span>; i &lt; a.Length; i++)</span><br><span class="line">            &#123;</span><br><span class="line">                diff |= a[i] ^ b[i];</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> diff == <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>新增檔案 2：PCBRepairNavi.Tests&#x2F;InternalApiSignatureTests.cs</p>
+<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> Microsoft.VisualStudio.TestTools.UnitTesting;</span><br><span class="line"><span class="keyword">using</span> PCBRepairNavi.Helpers;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">PCBRepairNavi.Tests</span></span><br><span class="line">&#123;</span><br><span class="line">    [<span class="meta">TestClass</span>]</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">InternalApiSignatureTests</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="built_in">string</span> Secret = <span class="string">&quot;unit-test-secret&quot;</span>;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="built_in">long</span> Now = <span class="number">1793180718</span>;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="built_in">string</span> Method = <span class="string">&quot;POST&quot;</span>;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="built_in">string</span> Path = <span class="string">&quot;/PNP/api/internal/ucs/ecn-rcn&quot;</span>;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="built_in">string</span> Body = <span class="string">&quot;&#123;\&quot;bomNo\&quot;:\&quot;60NB0000-MB0000\&quot;,\&quot;userName\&quot;:\&quot;mockuser\&quot;&#125;&quot;</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 以 .NET 10 的 HMACSHA256.HashData / Convert.ToHexStringLower（與 OAuth.MockPnp 相同寫法）預先算出</span></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">const</span> <span class="built_in">string</span> ExpectedSignature = <span class="string">&quot;mLzSTk8tcA7AW6fLcGRz2Pt7Y0ATEbqBhNHPpiYdgbs=&quot;</span>;</span><br><span class="line"></span><br><span class="line">        [<span class="meta">TestMethod</span>]</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">ComputeSignature_MatchesNet10Implementation</span>()</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">string</span> actual = InternalApiSignature.ComputeSignature(Secret, Now, Method, Path, Body);</span><br><span class="line">            Assert.AreEqual(ExpectedSignature, actual);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        [<span class="meta">TestMethod</span>]</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Verify_ValidSignature_AtSkewBoundary_ReturnsValid</span>()</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> result = InternalApiSignature.Verify(Secret, Now.ToString(), ExpectedSignature, Method, Path, Body, Now + <span class="number">5</span>);</span><br><span class="line">            Assert.AreEqual(InternalApiSignatureResult.Valid, result);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        [<span class="meta">TestMethod</span>]</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Verify_TimestampSixSecondsOld_ReturnsTimestampOutOfRange</span>()</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> result = InternalApiSignature.Verify(Secret, Now.ToString(), ExpectedSignature, Method, Path, Body, Now + <span class="number">6</span>);</span><br><span class="line">            Assert.AreEqual(InternalApiSignatureResult.TimestampOutOfRange, result);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        [<span class="meta">TestMethod</span>]</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Verify_WrongSecret_ReturnsInvalidSignature</span>()</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> result = InternalApiSignature.Verify(<span class="string">&quot;wrong-secret&quot;</span>, Now.ToString(), ExpectedSignature, Method, Path, Body, Now);</span><br><span class="line">            Assert.AreEqual(InternalApiSignatureResult.InvalidSignature, result);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        [<span class="meta">TestMethod</span>]</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Verify_PathWithoutVirtualDirectory_ReturnsInvalidSignature</span>()</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">var</span> result = InternalApiSignature.Verify(Secret, Now.ToString(), ExpectedSignature, Method, <span class="string">&quot;/api/internal/ucs/ecn-rcn&quot;</span>, Body, Now);</span><br><span class="line">            Assert.AreEqual(InternalApiSignatureResult.InvalidSignature, result);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        [<span class="meta">TestMethod</span>]</span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">Verify_TamperedBody_ReturnsInvalidSignature</span>()</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">string</span> tampered = Body.Replace(<span class="string">&quot;mockuser&quot;</span>, <span class="string">&quot;admin&quot;</span>);</span><br><span class="line">            <span class="keyword">var</span> result = InternalApiSignature.Verify(Secret, Now.ToString(), ExpectedSignature, Method, Path, tampered, Now);</span><br><span class="line">            Assert.AreEqual(InternalApiSignatureResult.InvalidSignature, result);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>幾個重點說明</p>
+<ol>
+<li>為什麼是 static class，不直接寫成 ActionFilter：ActionFilter 需要 HttpContext 才能跑，沒辦法在本機測試。把「怎麼算、怎麼比」抽出來成純函式，Filter 下一步只負責讀 header 和 body、讀密鑰、決定回 401。之後 SSO 端點與 Native Capability API 也都共用這一份。</li>
+<li>ExpectedSignature 是跨實作的對照值：這個值是我用 .NET 10 的 HMACSHA256.HashData + Convert.ToHexStringLower 算出來的，寫法和 MockPnp 第 169～176 行相同。如果只測「自己算、自己驗」，兩邊都錯一樣的地方時測試還是會過；有這個固定值，才能證明和 Authorization Server／MCP Server 那邊的算法一致。</li>
+<li>nowUnixSeconds 由外部傳入：像是讓時鐘可以「撥動」。測試可以精準放在 +5 秒（邊界，要通過）和 +6 秒（要拒絕），不會因為測試執行時剛好跨秒而時好時壞。正式呼叫時會傳 DateTimeOffset.UtcNow.ToUnixTimeSeconds()。</li>
+<li>先檢查時間戳，再算 HMAC：過期或格式錯誤的請求不用花時間算雜湊。NumberStyles.None 會拒絕 -1、 123、1e9 這類輸入，所以 timestamp 一定 ≥ 0，Math.Abs 不會溢位。</li>
+<li>固定時間比較：&#x3D;&#x3D; 碰到第一個不同的字元就會回傳，攻擊者可以從回應時間一個字元一個字元地猜出簽章。XOR 累加不管哪裡不同，都會跑完整個迴圈。NoOptimization 是 .NET Core 內建的 FixedTimeEquals 也有用的保護。</li>
+<li>Verify_PathWithoutVirtualDirectory：把第 8.3.1 節的虛擬目錄問題寫成測試，提醒之後 Filter 一定要用 Request.Url.AbsolutePath。</li>
+<li>C# 7.3 相容：PNP 的 LangVersion 是 7.3，所以沒用 using var、switch expression、record 這些新語法。</li>
+</ol>
+<p>測試步驟</p>
+<ol>
+<li>在 VS 用「加入 → 新增項目」建立這兩個檔案。PNP 和 Tests 都是舊式 csproj，直接在檔案總管新增的話，不會自動加上 <Compile Include>，檔案不會被編譯。</li>
+<li>建置方案，然後在「測試總管」執行 InternalApiSignatureTests。這一步驗證的是簽章邏輯和 .NET 10 版完全相容。</li>
+<li>刻意改壞：把 Sha256Hex 的 .ToLowerInvariant() 拿掉後重跑，再改回來。這一步驗證的是「對照值測試」真的能抓到格式不一致。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/" data-id="cmwof19cj00005sn15old8ub3" data-title="建立OAuth Server with OpenIddict(9)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">PKCE、HTTPS、HMAC 的用途與差異</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI%E6%87%89%E7%94%A8/">AI應用</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Docker/">Docker</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Google-Cloud/">Google Cloud</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Trouble-Shooting/">Trouble Shooting</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%B3%87%E5%AE%89/">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI/" rel="tag">AI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CDN/" rel="tag">CDN</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Clasp/" rel="tag">Clasp</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Code/" rel="tag">Claude Code</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Claude-Skill/" rel="tag">Claude Skill</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cloud-Run/" rel="tag">Cloud Run</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker-Volume/" rel="tag">Docker Volume</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/DockerFile/" rel="tag">DockerFile</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-App-Script/" rel="tag">Google App Script</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Google-Auth-Platform/" rel="tag">Google Auth Platform</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/IAP/" rel="tag">IAP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JWKS/" rel="tag">JWKS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JWT/" rel="tag">JWT</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MCP/" rel="tag">MCP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OOP/" rel="tag">OOP</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Side-Project/" rel="tag">Side Project</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Webpack/" rel="tag">Webpack</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/n8n/" rel="tag">n8n</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" rel="tag">物件導向</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%B3%87%E5%AE%89/" rel="tag">資安</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/AI/" style="font-size: 18.33px;">AI</a> <a href="/tags/AI%E7%94%A2%E5%87%BA/" style="font-size: 15px;">AI產出</a> <a href="/tags/Angular/" style="font-size: 16.67px;">Angular</a> <a href="/tags/CDN/" style="font-size: 10px;">CDN</a> <a href="/tags/Clasp/" style="font-size: 10px;">Clasp</a> <a href="/tags/Claude-Code/" style="font-size: 10px;">Claude Code</a> <a href="/tags/Claude-Skill/" style="font-size: 10px;">Claude Skill</a> <a href="/tags/Cloud-Run/" style="font-size: 10px;">Cloud Run</a> <a href="/tags/Docker/" style="font-size: 11.67px;">Docker</a> <a href="/tags/Docker-Compose/" style="font-size: 10px;">Docker Compose</a> <a href="/tags/Docker-Volume/" style="font-size: 10px;">Docker Volume</a> <a href="/tags/DockerFile/" style="font-size: 10px;">DockerFile</a> <a href="/tags/Google-App-Script/" style="font-size: 11.67px;">Google App Script</a> <a href="/tags/Google-Auth-Platform/" style="font-size: 10px;">Google Auth Platform</a> <a href="/tags/IAP/" style="font-size: 10px;">IAP</a> <a href="/tags/JWKS/" style="font-size: 10px;">JWKS</a> <a href="/tags/JWT/" style="font-size: 10px;">JWT</a> <a href="/tags/MCP/" style="font-size: 10px;">MCP</a> <a href="/tags/OAuth/" style="font-size: 20px;">OAuth</a> <a href="/tags/OOP/" style="font-size: 10px;">OOP</a> <a href="/tags/OpenIddict/" style="font-size: 20px;">OpenIddict</a> <a href="/tags/Side-Project/" style="font-size: 10px;">Side Project</a> <a href="/tags/Ubuntu/" style="font-size: 13.33px;">Ubuntu</a> <a href="/tags/WSL2/" style="font-size: 13.33px;">WSL2</a> <a href="/tags/Webpack/" style="font-size: 10px;">Webpack</a> <a href="/tags/docker/" style="font-size: 13.33px;">docker</a> <a href="/tags/n8n/" style="font-size: 13.33px;">n8n</a> <a href="/tags/%E7%89%A9%E4%BB%B6%E5%B0%8E%E5%90%91/" style="font-size: 10px;">物件導向</a> <a href="/tags/%E8%B3%87%E5%AE%89/" style="font-size: 11.67px;">資安</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/11/">November 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/10/">October 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/09/">September 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/08/">August 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/07/">July 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/06/">June 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/04/">April 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/03/">March 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2026/01/">January 2026</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/12/">December 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/10/">October 2025</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/09/">September 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/">建立OAuth Server with OpenIddict(9)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/">PKCE、HTTPS、HMAC 的用途與差異</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/18/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-8/">建立OAuth Server with OpenIddict(8)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/17/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-7/">建立OAuth Server with OpenIddict(7)</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/">建立OAuth Server with OpenIddict(6)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2026 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

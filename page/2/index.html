@@ -75,6 +75,63 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-建立OAuth-Server-with-OpenIddict-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/" class="article-date">
+  <time class="dt-published" datetime="2026-10-27T09:44:03.000Z" itemprop="datePublished">2026-10-27</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/">建立OAuth Server with OpenIddict(2)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="此篇重點：建置基礎服務相關API"><a href="#此篇重點：建置基礎服務相關API" class="headerlink" title="此篇重點：建置基礎服務相關API"></a>此篇重點：建置基礎服務相關API</h5><ul>
+<li>資安加固 ：限定aud（audience）claim</li>
+<li>refresh 被拒絕時，撤銷整條 refresh token 鏈</li>
+<li>第二次經過 &#x2F;connect&#x2F;authorize 時，檢查參數有沒有被竄改</li>
+<li>讓 PendingAuthorizeRequest「單次使用」在同時有多個請求時也成立</li>
+<li>檢查 Discovery 和 JWKS 的內容，確認只允許 S256</li>
+<li>加固 bridge-callback，讓它和 &#x2F;connect&#x2F;authorize 第二次經過一樣嚴謹</li>
+<li>定期清除過期的 PendingAuthorizeRequests</li>
+</ul>
+        
+          <p class="article-more-link">
+            <a href="/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/10/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-2/" data-id="cmvqi1tj7000070n1eh0da8jd" data-title="建立OAuth Server with OpenIddict(2)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-OpenIddict-測試" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/10/27/OpenIddict-%E6%B8%AC%E8%A9%A6/" class="article-date">
@@ -536,55 +593,6 @@
 
 
   
-    <article id="post-ng-npm-npx的差異" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/" class="article-date">
-  <time class="dt-published" datetime="2026-08-20T06:42:14.000Z" itemprop="datePublished">2026-08-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%89%8D%E7%AB%AF%E9%96%8B%E7%99%BC/">前端開發</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/">Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Angular 專案中的 <code>ng</code>、<code>npm</code>、<code>npx</code> 差異與使用方式<br><span style="color:red;">文章內容透過ai整理產出</span></p>
-        
-          <p class="article-more-link">
-            <a href="/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2026/08/20/ng-npm-npx%E7%9A%84%E5%B7%AE%E7%95%B0/" data-id="cmvarluy2002bo4n1gujh9d4d" data-title="Angular 專案中的 `ng`、`npm`、`npx` 差異與使用方式" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AI%E7%94%A2%E5%87%BA/" rel="tag">AI產出</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Angular/" rel="tag">Angular</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
@@ -642,6 +650,10 @@
       <ul>
         
           <li>
+            <a href="/2026/11/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-9/">建立OAuth Server with OpenIddict(9)</a>
+          </li>
+        
+          <li>
             <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/">PKCE、HTTPS、HMAC 的用途與差異</a>
           </li>
         
@@ -655,10 +667,6 @@
         
           <li>
             <a href="/2026/11/16/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-6/">建立OAuth Server with OpenIddict(6)</a>
-          </li>
-        
-          <li>
-            <a href="/2026/11/16/JWT%E3%80%81JWKS-%E8%88%87-kid-%E7%9A%84%E9%97%9C%E4%BF%82/">JWT、JWKS 與 kid 的關係</a>
           </li>
         
       </ul>

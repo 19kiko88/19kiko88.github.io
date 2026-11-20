@@ -101,11 +101,9 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h5 id="第-1-步（上）HMAC-簽章的核心邏輯與單元測試"><a href="#第-1-步（上）HMAC-簽章的核心邏輯與單元測試" class="headerlink" title="第 1 步（上）HMAC 簽章的核心邏輯與單元測試"></a>第 1 步（上）HMAC 簽章的核心邏輯與單元測試</h5><p>這一步在做什麼</p>
-<p>把第 1 步拆成兩半：</p>
-<ul>
-<li>這一半：寫一個純邏輯的 static class，負責計算和驗證簽章。它不碰 HttpContext，也不讀 web.config，所以可以完全用單元測試驗證。</li>
-<li>下一半：再用 ActionFilter 把它接到 MVC 上。</li>
+        <h5 id="供-MCP-Server-呼叫的-API-的程式開發，並透過-HMAC-確認呼叫者是-MCP-Server，且請求內容未被竄改。"><a href="#供-MCP-Server-呼叫的-API-的程式開發，並透過-HMAC-確認呼叫者是-MCP-Server，且請求內容未被竄改。" class="headerlink" title="供 MCP Server 呼叫的 API 的程式開發，並透過 HMAC 確認呼叫者是 MCP Server，且請求內容未被竄改。"></a>供 MCP Server 呼叫的 API 的程式開發，並透過 HMAC 確認呼叫者是 MCP Server，且請求內容未被竄改。</h5><ul>
+<li>簽章的核心邏輯與單元測試</li>
+<li>HMAC 驗證的 MVC Filter</li>
 </ul>
         
           <p class="article-more-link">

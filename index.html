@@ -75,6 +75,318 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-PKCE、HTTPS、HMAC-的用途與差異" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/" class="article-date">
+  <time class="dt-published" datetime="2026-11-20T02:08:39.000Z" itemprop="datePublished">2026-11-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/">PKCE、HTTPS、HMAC 的用途與差異</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="PKCE、HTTPS、HMAC-的用途與差異"><a href="#PKCE、HTTPS、HMAC-的用途與差異" class="headerlink" title="PKCE、HTTPS、HMAC 的用途與差異"></a>PKCE、HTTPS、HMAC 的用途與差異</h1><blockquote>
+<p>本文件整理本專案用到的三種安全機制：各自保護什麼、在專案中的哪裡使用、彼此如何分工。相關規格見 <code>OAuth2.1-MCP-AuthServer-Design.md</code> 第4.2、4.4節，HMAC 與 PNP 的實作細節見 <code>Handoff-ResourceServer.md</code> 第8.3節。</p>
+</blockquote>
+<hr>
+<h2 id="1-一句話說明"><a href="#1-一句話說明" class="headerlink" title="1. 一句話說明"></a>1. 一句話說明</h2><table>
+<thead>
+<tr>
+<th>機制</th>
+<th>一句話</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>PKCE</strong></td>
+<td>讓被偷走的 Authorization Code 無法換到 access_token</td>
+</tr>
+<tr>
+<td><strong>HTTPS</strong></td>
+<td>加密連線（第三方看不到）、防止傳輸途中被竄改、確認 <strong>Server</strong> 的身分</td>
+</tr>
+<tr>
+<td><strong>HMAC</strong></td>
+<td>確認<strong>呼叫者</strong>持有 Secret，而且請求內容沒有被竄改</td>
+</tr>
+</tbody></table>
+<p>HTTPS 與 HMAC 都能防竄改，關鍵差別在「<strong>確認誰的身分</strong>」：HTTPS 確認 <strong>Server</strong>，HMAC 確認 <strong>Client（呼叫者）</strong>。</p>
+<hr>
+<h2 id="2-PKCE（Proof-Key-for-Code-Exchange）"><a href="#2-PKCE（Proof-Key-for-Code-Exchange）" class="headerlink" title="2. PKCE（Proof Key for Code Exchange）"></a>2. PKCE（Proof Key for Code Exchange）</h2><h3 id="2-1-解決的問題"><a href="#2-1-解決的問題" class="headerlink" title="2.1 解決的問題"></a>2.1 解決的問題</h3><p>Authorization Code 會透過瀏覽器導轉送回 MCP Client（<code>redirect_uri?code=...</code>），途中可能被攔截（瀏覽器歷史紀錄、惡意程式、log）。沒有 PKCE 時，偷到 code 的人可以直接拿去 <code>/connect/token</code> 換 access_token。</p>
+<p>PKCE <strong>無法阻止 code 被偷走</strong>，而是讓<strong>偷走的 code 換不到 token</strong>。</p>
+<h3 id="2-2-運作方式"><a href="#2-2-運作方式" class="headerlink" title="2.2 運作方式"></a>2.2 運作方式</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. MCP Client 產生只有自己知道的隨機字串 code_verifier</span><br><span class="line">2. 算出 code_challenge = Base64Url(SHA256(code_verifier))</span><br><span class="line">3. /connect/authorize 時送出 code_challenge（會出現在網址上，可能被看到）</span><br><span class="line">4. Authorization Server 把 code_challenge 和簽發的 Authorization Code 綁在一起</span><br><span class="line">5. /connect/token 時，MCP Client 送出 code 與原始的 code_verifier</span><br><span class="line">6. Authorization Server 計算 SHA256(code_verifier)，與當初的 code_challenge 比對，相同才簽發 token</span><br></pre></td></tr></table></figure>
+
+<p>偷到 code（甚至看到 <code>code_challenge</code>）的人，手上沒有 <code>code_verifier</code>，而 SHA256 無法反推，所以換不到 token。</p>
+<h3 id="2-3-為什麼只允許-S256，不允許-plain"><a href="#2-3-為什麼只允許-S256，不允許-plain" class="headerlink" title="2.3 為什麼只允許 S256，不允許 plain"></a>2.3 為什麼只允許 S256，不允許 plain</h3><table>
+<thead>
+<tr>
+<th>方法</th>
+<th><code>code_challenge</code> 的算法</th>
+<th>被看到 <code>code_challenge</code> 時</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>S256</code></td>
+<td><code>SHA256(code_verifier)</code></td>
+<td>無法反推 <code>code_verifier</code>，安全</td>
+</tr>
+<tr>
+<td><code>plain</code></td>
+<td>直接等於 <code>code_verifier</code></td>
+<td><code>code_challenge</code> 本身就是通關密碼，PKCE 失去作用</td>
+</tr>
+</tbody></table>
+<h3 id="2-4-在本專案中的位置"><a href="#2-4-在本專案中的位置" class="headerlink" title="2.4 在本專案中的位置"></a>2.4 在本專案中的位置</h3><ul>
+<li>Authorization Server 強制所有 client 使用 PKCE，且<strong>只允許 <code>S256</code></strong>（設計文件第10節第4點）。</li>
+<li>第二次經過 <code>/connect/authorize</code> 時比對參數，防止 resume 網址中的 <code>code_challenge</code> 被替換（設計文件第4.1節）。</li>
+</ul>
+<hr>
+<h2 id="3-HTTPS"><a href="#3-HTTPS" class="headerlink" title="3. HTTPS"></a>3. HTTPS</h2><h3 id="3-1-保護的範圍"><a href="#3-1-保護的範圍" class="headerlink" title="3.1 保護的範圍"></a>3.1 保護的範圍</h3><table>
+<thead>
+<tr>
+<th>保護</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>加密</strong></td>
+<td>連線雙向加密，第三方看不到傳輸內容（token、帳號、資料）</td>
+</tr>
+<tr>
+<td><strong>防竄改</strong></td>
+<td><strong>雙向</strong>保護，Client 送出的請求與 Server 回傳的回應，傳輸途中都無法被修改</td>
+</tr>
+<tr>
+<td><strong>確認 Server 身分</strong></td>
+<td>Client 驗證 Server 的憑證，確認連到的是真的 Server，而不是假冒者</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-沒有保護的部分"><a href="#3-2-沒有保護的部分" class="headerlink" title="3.2 沒有保護的部分"></a>3.2 沒有保護的部分</h3><p>一般的 HTTPS <strong>不驗證 Client 是誰</strong>。任何人都能和 PNP 建立 HTTPS 連線並送出請求，HTTPS 本身無法分辨請求是來自 Authorization Server、MCP Server，還是攻擊者。這正是需要 HMAC 的原因。</p>
+<p>（雙向驗證的 mTLS 可以驗證 Client，設計文件第3.1節將它列為確認為可信內網後「可疊加」的防護層，目前未採用。）</p>
+<h3 id="3-3-在本專案中的位置"><a href="#3-3-在本專案中的位置" class="headerlink" title="3.3 在本專案中的位置"></a>3.3 在本專案中的位置</h3><p>所有連線都要求 HTTPS：MCP Client ↔ Authorization Server、MCP Client ↔ MCP Server、Authorization Server → PNP、MCP Server → PNP。</p>
+<hr>
+<h2 id="4-HMAC"><a href="#4-HMAC" class="headerlink" title="4. HMAC"></a>4. HMAC</h2><h3 id="4-1-保護的範圍"><a href="#4-1-保護的範圍" class="headerlink" title="4.1 保護的範圍"></a>4.1 保護的範圍</h3><table>
+<thead>
+<tr>
+<th>保護</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>確認呼叫者身分</strong></td>
+<td>只有持有 Secret 的一方能算出正確的簽章</td>
+</tr>
+<tr>
+<td><strong>防竄改</strong></td>
+<td>內容被改過一個字元，簽章就對不上</td>
+</tr>
+<tr>
+<td><strong>防重送</strong></td>
+<td>搭配時間戳（±5 秒），被攔截的請求過了時限就無法再使用</td>
+</tr>
+<tr>
+<td>❌ 不加密</td>
+<td>HMAC 只簽章、不加密，內容的保密仍靠 HTTPS</td>
+</tr>
+</tbody></table>
+<h3 id="4-2-運作方式"><a href="#4-2-運作方式" class="headerlink" title="4.2 運作方式"></a>4.2 運作方式</h3><p><strong>Secret 從頭到尾都不會被傳送，也不會被拿來比對</strong>；比對的是雙方各自算出的簽章。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">送出端（Authorization Server / MCP Server）                 接收端（PNP）</span><br><span class="line">───────────────────────────────────                    ─────────────────</span><br><span class="line">Secret（自己保管，不送出）                                  Secret（自己保管，同一個值）</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">簽章 = HMAC-SHA256(Secret, &quot;時間戳\n方法\n路徑\nbody雜湊&quot;)</span><br><span class="line">        │</span><br><span class="line">        └── X-Timestamp、X-Signature、body ──────────▶  用自己的 Secret 對收到的內容重算一次</span><br><span class="line">                                                          兩個簽章相同？ → 通過</span><br><span class="line">                                                          時間差 ±5 秒內？ → 通過</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>HMAC-SHA256</strong>：使用 SHA256 雜湊函數的 HMAC。在 JWT 中，同一個演算法的簡寫是 <code>HS256</code>。</li>
+<li>從簽章無法反推 Secret；沒有 Secret 就算不出正確的簽章。</li>
+</ul>
+<h3 id="4-3-驗章成功的條件"><a href="#4-3-驗章成功的條件" class="headerlink" title="4.3 驗章成功的條件"></a>4.3 驗章成功的條件</h3><ol>
+<li><strong>Secret 相同</strong>：雙方設定同一個值（設定 key 名稱可以不同，例如 <code>IdentityProviders:Pnp:HmacSecret</code> 與 <code>Sso:HmacSecret</code>）。</li>
+<li><strong>計算方式完全相同</strong>：</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>必須一致的內容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>簽章內容的組法</td>
+<td><code>時間戳\n方法\n路徑\nbody雜湊</code>：順序與換行符號（<code>\n</code>）都相同</td>
+</tr>
+<tr>
+<td>時間戳</td>
+<td><code>X-Timestamp</code> header 的值，Unix 秒數</td>
+</tr>
+<tr>
+<td>方法</td>
+<td>大寫，例如 <code>POST</code></td>
+</tr>
+<tr>
+<td>路徑</td>
+<td>只取路徑，不含主機與 query string；<strong>有 IIS 虛擬目錄時要包含它</strong></td>
+</tr>
+<tr>
+<td>body 雜湊</td>
+<td>對<strong>原始 body 文字</strong>算 SHA256，轉成<strong>小寫</strong> 16 進位；不可先反序列化再序列化</td>
+</tr>
+<tr>
+<td>文字編碼</td>
+<td>UTF-8</td>
+</tr>
+<tr>
+<td>演算法</td>
+<td>HMAC-SHA256</td>
+</tr>
+<tr>
+<td>簽章表示</td>
+<td>Base64，放在 <code>X-Signature</code> header</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li><strong>時間同步</strong>：接收端檢查 <code>X-Timestamp</code> 與自己的時間相差不超過 ±5 秒，所以主機時鐘須對齊（公司 NTP）。</li>
+</ol>
+<p>任一項不同，合法的請求也會得到 401。</p>
+<h3 id="4-4-在本專案中的位置"><a href="#4-4-在本專案中的位置" class="headerlink" title="4.4 在本專案中的位置"></a>4.4 在本專案中的位置</h3><table>
+<thead>
+<tr>
+<th>路徑</th>
+<th>用途</th>
+<th>密鑰</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authorization Server → PNP</td>
+<td>redeem、token-status（目前由 MockPnp 模擬）</td>
+<td>Authorization Server ↔ PNP 這一組</td>
+</tr>
+<tr>
+<td>MCP Server → PNP</td>
+<td>UCS 資料的內部 API、Native Capability API</td>
+<td>MCP Server ↔ PNP 這一組（<strong>與上面不同</strong>）</td>
+</tr>
+</tbody></table>
+<p>兩條路徑使用不同的密鑰：一組外洩只影響一條路徑。MCP Server → PNP 的密鑰尤其重要，外洩時持有者能以任何使用者身分呼叫 Native Capability API（<code>Handoff-ResourceServer.md</code> 第2.2節）。</p>
+<hr>
+<h2 id="5-三者如何搭配"><a href="#5-三者如何搭配" class="headerlink" title="5. 三者如何搭配"></a>5. 三者如何搭配</h2><table>
+<thead>
+<tr>
+<th>連線</th>
+<th>HTTPS</th>
+<th>PKCE</th>
+<th>HMAC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MCP Client → Authorization Server（<code>/connect/authorize</code>、<code>/connect/token</code>）</td>
+<td>✅</td>
+<td>✅</td>
+<td>—</td>
+</tr>
+<tr>
+<td>MCP Client → MCP Server（帶 access_token 呼叫工具）</td>
+<td>✅</td>
+<td>—</td>
+<td>—（以 JWT 驗證）</td>
+</tr>
+<tr>
+<td>Authorization Server → PNP（redeem、token-status）</td>
+<td>✅</td>
+<td>—</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>MCP Server → PNP（內部 API）</td>
+<td>✅</td>
+<td>—</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>PKCE</strong> 只用在 OAuth 的授權碼流程。</li>
+<li><strong>HTTPS</strong> 每一條連線都要。</li>
+<li><strong>HMAC</strong> 用在伺服器對伺服器的內部 API：這些 API 沒有使用者登入狀態，靠 HMAC 確認呼叫者是誰。</li>
+<li>MCP Client → MCP Server 不用 HMAC，而是用 Authorization Server 簽發的 <strong>JWT</strong>（access_token）確認使用者與權限（見 <code>JWT-JWKS-kid.md</code>）。</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/" data-id="cmwocmovd0000h8n135fcamwg" data-title="PKCE、HTTPS、HMAC 的用途與差異" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-建立OAuth-Server-with-OpenIddict-8" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2026/11/18/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-8/" class="article-date">
+  <time class="dt-published" datetime="2026-11-18T09:25:20.000Z" itemprop="datePublished">2026-11-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2026/11/18/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-8/">建立OAuth Server with OpenIddict(8)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="接續上一篇…"><a href="#接續上一篇…" class="headerlink" title="接續上一篇…"></a>接續上一篇…</h5><h5 id="把-AuthorizationController-的-DB-邏輯抽到-OAuth-Core"><a href="#把-AuthorizationController-的-DB-邏輯抽到-OAuth-Core" class="headerlink" title="把 AuthorizationController 的 DB 邏輯抽到 OAuth.Core"></a>把 AuthorizationController 的 DB 邏輯抽到 OAuth.Core</h5>
+        
+          <p class="article-more-link">
+            <a href="/2026/11/18/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-8/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2026/11/18/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-8/" data-id="cmwocmovf0001h8n10flf64bz" data-title="建立OAuth Server with OpenIddict(8)" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-建立OAuth-Server-with-OpenIddict-7" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2026/11/17/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-7/" class="article-date">
@@ -491,109 +803,11 @@
 
 
   
-    <article id="post-OpenIddict-測試" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2026/10/27/OpenIddict-%E6%B8%AC%E8%A9%A6/" class="article-date">
-  <time class="dt-published" datetime="2026-10-27T07:38:25.000Z" itemprop="datePublished">2026-10-27</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/10/27/OpenIddict-%E6%B8%AC%E8%A9%A6/">OpenIddict 測試</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h5 id="OpenIddict-測試"><a href="#OpenIddict-測試" class="headerlink" title="OpenIddict 測試"></a>OpenIddict 測試</h5>
-        
-          <p class="article-more-link">
-            <a href="/2026/10/27/OpenIddict-%E6%B8%AC%E8%A9%A6/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2026/10/27/OpenIddict-%E6%B8%AC%E8%A9%A6/" data-id="cmvqfl1iz0000jon18gwfgi5d" data-title="OpenIddict 測試" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-建立OAuth-Server-with-OpenIddict-1" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-1/" class="article-date">
-  <time class="dt-published" datetime="2026-10-20T06:54:47.000Z" itemprop="datePublished">2026-10-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/%E5%BE%8C%E7%AB%AF%E9%96%8B%E7%99%BC/">後端開發</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-1/">建立OAuth Server with OpenIddict(1)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h5 id="用OpenIddict建立一個測試用remote-MCP-Server專案"><a href="#用OpenIddict建立一個測試用remote-MCP-Server專案" class="headerlink" title="用OpenIddict建立一個測試用remote MCP Server專案"></a>用OpenIddict建立一個測試用remote MCP Server專案</h5>
-        
-          <p class="article-more-link">
-            <a href="/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-1/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2026/10/20/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-1/" data-id="cmvqi1tj9000170n1hzgsbl5m" data-title="建立OAuth Server with OpenIddict(1)" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OAuth/" rel="tag">OAuth</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/OpenIddict/" rel="tag">OpenIddict</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
     
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
   </nav>
 
 </section>
@@ -646,6 +860,14 @@
       <ul>
         
           <li>
+            <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/">PKCE、HTTPS、HMAC 的用途與差異</a>
+          </li>
+        
+          <li>
+            <a href="/2026/11/18/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-8/">建立OAuth Server with OpenIddict(8)</a>
+          </li>
+        
+          <li>
             <a href="/2026/11/17/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-7/">建立OAuth Server with OpenIddict(7)</a>
           </li>
         
@@ -655,14 +877,6 @@
         
           <li>
             <a href="/2026/11/16/JWT%E3%80%81JWKS-%E8%88%87-kid-%E7%9A%84%E9%97%9C%E4%BF%82/">JWT、JWKS 與 kid 的關係</a>
-          </li>
-        
-          <li>
-            <a href="/2026/11/09/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-5/">建立OAuth Server with OpenIddict(5)</a>
-          </li>
-        
-          <li>
-            <a href="/2026/11/06/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-4/">建立OAuth Server with OpenIddict(4)</a>
           </li>
         
       </ul>

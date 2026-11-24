@@ -11,6 +11,8 @@ tags:
 ##### 供 MCP Server 呼叫的 API 的程式開發，並透過 HMAC 確認呼叫者是 MCP Server，且請求內容未被竄改。                
 - 簽章的核心邏輯與單元測試
 - HMAC 驗證的 MVC Filter
+- 新增 POST 內部API(透過此API來呼叫真正的UCS API)
+- 設定密鑰、部署到 PnpTest、用 PowerShell 模擬 MCP Server 測試
 <!-- more -->
 #
 #
@@ -581,3 +583,245 @@ namespace PCBRepairNavi.Controllers
 9. [InternalApiHmac] 放在 class 層級：這樣不會有人新增 action 時忘了加，讓 API 沒有保護就上線。一個 Controller 對應一組密鑰，「格式共用、密鑰分開」從 Controller 的分法就看得出來。
 10. 路徑和程式放在一起：看 Controller 就知道網址，不用去 RouteConfig.cs 對照。
 11. MapMvcAttributeRoutes() 要放在 Default 之前：否則 Default 的 {controller}/{action}/{id} 會先比對到 api/internal/ucs，結果找不到 controller，回 404。
+#
+#
+#
+---
+## 設定密鑰、部署到 PnpTest、用 PowerShell 模擬 MCP Server 測試
+
+這一步在做什麼
+
+1. 讓 PNP 讀得到密鑰 A：Web.config 的 appSettings 加上 file="InternalApi.secrets.config"，把外部密鑰檔合併進來。filter 照原本的寫法，用 WebConfigurationManager.AppSettings 讀取，filter 程式不用改。
+2. 密鑰檔不進 git，只在發行到測試機時一起帶上。
+3. 部署到 PnpTest，用 PowerShell 腳本扮演 MCP Server 簽章呼叫，驗證第 1、2 步的所有程式。
+
+以下 A、B 兩部分在本機完成，C 部署、D 測試。
+
+---
+**A. 準備密鑰（本機）**
+
+- A-1. 修改根目錄 .gitignore（加在第 403 行 /PCBRepairNavi/App_Data/Elmah.Errors 附近）
+
+/PCBRepairNavi/InternalApi.secrets.config
+
+- A-2. 產生密鑰 A（PowerShell 5.1）
+``` bash
+    $b = New-Object byte[] 32
+    [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
+    [Convert]::ToBase64String($b)
+```
+把輸出的字串存到你的密碼管理工具，第二階段 MCP Server 還要用。不要貼給我，也不要放進任何進 git 的檔案。
+
+- A-3. 建立密鑰檔 PCBRepairNavi/InternalApi.secrets.config
+``` xml
+    $secret = 'A-2. 產生的密鑰'
+    $path   = 'D:\Homer\Project\PCBNavigatePortal\PCBRepairNavi\InternalApi.secrets.config'
+    $xml    = '<?xml version="1.0" encoding="utf-8"?>' + "`r`n" + '<appSettings>' + "`r`n" + '  <add key="InternalApi.McpHmacSecret" value="' + $secret + '" />' + "`r`n" + '</appSettings>' + "`r`n"
+    [IO.File]::WriteAllText($path, $xml, (New-Object System.Text.UTF8Encoding($false)))
+    Get-Item $path | Select-Object FullName, Length
+```
+▎ 不要用 VS 的「加入 → 新增項目」建立這個檔案：VS 會自動在 csproj 加上一行沒有條件的 <Content>，和 B-3 衝突。
+
+- A-4. 驗證 XML 格式（每次修改密鑰檔後都要做）
+``` bash
+    [xml](Get-Content $path -Raw) | Out-Null; 'XML OK'
+```
+[xml](Get-Content $path -Raw) | Out-Null; 'XML OK'
+
+印出 XML OK 才可以發行。
+{% asset_image xml_ok.jpg xml_ok%}
+#
+#
+#
+---
+**B. 修改程式（本機）**
+
+- 修改 PCBRepairNavi/Web.config（第 19 行）
+``` xml
+    <appSettings file="InternalApi.secrets.config">
+```
+{% asset_image appsettings.jpg appsettings %}
+
+- B-2. 修改 PCBRepairNavi/Controllers/InternalUcsApiController.cs 的 class 註解
+``` csharp
+    /// <summary>
+    /// MCP Server（PCBRepairNavi.MCP）→ PNP 的內部 API。
+    /// 刻意繼承 Controller 而非 BaseController：BaseController.OnAuthorization 會把沒有 .ASPXAUTH 的
+    /// 伺服器呼叫導向登入頁；存取控制改由 [InternalApiHmac] 負責。
+    /// 刻意不套用 CSRF 驗證（伺服器對伺服器），理由見 InternalApiHmacAttribute。
+    /// 路徑必須在 /api/ 底下：Web.config 全站 <deny users="?" >，只有 <location path="api"> 允許未登入的請求。
+    /// 密鑰 InternalApi.McpHmacSecret 來自 Web.config <appSettings file="InternalApi.secrets.config">（不進 git）。
+    /// </summary>
+```
+
+- B-3. 修改 PCBRepairNavi/PCBRepairNavi.csproj
+在方案總管對 PCBRepairNavi 按右鍵 →「卸載專案」→「編輯 PCBRepairNavi.csproj」，找到任一個含有 <Content Include="..." /> 的 <ItemGroup>，在裡面加入下面這行，存檔後「重新載入專案」：
+``` xml
+    <!-- MCP → PNP 的 HMAC 密鑰（測試機用）。不進 git；只有 TP-CAEVM-VT01 組態且檔案存在時才發行 -->
+    <Content Include="InternalApi.secrets.config" Condition="Exists('InternalApi.secrets.config') And '$(Configuration)' == 'TP-CAEVM-VT01'" />
+```
+#
+#
+#
+---
+**C. 部署**
+先做 A-4 確認 XML OK，再用 tp-caevm-vt01(TEST)Test 發行。
+#
+#
+#
+---
+**D. 測試腳本：D:\Homer\Test\Invoke-PnpInternalApi.ps1**
+這個檔案放在 repo 外面，不含密鑰，密鑰從環境變數讀取。
+``` ps1
+    param(
+        [string]$BaseUrl = 'https://tp-caevm-vt01.corpnet.asus/Pnp/',
+        [string]$RelativePath = 'api/internal/ucs/ecn-rcn',
+        [string]$Body = '{"bomNo":"","userName":"ucs\\mcp-test"}',
+        [string]$Secret = $env:PNP_MCP_HMAC_SECRET,
+        [int]$TimestampOffset = 0
+    )
+    $ErrorActionPreference = 'Stop'
+    if ([string]::IsNullOrEmpty($Secret)) { throw 'Please set $env:PNP_MCP_HMAC_SECRET first.' }
+
+    # 路徑取法與 MCP Server 相同：基底網址以 / 結尾、相對路徑不以 / 開頭，再取 AbsolutePath
+    $uri  = New-Object System.Uri((New-Object System.Uri($BaseUrl)), $RelativePath)
+    $path = $uri.AbsolutePath
+    $ts   = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + $TimestampOffset
+
+    $utf8     = New-Object System.Text.UTF8Encoding($false)
+    $sha      = [System.Security.Cryptography.SHA256]::Create()
+    $bodyHash = -join ($sha.ComputeHash($utf8.GetBytes($Body)) | ForEach-Object { $_.ToString('x2') })
+    $canonical = "$ts`nPOST`n$path`n$bodyHash"
+
+    $hmac     = New-Object System.Security.Cryptography.HMACSHA256
+    $hmac.Key = $utf8.GetBytes($Secret)
+    $sig      = [Convert]::ToBase64String($hmac.ComputeHash($utf8.
+
+    # body 寫成檔案再用 --data-binary 送出，確保送出的位元組與簽章時完全相同
+    $tmp = [System.IO.Path]::GetTempFileName()
+    [System.IO.File]::WriteAllBytes($tmp, $utf8.GetBytes($Body))
+
+    Write-Host "URL        : $($uri.AbsoluteUri)"
+    Write-Host "Path(sign) : $path"
+    Write-Host "Local UTC  : $([DateTime]::UtcNow.ToString('R'))"
+    Write-Host '----------------------------------------'
+    try {
+        curl.exe -s -i -X POST $uri.AbsoluteUri `
+            -H 'Content-Type: application/json' `
+            -H "X-Timestamp: $ts" `
+            -H "X-Signature: $sig" `
+            --data-binary "@$tmp"
+    } finally {
+        Remove-Item $tmp
+    }
+```
+
+**為什麼選 PowerShell 腳本：**
+
+| 理由 | 說明 |
+|---|---|
+| 每次自動重算 | 腳本每次執行都會取「現在」的時間、重新計算 body 雜湊和簽章 |
+| 不用另外安裝工具 | PowerShell 5.1 內建 HMACSHA256、SHA256，Windows 也內建 curl.exe |
+| 和 MCP Server 的邏輯相同 | 腳本的取路徑、組簽章字串的方式，就是第二階段 MCP Server 要用 C# 寫的同一套邏輯，等於先驗證了「規格」 |
+| 方便測錯誤情境 | `-Secret`、`-TimestampOffset`、`-RelativePath` 這些參數，一行就能做出 #2、#3、#5 的錯誤情境 |
+
+
+---
+
+幾個重點說明
+
+1. appSettings file=：ASP.NET 會把外部檔案的 <add> 合併進 appSettings。檔案不存在時直接忽略，所以其他人的電腦和正式環境都和現在完全一樣。
+2. ⚠️ 這個做法唯一的風險：密鑰檔存在但 XML 格式錯誤時，整個網站會無法啟動。所以 A-4 的驗證是發行前的必要步驟，不是選擇性的。
+3. 對既有功能的影響：
+   - 密鑰的 key InternalApi.McpHmacSecret 是全新的名稱，不會覆蓋任何既有設定。
+   - Web.Release.config、Web.TP-CAEVM-VT01.config 的 transform 只修改個別的 <add>，不會動到 file 屬性。
+4. 更換密鑰要重新啟動網站：修改外部檔案不會像修改 Web.config 那樣自動重新啟動，要重新發行（或重新啟動應用程式集區）才會生效。
+5. 密鑰檔怎麼送上測試機：
+   - 放在專案根目錄、和 Web.config 同一層，不放 App_Data，因為 publish profile 設了 ExcludeApp_Data=true。
+   - 發行時由 B-3 的 <Content> 帶上，而且只限 TP-CAEVM-VT01 組態，用 Release 發行到正式環境時不會帶上。
+   - SkipExtraFilesOnServer=true：其他人發行時，即使他們的電腦沒有這個檔案，測試機上的密鑰檔也會保留。
+6. IIS 預設禁止下載 .config：Web.config 也是靠這個保護。測試 #6 會實際驗證。
+7. 測試腳本：
+   - 用 --data-binary @檔案 送出，避免 PowerShell 5.1 把 JSON 的引號吃掉、導致 body 和簽章不一致。
+   - 路徑用 Uri 合併後取 AbsolutePath，和第二階段 MCP Server 的寫法相同。
+   - curl -i 會顯示回應的 Date:（測試機時間），用來代替 w32tm 比對時鐘。
+   - -s 不跟隨轉址，收到 302 會原樣顯示。
+
+測試步驟
+
+本機（發行前）：
+
+1. 建置方案，在測試總管執行 InternalApiSignatureTests。這一步確認前面的步驟沒有受影響。
+2. 執行 git status。這一步確認 Web.config、.gitignore、csproj、Controller 有變更，而且看不到 InternalApi.secrets.config。
+
+部署後，先設定密鑰（只對目前的 PowerShell 視窗有效）：
+``` bash
+$env:PNP_MCP_HMAC_SECRET = '<A-2 產生的字串>'
+cd D:\Homer\Test
+```
+
+| # | 指令 | 驗證什麼 |
+|:---:|---|---|
+| 1 | `.\Invoke-PnpInternalApi.ps1 -Body '{"bomNo":"<有資料的bomNo>","userName":"ucs\\mcp-test"}'` | 整條路徑都通（虛擬目錄、/api 放行、屬性路由、讀密鑰、呼叫 UCS），並比對時鐘 |
+| 2 | 同 #1，再加上 `-Secret 'wrong-secret'` | 簽章錯誤會回 401 JSON，不會變成 302 導向登入頁 |
+| 3 | 同 #1，再加上 `-TimestampOffset -10` | 時間戳過期會回 401 |
+| 4 | `.\Invoke-PnpInternalApi.ps1`（bomNo 為空） | 輸入驗證會回 400 |
+| 5 | 同 #1，再加上 `-RelativePath 'InternalUcsApi/EcnRcn'` | 傳統路由打不到屬性路由的 action |
+| 6 | 用瀏覽器開啟：<br>`https://tp-caevm-vt01.corpnet.asus/PnpTest/InternalApi.secrets.config`<br>`https://tp-caevm-vt01.corpnet.asus/PnpTest/Areas/Viewer/Content/test_log.txt` | 密鑰檔不能被下載；稽核 log 是否會被外部下載（既有問題） |
+
+
+請執行後確認
+
+- [ ] A-3 最後一行有顯示 FullName 和 Length；A-4 印出 XML OK
+- [ ] 建置成功，6 個測試全部通過
+- [ ] git status：看不到 InternalApi.secrets.config
+- [ ] 部署後，PNP 既有頁面能正常開啟（確認網站有正常啟動）
+- [ ] #1：HTTP/1.1 200，{"items":[...]}，Date 和 Local UTC 相差在 5 秒內
+- [ ] #2、#3：HTTP/1.1 401，{"message":"Unauthorized"}，不是 302
+- [ ] #4：HTTP/1.1 400，{"message":"Bad Request"}
+- [ ] #5：HTTP/1.1 404
+- [ ] #6：密鑰檔無法下載；test_log.txt 能不能下載（能的話，裡面應該有 [InternalApi][ucs.ecn-rcn] User=ucs\mcp-test ...，以及 #3 那一筆的 Reason=TimestampOutOfRange ServerTime=... ClientTime=...）
+- [ ] 結果不如預期的話，請貼上 curl 的狀態列和 header（不需要貼 X-Signature），以及 log 裡對應的那幾行   
+#
+#
+#
+---
+程式裡沒有任何地方直接呼叫 InternalUcsApiController。它是由 MVC 依照收到的 HTTP 請求自動建立和呼叫的，和 PNP 既有的 Controller（例如 PCBNewController）一樣：既有的 Controller 是被瀏覽器或 Angular 呼叫，<span style="color: red;">這一支則是被 D 的測試腳本呼叫（現在由腳本扮演 MCP Server，第二階段換成真正的 MCP Server）。</span>
+
+比喻
+
+Controller 像是公司裡的某個分機。沒有員工會「呼叫分機的程式碼」，而是外面有人撥了號碼，總機（MVC 路由）查表後把電話轉過去。測試腳本就是那個撥號的人。
+
+請求怎麼一路走到這個 Controller
+
+D 的測試腳本（curl.exe）
+  │  POST https://tp-caevm-vt01.corpnet.asus/PnpTest/api/internal/ucs/ecn-rcn
+  ▼
+IIS → PnpTest 網站
+  ▼
+Web.config <location path="api"> 放行未登入的請求          ← 少了這個會 302 到登入頁
+  ▼
+MVC 路由：routes.MapMvcAttributeRoutes()
+  比對 [RoutePrefix("api/internal/ucs")] + [Route("ecn-rcn")]
+  → 找到 InternalUcsApiController.EcnRcn                      ← 「呼叫」就發生在這裡
+  ▼
+Unity 建立 InternalUcsApiController（建構子注入 IUcsService、ILogService）
+  ▼
+[InternalApiHmac] 驗章（OnAuthorization）                   ← 失敗 → 401，不會進 action
+  ▼
+EcnRcn() 執行 → _ucsService.GetEcnAndRcnInfo(bomNo) → 回傳 JSON
+#
+#
+#
+---
+**做完最後的測試。表示HMAC的簽章機制在PNP這端（驗章端）是可以成功運作了!**
+
+| 證明的事 | 由哪一項驗證 |
+|---|:---:|
+| 正確的簽章會放行 | #1 |
+| 錯誤的密鑰會擋下 | #2 |
+| 過期的時間戳會擋下 | #3 |
+| 擋下時回 401 JSON，不會被改成 302 導向登入頁 | #2、#3 |
+| 驗章通過後，輸入驗證仍然有效 | #4 |
+| 只能從指定的路徑呼叫 | #5 |
+| 密鑰檔不會外洩 | #6 |

@@ -597,7 +597,6 @@ namespace PCBRepairNavi.Controllers
 
 以下 A、B 兩部分在本機完成，C 部署、D 測試。
 
----
 **A. 準備密鑰（本機）**
 
 - A-1. 修改根目錄 .gitignore（加在第 403 行 /PCBRepairNavi/App_Data/Elmah.Errors 附近）
@@ -630,10 +629,7 @@ namespace PCBRepairNavi.Controllers
 
 印出 XML OK 才可以發行。
 {% asset_image xml_ok.jpg xml_ok%}
-#
-#
-#
----
+
 **B. 修改程式（本機）**
 
 - 修改 PCBRepairNavi/Web.config（第 19 行）
@@ -660,16 +656,10 @@ namespace PCBRepairNavi.Controllers
     <!-- MCP → PNP 的 HMAC 密鑰（測試機用）。不進 git；只有 TP-CAEVM-VT01 組態且檔案存在時才發行 -->
     <Content Include="InternalApi.secrets.config" Condition="Exists('InternalApi.secrets.config') And '$(Configuration)' == 'TP-CAEVM-VT01'" />
 ```
-#
-#
-#
----
+
 **C. 部署**
 先做 A-4 確認 XML OK，再用 tp-caevm-vt01(TEST)Test 發行。
-#
-#
-#
----
+
 **D. 測試腳本：D:\Homer\Test\Invoke-PnpInternalApi.ps1**
 這個檔案放在 repo 外面，不含密鑰，密鑰從環境變數讀取。
 ``` ps1
@@ -782,10 +772,8 @@ cd D:\Homer\Test
 - [ ] #5：HTTP/1.1 404
 - [ ] #6：密鑰檔無法下載；test_log.txt 能不能下載（能的話，裡面應該有 [InternalApi][ucs.ecn-rcn] User=ucs\mcp-test ...，以及 #3 那一筆的 Reason=TimestampOutOfRange ServerTime=... ClientTime=...）
 - [ ] 結果不如預期的話，請貼上 curl 的狀態列和 header（不需要貼 X-Signature），以及 log 裡對應的那幾行   
-#
-#
-#
----
+
+
 程式裡沒有任何地方直接呼叫 InternalUcsApiController。它是由 MVC 依照收到的 HTTP 請求自動建立和呼叫的，和 PNP 既有的 Controller（例如 PCBNewController）一樣：既有的 Controller 是被瀏覽器或 Angular 呼叫，<span style="color: red;">這一支則是被 D 的測試腳本呼叫（現在由腳本扮演 MCP Server，第二階段換成真正的 MCP Server）。</span>
 
 比喻
@@ -810,10 +798,8 @@ Unity 建立 InternalUcsApiController（建構子注入 IUcsService、ILogServic
 [InternalApiHmac] 驗章（OnAuthorization）                   ← 失敗 → 401，不會進 action
   ▼
 EcnRcn() 執行 → _ucsService.GetEcnAndRcnInfo(bomNo) → 回傳 JSON
-#
-#
-#
----
+
+
 **做完最後的測試。表示HMAC的簽章機制在PNP這端（驗章端）是可以成功運作了!**
 
 | 證明的事 | 由哪一項驗證 |

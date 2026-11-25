@@ -8,7 +8,7 @@ tags:
   - OAuth
   - OpenIddict
 ---
-##### 建立 PCBRepairNavi.MCP
+##### 把 PNP 的能力包成需要 OAuth 登入的 MCP Server
 <!-- more -->
 這一步在做什麼
 
@@ -19,6 +19,7 @@ tags:
 #
 #
 ---
+## 建立 PCBRepairNavi.MCP（最小可執行的 MCP Server）
 
 1. 建立專案並安裝套件
 ``` bash
@@ -26,13 +27,13 @@ dotnet new web -n PCBRepairNavi.MCP -o PCBRepairNavi.MCP -f net10.0
 dotnet add .\PCBRepairNavi.MCP package ModelContextProtocol.AspNetCore --version 2.4.0
 ```
 
-## 固定 port：PCBRepairNavi.MCP/Properties/launchSettings.json
+2. 固定 port：PCBRepairNavi.MCP/Properties/launchSettings.json
 把 https profile 的 applicationUrl 改成：
 ``` json
 "applicationUrl": "https://localhost:7290;http://localhost:5290",
 ```
 
-2. 修改 PCBRepairNavi.MCP/Program.cs（整個檔案換掉）
+3. 修改 PCBRepairNavi.MCP/Program.cs（整個檔案換掉）
 ``` csharp
 using PCBRepairNavi.MCP.Tools;
 
@@ -49,7 +50,7 @@ app.MapMcp("/mcp");
 app.Run();
 ```
 
-3. 新增 PCBRepairNavi.MCP/Tools/PingTool.cs
+4. 新增 PCBRepairNavi.MCP/Tools/PingTool.cs
 ``` csharp
 using System.ComponentModel;
 using System.ComponentModel;
@@ -68,7 +69,7 @@ public sealed class PingTool
 }
 ```
 
-4. 測試用的 JSON-RPC 檔案（放在 D:\Homer\Test\mcp\，repo 外面）
+5. 測試用的 JSON-RPC 檔案（放在 D:\Homer\Test\mcp\，repo 外面）
 在powershell執行下面指令，建立測試json檔案。
 ``` bash
 New-Item -ItemType Directory -Force D:\Homer\Test\mcp | Out-Null
@@ -291,6 +292,8 @@ $h = @('-H', 'Content-Type: application/json', '-H', 'Accept: application/json, 
 - 測試4.
 測試用錯誤的acess_token呼叫MCP Server
 {% asset_image mcp_test_4.jpg mcp_test_4%}
+MCP Server 的主控台有 Bearer was not authenticated 之類的訊息
+{% asset_image error_token.png error_token%}
 
 
 請執行後確認
@@ -301,3 +304,177 @@ $h = @('-H', 'Content-Type: application/json', '-H', 'Accept: application/json, 
 - [ ] #3：HTTP/1.1 200，結果裡有 pong from PCBRepairNavi.MCP, user=test\\mockuser
 - [ ] #4：HTTP/1.1 401，MCP Server 的主控台有 Bearer was not authenticated 之類的訊息，並寫出原因（例如 signature validation failed）
 - [ ] 如果 #3 是 401，請貼上 MCP Server 主控台的那一行錯誤訊息（不要貼 token）
+#
+#
+#
+---
+## 用 Claude Code 跑通 OAuth 登入，驗證第 4.2 節的相容性風險
+
+這一步在做什麼
+
+讓 Claude Code 扮演真正的 MCP Client，從「沒有 token」開始，自己完成整個流程：
+
+1. 讀 401 的 WWW-Authenticate，找到 Protected Resource Metadata
+2. 從 metadata 找到 Authorization Server
+3. 開瀏覽器登入（經過 MockPnp 的 bridge）
+4. 拿到 token 後呼叫 ping
+
+這一步不改 MCP Server 的程式，只改設定，目的是觀察流程會卡在哪裡。卡住也是有用的結果，代表找到了要回 OAuth repo 處理的問題。
+
+
+1. OAuth repo：註冊 Claude Code 的 redirect URI
+
+修改 D:\Homer\Project\OAuth\OAuth.AuthorizationServer\registration.Development.json，在 pnp-mcp-client 的 redirectUris 加上一筆：
+``` json
+"redirectUris": [ "https://localhost:5055/callback", "http://localhost:5056/callback" ],
+```
+
+執行註冊工具，然後重新啟動 Authorization Server（附錄 B.4）：
+``` bash
+cd D:\Homer\Project\OAuth
+dotnet run --project OAuth.Registration -- OAuth.AuthorizationServer\registration.Development.json
+```
+
+2. 匯出開發憑證給 Claude Code 信任（第 4.2 節第 4 項）
+``` bash
+New-Item -ItemType Directory -Force D:\Homer\Test\certs | Out-Null
+dotnet dev-certs https --export-path D:\Homer\Test\certs\localhost-dev.pem --format Pem --no-password
+Remove-Item D:\Homer\Test\certs\localhost-dev.key   # 私鑰用不到，匯出後立刻刪除
+```
+
+3. 在 Claude Code 加入 MCP Server
+
+開一個新的 PowerShell 視窗，不要在目前這個 Claude Code 對話裡執行：
+``` bash
+$env:NODE_EXTRA_CA_CERTS = 'D:\Homer\Test\certs\localhost-dev.pem'
+cd D:\Homer\Test\mcp
+claude mcp add --transport http pnp-mcp https://localhost:7290/mcp --client-id pnp-mcp-client --callback-port 5056
+```
+{% asset_image add_mcp.jpg add_mcp%}
+
+4. 登入並呼叫
+
+在同一個視窗執行 claude，然後：
+1. 輸入 /mcp，選 pnp-mcp，選 Authenticate。
+{% asset_image pnp_mcp.jpg pnp_mcp %}
+
+2. 瀏覽器會打開登入流程（MockPnp 會自動視為 test\mockuser 已登入），完成後回到 Claude Code。
+3. 輸入：請呼叫 pnp-mcp 的 ping 工具。
+
+
+幾個重點說明
+
+1. --client-id pnp-mcp-client：直接用 Authorization Server 已經註冊的 public client，不走 DCR。這是在驗證第 4.2 節第 2 項。
+2. --callback-port 5056：Claude Code 會在本機 5056 port 接收登入完成後的回呼，所以 redirect URI 是 http://localhost:5056/callback。註冊工具允許 http://localhost 這種 loopback 位址（附錄 B.2），因為回呼只在你自己的電腦上發生。
+3. NODE_EXTRA_CA_CERTS：.NET 的開發憑證只被加進 Windows 的憑證存放區，Claude Code 預設不信任它，會連不上 https://localhost:7290、7280。只匯出公開憑證就夠了，私鑰要刪掉。
+4. 在 D:\Homer\Test\mcp 執行 claude mcp add：預設的 local 範圍是「這個資料夾專用」，所以不會影響 PNP 專案或其他資料夾的 Claude Code 設定。之後要移除時，在同一個資料夾執行 claude mcp remove pnp-mcp。
+5. 這一步預期可能會卡住。下表是可能卡住的地方，以及要看哪裡：
+
+| 可能卡住的地方 | 對應的風險 | 現象 | 看哪裡 |
+|---|---|---|---|
+| ① 找不到 Authorization Server 的 metadata | 第 4.1 節：Authorization Server 只發布 `openid-configuration`，沒有 `oauth-authorization-server` | /mcp 顯示錯誤，還沒開瀏覽器 | Claude Code 的錯誤訊息 |
+| ② Authorization Server 拒絕 resource 參數 | 第 4.2 節第 3 項 | 瀏覽器停在 Authorization Server 的錯誤頁（例如 `invalid_target`） | 瀏覽器網址列的 `error=`、Authorization Server 主控台 |
+| ③ redirect URI 不符 | — | 瀏覽器顯示 `invalid_request` / `redirect_uri` 錯誤 | Authorization Server 主控台 |
+| ④ token 的 aud 不被接受 | 第 4.2 節第 3 項 | 登入成功，但呼叫 ping 時又要求驗證 | MCP Server 主控台的 `Bearer was not authenticated` 原因 |
+| ⑤ 憑證不被信任 | 第 4.2 節第 4 項 | 錯誤訊息有 `certificate`、`self-signed` | Claude Code 的錯誤訊息 |
+
+測試步驟
+
+前置：PostgreSQL、Authorization Server（重新啟動過）、MockPnp、MCP Server 都在執行中。
+
+1. 執行註冊工具：驗證 redirect URI 寫入成功（回傳碼 0）。
+2. 在 Claude Code 跑 /mcp → Authenticate → 登入：這是在驗證 metadata 探索、resource 參數、redirect URI（風險 ①②③⑤）。
+  - 出現了② Authorization Server 拒絕 resource 參數，我們會在下個流程處理。
+  {% asset_image invalid_target.jpg invalid_target%}
+3. 呼叫 ping：這是在驗證 token 的 aud 被 MCP Server 接受，sub 也有傳進工具（風險 ④）。
+
+請執行後確認
+
+- [ ] 註冊工具執行成功
+- [ ] /mcp 裡 pnp-mcp 的狀態從「需要驗證」變成「已連線」
+- [ ] 呼叫 ping 得到 pong from PCBRepairNavi.MCP, user=test\mockuser
+- [ ] 如果卡住：告訴我卡在上表的哪一個位置，並貼上
+  - Claude Code 顯示的錯誤訊息
+  - 瀏覽器最後停留頁面的網址（把 code=、state= 的值遮掉）
+  - Authorization Server 和 MCP Server 主控台在那個時間點的訊息（不要貼 token）
+#
+#
+#
+---
+## OAuth repo：讓 Authorization Server 接受 resource 參數
+
+這一步在做什麼
+
+修改 Authorization Server：
+
+1. 登記 MCP Server 的網址為合法的 resource。
+2. 讓 client 擁有要求這個 resource 的權限。
+3. 讓 token 的 aud 變成 MCP Server 的網址。
+
+MCP Server 這邊只改一行設定。照交接文件的原則，「需要調整 Authorization Server 時，先回 OAuth repo 處理」。
+
+1. OAuth.AuthorizationServer/Program.cs
+在 .AddServer(options => { ... }) 裡面，options.SetAccessTokenLifetime(...) 的前面加入：
+``` csharp
+// RFC 8707：MCP Client 登入時會帶 resource=<MCP Server 網址>。
+// OpenIddict 只接受事先登記的 resource，未登記的回 invalid_target（ID2190）
+options.RegisterResources(builder.Configuration.GetSection("OAuth:Resources").Get<string[]>() ?? []);
+```
+
+2. OAuth.AuthorizationServer/appsettings.Development.json
+在最外層的 { } 裡加入一個區塊（和其他區塊並列，注意逗號）：
+``` json
+  "OAuth": {
+    "Resources": [ "https://localhost:7290/mcp" ]
+  }
+```
+
+3. OAuth.Core/Registration/RegistrationService.cs
+在 client 迴圈裡，緊接在 foreach (var scope in c.Scopes) { descriptor.Permissions.Add(Permissions.Prefixes.Scope + scope); } 之後加入：
+``` csharp
+            // client 可要求的 resource = 它被授予的 scope 所屬的 Resource Server（rsrc: 權限，RFC 8707）
+            var clientResources = manifest.Scopes
+                .Where(s => c.Scopes.Contains(s.Name))
+                .SelectMany(s => s.Resources)
+                .Distinct(StringComparer.Ordinal);
+            foreach (var resource in clientResources)
+            {
+                descriptor.Permissions.Add(Permissions.Prefixes.Resource + resource);
+            }
+```
+
+4. OAuth.AuthorizationServer/registration.Development.json
+三個 scope 的 resources 都改成 MCP Server 的網址：
+``` json
+  "scopes": [
+    { "name": "ucs.sn-info.read", "displayName": "SN 資料讀取", "resources": [ "https://localhost:7290/mcp" ] },
+    { "name": "ucs.ecn-rcn-info.read", "displayName": "UCS ECN/RCN 資料讀取", "resources": [ "https://localhost:7290/mcp" ] },
+    { "name": "pnp.L1-L2-previous-rma-info.read", "displayName": "SN自動開啟點圖 讀取", "resources": [ "https://localhost:7290/mcp" ] }
+  ],
+```
+registration.Test.json 不改（原因見重點說明第 4 點）。
+
+5. OAuth的部分加上resources後，MCP Server的部分也需要做修改。 PCBRepairNavi.MCP/appsettings.Development.json
+``` json
+"Audience": "https://localhost:7290/mcp",
+```
+幾個重點說明
+
+1. RegisterResources 從設定檔讀取：MCP Server 的網址每個環境都不同（開發是 localhost:7290，正式是另一個主機），所以不寫死在程式裡。正式環境再到 appsettings.Production.json 或環境變數設定 OAuth__Resources__0。
+2. rsrc: 權限從 scope 推導：client 能要求哪些 resource，由「它被授予的 scope 屬於哪些 Resource Server」決定，不用在註冊檔另外寫一份，也不會出現 scope 和 resource 對不上的情況。另一個做法是呼叫 IgnoreResourcePermissions() 直接略過這道檢查，但這樣任何 client 都能要求任何已登記的 resource，我不建議。
+3. aud 不用改程式：AuthorizationController.cs:308 原本就是「依 scope 查出 Resource Server，設成 aud」。scope 的 resources 換成網址後，aud 自然就變成網址。
+4. registration.Test.json 和自動化測試不動：OAuth repo 的自動化測試（AuthorizationFlowTests.cs:34）用的是 registration.Test.json，斷言 aud 是 urn:pnp:ucs-mcp，而且測試不帶 resource 參數。測試環境沒有 OAuth:Resources 設定，RegisterResources 會收到空陣列，對不帶 resource 的請求沒有影響。所以測試應該全部照常通過，這也正好用來驗證這次修改沒有破壞原本的流程。
+5. 註冊工具會整筆覆蓋 client（附錄 B.3）：執行後 pnp-mcp-client 會自動帶上新的 rsrc:https://localhost:7290/mcp 權限，不需要先刪除。
+6. 文件：設計文件和交接文件裡寫的 aud（urn:pnp:ucs-mcp）之後要更新，等你要求時我再整理。
+
+測試步驟
+
+1. OAuth repo：dotnet test。驗證原本的流程沒有被破壞（重點說明第 4 點）。
+2. OAuth repo：執行註冊工具，然後重新啟動 Authorization Server。
+cd D:\Homer\Project\OAuth
+dotnet run --project OAuth.Registration -- OAuth.AuthorizationServer\registration.Development.json
+3. PNP repo：重新啟動 MCP Server（讓新的 Audience 生效）。
+4. Claude Code（D:\Homer\Test\mcp，記得先設定 NODE_EXTRA_CA_CERTS）：/mcp → pnp-mcp → 重新 Authenticate，再呼叫 ping。這一步驗證 resource 參數被接受，而且 token 的 aud 被 MCP Server 接受。
+
+Claude Code成功呼叫到MCP Tool了
+{% asset_image call_mcp_tool.jpg call_mcp_tool %}

@@ -478,3 +478,288 @@ dotnet run --project OAuth.Registration -- OAuth.AuthorizationServer\registratio
 
 Claude Code成功呼叫到MCP Tool了
 {% asset_image call_mcp_tool.jpg call_mcp_tool %}
+
+<span style="color: red;">這是一個重要的里程碑：真正的 MCP Client（Claude Code）已經能自己完成整個 OAuth 登入並呼叫 MCP Tool。</span>
+
+#
+#
+#
+---
+## MCP Server 用 HMAC 呼叫 PNP 的 client
+
+這一步在做什麼
+
+把第一階段 PowerShell 腳本做的事（簽章、送出），改寫成 MCP Server 裡的 C# 程式，讓下一步的 MCP Tool 可以直接呼叫 PNP。分成三塊：
+
+- PnpHmacSigner：純函式，計算簽章（和 PNP 的 InternalApiSignature.ComputeSignature 是同一套演算法）。
+- PnpHmacHandler：DelegatingHandler，在每個送往 PNP 的請求上自動加 X-Timestamp、X-Signature。
+- PnpInternalApiClient：呼叫 api/internal/ucs/ecn-rcn，把 HTTP 狀態碼轉成結果。
+
+1. 設定 PNP 網址：PCBRepairNavi.MCP/appsettings.Development.json
+在 "Auth": { ... } 後面加入（注意逗號）：
+``` json
+  "Pnp": {
+    "BaseUrl": "https://tp-caevm-vt01.corpnet.asus/PNP/",
+    "TimeoutSeconds": 10
+  }
+```
+
+2. 設定密鑰 A：user-secrets（不進 git）(先前存在InternalApi.secrets.config的那組Secret Key)
+``` bash
+cd D:\Homer\Project\PCBNavigatePortal\PCBRepairNavi.MCP
+dotnet user-secrets init
+dotnet user-secrets set "Pnp:HmacSecret" "<第一階段 A-2 產生的密鑰>"
+```
+
+3. 新增 PCBRepairNavi.MCP/Pnp/PnpOptions.cs
+``` csharp
+namespace PCBRepairNavi.MCP.Pnp;
+
+/// <summary>
+/// 呼叫 PNP 內部 API 的設定。BaseUrl 放 appsettings；HmacSecret（密鑰 A）放 user-secrets／正式環境的金鑰管理
+/// </summary>
+public sealed class PnpOptions
+{
+    public const string SectionName = "Pnp";
+
+    /// <summary>含虛擬目錄、以 / 結尾，例如 https://host/PNP/</summary>
+    public string BaseUrl { get; set; } = "";
+
+    public string HmacSecret { get; set; } = "";
+
+    public int TimeoutSeconds { get; set; } = 10;
+}
+```
+
+4. 新增 PCBRepairNavi.MCP/Pnp/PnpHmacSigner.cs
+``` csharp
+using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace PCBRepairNavi.MCP.Pnp;
+
+/// <summary>
+/// PNP 內部 API 的 HMAC-SHA256 簽章（OAuth repo docs/OAuth2.1-MCP-AuthServer-Design.md 第4.4節）。
+/// 必須與 PNP 的 PCBRepairNavi.Helpers.InternalApiSignature.ComputeSignature 完全一致
+/// </summary>
+public static class PnpHmacSigner
+{
+    public static string ComputeSignature(string secret, long timestamp, string method, string path, string body)
+    {
+        var bodyHash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(body)));
+        var canonical = $"{timestamp.ToString(CultureInfo.InvariantCulture)}\n{method}\n{path}\n{bodyHash}";
+        var signature = HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes(canonical));
+        return Convert.ToBase64String(signature);
+    }
+}
+```
+
+5. 新增 PCBRepairNavi.MCP/Pnp/PnpHmacHandler.cs
+``` csharp
+using System.Globalization;
+using Microsoft.Extensions.Options;
+
+namespace PCBRepairNavi.MCP.Pnp;
+
+/// <summary>
+/// 在每個送往 PNP 內部 API 的請求加上 X-Timestamp、X-Signature。
+/// 路徑取 RequestUri.AbsolutePath（含虛擬目錄），與 PNP 端的 Request.Url.AbsolutePath 一致
+/// </summary>
+public sealed class PnpHmacHandler(IOptions<PnpOptions> options, TimeProvider timeProvider) : DelegatingHandler
+{
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var body = request.Content is null ? "" : await request.Content.ReadAsStringAsync(cancellationToken);
+        var timestamp = timeProvider.GetUtcNow().ToUnixTimeSeconds();
+        var path = request.RequestUri!.AbsolutePath;
+
+        var signature = PnpHmacSigner.ComputeSignature(options.Value.HmacSecret, timestamp, request.Method.Method, path, body);
+
+        request.Headers.Remove("X-Timestamp");
+        request.Headers.Remove("X-Signature");
+        request.Headers.Add("X-Timestamp", timestamp.ToString(CultureInfo.InvariantCulture));
+        request.Headers.Add("X-Signature", signature);
+
+        return await base.SendAsync(request, cancellationToken);
+    }
+}
+```
+
+6. 新增 PCBRepairNavi.MCP/Pnp/PnpInternalApiClient.cs
+``` csharp
+using System.Net;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+
+namespace PCBRepairNavi.MCP.Pnp;
+
+public enum PnpCallStatus
+{
+    Success,
+    BadRequest,      // PNP 400：輸入格式錯誤
+    Unauthorized,    // PNP 401：簽章錯誤、時鐘差、密鑰未設定 → 屬設定問題
+    UpstreamFailed,  // PNP 502：UCS 失敗
+    Unavailable,     // 連線失敗、逾時、其他非預期回應
+}
+
+public sealed record PnpResult<T>(PnpCallStatus Status, T? Value);
+
+/// <summary>PNP 回傳的 ECN/RCN 資料（對應 PNP 的 ResUcsEcnRcnInfoDto）</summary>
+public sealed record EcnRcnItem(
+    string? ArnNo,
+    string? SopFileName,
+    string? SopPath,
+    string? SipProblem,
+    string? CreatorName,
+    string? ScheduleDate,
+    string? NoticeViewLink);
+
+/// <summary>
+/// 呼叫 PNP 內部 API（PCBRepairNavi InternalUcsApiController）。簽章由 PnpHmacHandler 自動加上
+/// </summary>
+public sealed class PnpInternalApiClient(HttpClient httpClient, ILogger<PnpInternalApiClient> logger)
+{
+    private sealed record EcnRcnResponse(List<EcnRcnItem>? Items);
+
+    public async Task<PnpResult<IReadOnlyList<EcnRcnItem>>> GetEcnRcnAsync(string bomNo, string userName, CancellationToken cancellationToken)
+    {
+        // 相對路徑不以 / 開頭，才會接在 BaseUrl 的虛擬目錄後面
+        const string relativePath = "api/internal/ucs/ecn-rcn";
+        var body = JsonSerializer.Serialize(new { bomNo, userName });
+
+        try
+        {
+            using var content = new StringContent(body, Encoding.UTF8, "application/json");
+            using var response = await httpClient.PostAsync(relativePath, content, cancellationToken);
+
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    var payload = await response.Content.ReadFromJsonAsync<EcnRcnResponse>(cancellationToken);
+                    return new(PnpCallStatus.Success, payload?.Items ?? []);
+                case HttpStatusCode.BadRequest:
+                    logger.LogWarning("PNP ecn-rcn rejected input. BomNo={BomNo}", bomNo);
+                    return new(PnpCallStatus.BadRequest, null);
+                case HttpStatusCode.Unauthorized:
+                    logger.LogError("PNP ecn-rcn returned 401. Check Pnp:HmacSecret, Pnp:BaseUrl (virtual directory) and clock skew (±5s).");
+                    return new(PnpCallStatus.Unauthorized, null);
+                case HttpStatusCode.BadGateway:
+                    logger.LogWarning("PNP ecn-rcn upstream (UCS) failed. BomNo={BomNo}", bomNo);
+                    return new(PnpCallStatus.UpstreamFailed, null);
+                default:
+                    logger.LogError("PNP ecn-rcn unexpected status {StatusCode}. Location={Location}",
+                        (int)response.StatusCode, response.Headers.Location);
+                    return new(PnpCallStatus.Unavailable, null);
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException
+                                   && !cancellationToken.IsCancellationRequested)
+        {
+            logger.LogError(ex, "PNP ecn-rcn call failed.");
+            return new(PnpCallStatus.Unavailable, null);
+        }
+    }
+}
+```
+
+7. 修改 PCBRepairNavi.MCP/Program.cs
+開頭加上：
+``` csharp
+using Microsoft.Extensions.Options;
+using PCBRepairNavi.MCP.Pnp;
+```
+
+在 builder.Services.AddMcpServer() 之前加入：
+``` csharp
+// ---------- 呼叫 PNP 內部 API（HMAC 密鑰 A） ----------
+builder.Services.AddOptions<PnpOptions>()
+    .Bind(builder.Configuration.GetSection(PnpOptions.SectionName))
+    .Validate(o => Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out var uri)
+                   && uri.Scheme == Uri.UriSchemeHttps
+                   && o.BaseUrl.EndsWith('/'),
+              "Pnp:BaseUrl 必須是 https:// 開頭、以 / 結尾的絕對網址（含虛擬目錄）")
+    .Validate(o => !string.IsNullOrEmpty(o.HmacSecret), "找不到設定 'Pnp:HmacSecret'（請以 user-secrets 設定）")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddTransient<PnpHmacHandler>();
+builder.Services.AddHttpClient<PnpInternalApiClient>((sp, client) =>
+    {
+        var options = sp.GetRequiredService<IOptions<PnpOptions>>().Value;
+        client.BaseAddress = new Uri(options.BaseUrl);
+        client.Timeout = TimeSpan.FromSeconds(options.TimeoutSeconds);
+    })
+    // 不自動跟隨轉址：302 代表網址設錯（http→https、被導向登入頁），跟隨後 POST 會變 GET、簽章也不再有效
+    .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false })
+    .AddHttpMessageHandler<PnpHmacHandler>();
+```
+
+8. 新增測試專案 PCBRepairNavi.MCP.Tests
+``` bash
+cd D:\Homer\Project\PCBNavigatePortal
+dotnet new xunit -n PCBRepairNavi.MCP.Tests -o PCBRepairNavi.MCP.Tests -f net10.0
+dotnet add .\PCBRepairNavi.MCP.Tests reference .\PCBRepairNavi.MCP\PCBRepairNavi.MCP.csproj
+Remove-Item .\PCBRepairNavi.MCP.Tests\UnitTest1.cs
+```
+
+新增 PCBRepairNavi.MCP.Tests/PnpHmacSignerTests.cs：
+``` csharp
+using PCBRepairNavi.MCP.Pnp;
+
+namespace PCBRepairNavi.MCP.Tests;
+
+public class PnpHmacSignerTests
+{
+    // 與 PNP 的 PCBRepairNavi.Tests/InternalApiSignatureTests 使用同一組對照值：
+    // 兩邊都算出同一個簽章，代表 MCP Server（簽章端）與 PNP（驗章端）格式一致
+    private const string Secret = "unit-test-secret";
+    private const long Timestamp = 1793180718;
+    private const string Path = "/PNP/api/internal/ucs/ecn-rcn";
+    private const string Body = "{\"bomNo\":\"60NB0000-MB0000\",\"userName\":\"mockuser\"}";
+    private const string ExpectedSignature = "mLzSTk8tcA7AW6fLcGRz2Pt7Y0ATEbqBhNHPpiYdgbs=";
+
+    [Fact]
+    public void ComputeSignature_MatchesPnpVector()
+    {
+        Assert.Equal(ExpectedSignature, PnpHmacSigner.ComputeSignature(Secret, Timestamp, "POST", Path, Body));
+    }
+
+    [Fact]
+    public void ComputeSignature_DifferentPath_ChangesSignature()
+    {
+        Assert.NotEqual(ExpectedSignature, PnpHmacSigner.ComputeSignature(Secret, Timestamp, "POST", "/api/internal/ucs/ecn-rcn", Body));
+    }
+}
+```
+
+幾個重點說明
+
+1. 對照值是同一個 mLzSTk8...：第一階段 PNP 端的測試證明「PNP 驗章 = .NET 10 寫法」，這次 MCP 端的測試證明「MCP 簽章 = 同一個值」。兩端各自對同一個標準答案，所以不用部署就能確定兩邊格式一致。
+2. DelegatingHandler：就像在 HttpClient 前面加了一個自動蓋章的關卡。之後新增其他 ucs.* 工具時，只要寫 PostAsync(...)，不用每次自己簽章，也不會忘記。
+3. 路徑取 request.RequestUri.AbsolutePath：和第一階段腳本、PNP 端的 Request.Url.AbsolutePath 是同一個概念，都取「實際送出的網址」，所以虛擬目錄、大小寫一定一致。
+4. BaseUrl 以 / 結尾、相對路徑不以 / 開頭：先前說明虛擬目錄時提過的 Uri 合併規則。啟動時用 Validate 檢查，設定錯了就不讓網站啟動，比跑到一半才 401 好查得多。
+5. ValidateOnStart()：缺密鑰或網址不是 https 時，dotnet run 會直接報錯並寫出原因。也順便強制做到設計文件第 4.2 節的「只接受 HTTPS」。
+6. AllowAutoRedirect = false：HttpClient 預設會跟隨 302。第一階段遇過的 http→https 轉址、/api 外被導向登入頁，跟隨後 POST 會變成 GET，最後只會看到莫名其妙的錯誤。關掉之後，302 會直接落到 default 分支並記錄 Location，一眼就知道被導去哪裡。
+7. PnpCallStatus：把 PNP 的狀態碼轉成有意義的結果，讓下一步的 MCP Tool 可以回覆不同的訊息給使用者（例如「查無此料號格式」和「系統暫時無法使用」）。401 記為 Error，因為它代表設定錯誤，不是使用者的問題。
+8. TimeProvider：.NET 8 起內建的「可替換時鐘」，和第一階段 Verify(..., nowUnixSeconds) 的想法相同，之後要測時間相關的邏輯時可以替換。
+9. 測試專案同樣先不加進 PCBRepairNavi.sln：和 MCP 專案的理由相同，建置機是否有 .NET 10 還沒確認。dotnet new xunit 範本產生的套件版本都是明確指定的。
+
+測試步驟
+
+1. dotnet test .\PCBRepairNavi.MCP.Tests：這一步驗證 MCP 端的簽章和 PNP 端一致。
+2. 刻意改壞：把 PnpHmacSigner 的 ToHexStringLower 改成 ToHexString（大寫）後重跑測試，確認會失敗，再改回來。這一步驗證測試真的能抓到格式差異。
+3. 啟動驗證：
+   - 先執行 dotnet user-secrets remove "Pnp:HmacSecret"，再 dotnet run --launch-profile https：應該啟動失敗，並顯示「找不到設定 'Pnp:HmacSecret'」。
+   - 把密鑰設回去，再啟動一次：應該正常啟動。
+
+   這一步驗證設定錯誤時會在啟動階段就被擋下。
+
+請執行後確認
+
+- [ ] 2 個測試全部通過
+- [ ] 改成大寫後，ComputeSignature_MatchesPnpVector 失敗；改回來後恢復通過
+- [ ] 沒有密鑰時，啟動失敗並顯示 Pnp:HmacSecret 的訊息
+- [ ] 設回密鑰後，正常啟動，Claude Code 的 ping 仍然可以呼叫（確認沒有影響前一步）
+- [ ] git status：看不到密鑰（user-secrets 存在 %APPDATA%\Microsoft\UserSecrets\，不在專案資料夾）

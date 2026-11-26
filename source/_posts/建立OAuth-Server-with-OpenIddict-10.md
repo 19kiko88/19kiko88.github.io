@@ -958,3 +958,6 @@ builder.Services.AddMcpServer()
 - [ ] 如果 #2 失敗，請貼上 MCP Server 主控台的訊息：
   - 看到 PNP ecn-rcn returned 401 的話，最可能是時鐘差（之前量到約 6 秒）。請先校正你電腦的時鐘（Windows 設定 → 時間與語言 → 日期和時間 →「立即同步」），再試一次。
   - 看到 unexpected status 302 的話，請一併貼上 Location=。
+
+把MCP Tool的Scope改成沒有授權的Scope，會出現 [沒有 GetEcnRcnInfo 的權限]的訊息。
+{% asset_image require_scope_test.jpg require_scope_test %}

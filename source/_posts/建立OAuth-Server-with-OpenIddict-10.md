@@ -932,10 +932,13 @@ builder.Services.AddMcpServer()
 2. 工具參數有兩種：
    - bomNo 是給 Claude 填的，會出現在 inputSchema，Description 告訴 Claude 要填什麼。
    - PnpInternalApiClient、IHttpContextAccessor、CancellationToken 是 SDK 從 DI 帶入的，Claude 看不到。
-3. userName 一律取自 JWT 的 sub，不讓 Claude 填：如果把 userName 設計成工具參數，LLM（或使用者透過 prompt）就能冒充別人。這和 SECURITY.md §16.3「身分欄位一律取自伺服器端」是同一個原則，也是交接文件第 2.2 節信任邊界的前提：PNP 相信 MCP Server 給的 userName，所以 MCP Server 必須確保它來自驗證過的 token。
-4. MCP 端也驗證 bomNo：PNP 端已經有驗證，這裡再擋一次。明顯錯誤的輸入不用浪費一次 PNP 呼叫，也能給 Claude 比較具體的錯誤訊息。
-5. McpException：SDK 會把它轉成 isError: true 的工具結果，訊息原樣給 Claude，所以 Claude 能告訴使用者「料號格式錯誤」或「UCS 暫時無法使用」。其他類型的例外，SDK 只會回通用訊息，不會洩漏細節。訊息裡不放 PNP 的狀態碼、網址等技術細節（和 SECURITY.md §2.3 同樣精神），401 的詳細原因只寫在 MCP Server 的 log。
-6. 回傳 object：SDK 會序列化成 JSON 放進 result.content。用匿名物件「投影」出要給的欄位，PNP 的 DTO 以後新增欄位，也不會在沒審查的情況下自動傳給 Claude。
+3. <span style="color: red;">「已登入」由哪裡保證：/mcp 端點本身有 .RequireAuthorization()，沒有有效的 access_token 根本進不來。而且沒登入就沒有 scope claim，HasScope 也一定回傳 false。</span>
+4. AuthorizationHandler<RequireScopeAttribute>：ASP.NET Core 會把 attribute 帶來的「要求」交給對應的 handler 判斷。handler 只要註冊一次，所有 [RequireScope(...)] 都共用它。
+5. AllowMultiple = true：某個工具需要兩個 scope 時，可以掛兩個 [RequireScope]，兩個都要通過才放行。   
+6. userName 一律取自 JWT 的 sub，不讓 Claude 填：如果把 userName 設計成工具參數，LLM（或使用者透過 prompt）就能冒充別人。這和 SECURITY.md §16.3「身分欄位一律取自伺服器端」是同一個原則，也是交接文件第 2.2 節信任邊界的前提：PNP 相信 MCP Server 給的 userName，所以 MCP Server 必須確保它來自驗證過的 token。
+7. MCP 端也驗證 bomNo：PNP 端已經有驗證，這裡再擋一次。明顯錯誤的輸入不用浪費一次 PNP 呼叫，也能給 Claude 比較具體的錯誤訊息。
+8. McpException：SDK 會把它轉成 isError: true 的工具結果，訊息原樣給 Claude，所以 Claude 能告訴使用者「料號格式錯誤」或「UCS 暫時無法使用」。其他類型的例外，SDK 只會回通用訊息，不會洩漏細節。訊息裡不放 PNP 的狀態碼、網址等技術細節（和 SECURITY.md §2.3 同樣精神），401 的詳細原因只寫在 MCP Server 的 log。
+9. 回傳 object：SDK 會序列化成 JSON 放進 result.content。用匿名物件「投影」出要給的欄位，PNP 的 DTO 以後新增欄位，也不會在沒審查的情況下自動傳給 Claude。
 
 測試步驟
 

@@ -556,6 +556,7 @@ public static class PnpHmacSigner
 ```
 
 5. 新增 PCBRepairNavi.MCP/Pnp/PnpHmacHandler.cs
+<span style= "color: red;">在每個送往 PNP 內部 API 的請求加上 X-Timestamp、X-Signature。</span>
 ``` csharp
 using System.Globalization;
 using Microsoft.Extensions.Options;
@@ -763,3 +764,194 @@ public class PnpHmacSignerTests
 - [ ] 沒有密鑰時，啟動失敗並顯示 Pnp:HmacSecret 的訊息
 - [ ] 設回密鑰後，正常啟動，Claude Code 的 ping 仍然可以呼叫（確認沒有影響前一步）
 - [ ] git status：看不到密鑰（user-secrets 存在 %APPDATA%\Microsoft\UserSecrets\，不在專案資料夾）
+#
+#
+#
+---
+## 第一個真正的 MCP Tool：查詢 ECN/RCN
+
+這一步在做什麼
+
+新增 EcnRcnTool：從 JWT 取得使用者（sub），檢查有沒有 ECN/RCN 的 scope，再用上一步的 PnpInternalApiClient 呼叫 PNP，最後把結果整理後回給 Claude。
+
+做完這一步，整條路就打通了：
+
+Claude Code ─JWT─▶ MCP Server ─HMAC─▶ PNP ─▶ UCS
+
+回傳欄位的決定（之前留下的待決事項）
+
+我建議不回傳 sopPath 和 creatorName：
+
+| 欄位 | 回傳 | 理由 |
+|---|:---:|---|
+| `arnNo`、`sipProblem`、`scheduleDate`、`sopFileName` | ✅ | 查詢 ECN/RCN 的主要內容 |
+| `noticeViewLink` | ✅ | UCS 頁面的連結，開啟時仍需要登入 UCS |
+| `sopPath` | ❌ | 帶 `sign=` 簽章的下載連結，拿到連結的人不用登入就能下載，不應該交給 LLM（可能被複製、記錄、轉貼） |
+| `creatorName` | ❌ | 人名，查詢 ECN/RCN 用不到（資料最小化） |
+之後如果確定需要，再加回來只要改一行。
+
+1. 新增 PCBRepairNavi.MCP/Auth/RequireScopeAttribute.cs
+``` csharp
+using Microsoft.AspNetCore.Authorization;
+
+namespace PCBRepairNavi.MCP.Auth;
+
+/// <summary>
+/// 標在 MCP Tool 上，要求 access_token 的 scope 包含指定值。
+/// 實作 IAuthorizationRequirementData：attribute 本身就帶著檢查條件，不需在 Program.cs 逐一 AddPolicy
+/// </summary>
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
+public sealed class RequireScopeAttribute(string scope) : Attribute, IAuthorizationRequirementData, IAuthorizationRequirement
+{
+    public string Scope { get; } = scope;
+
+    public IEnumerable<IAuthorizationRequirement> GetRequirements()
+    {
+        yield return this;
+    }
+}
+
+/// <summary>檢查 RequireScopeAttribute 的通用規則：access_token 的 scope 是否包含指定值</summary>
+public sealed class RequireScopeHandler : AuthorizationHandler<RequireScopeAttribute>
+{
+    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RequireScopeAttribute requirement)
+    {
+        if (ScopeHelper.HasScope(context.User, requirement.Scope))
+        {
+            context.Succeed(requirement);
+        }
+        return Task.CompletedTask;
+    }
+}
+```
+
+2. 新增 PCBRepairNavi.MCP/Tools/EcnRcnTool.cs
+``` csharp
+using System.ComponentModel;
+using System.Text.RegularExpressions;
+using ModelContextProtocol;
+using ModelContextProtocol.Server;
+using PCBRepairNavi.MCP.Auth;
+using PCBRepairNavi.MCP.Pnp;
+
+namespace PCBRepairNavi.MCP.Tools;
+
+/// <summary>
+/// 依主機板料號（bomNo）查詢 UCS 的 ECN/RCN 通知。需要 ECN/RCN 讀取 scope。
+/// 資料經 PNP 內部 API 取得（HMAC 密鑰 A）；userName 取自 JWT 的 sub，供 PNP 稽核
+/// </summary>
+[McpServerToolType]
+[RequireScope("ucs.ecn-rcn-info.read")]
+public sealed partial class EcnRcnTool
+{
+    // 與 PNP 端 SecurityUtils.IsStrictSafe 同方向的白名單（英數、-、_），先在 MCP 端擋掉明顯錯誤的輸入
+    [GeneratedRegex(@"^[A-Za-z0-9\-_]{1,50}$")]
+    private static partial Regex BomNoRegex();
+
+    [McpServerTool, Description(
+        "Gets ECN/RCN (engineering/repair change notice) records for a mainboard BOM number (part number) from ASUS UCS. " +
+        "Returns notice number, problem description, schedule date, SOP file name and a link to view the notice in UCS.")]
+    public static async Task<object> GetEcnRcnInfo(
+        [Description("Mainboard BOM number (part number), for example 60NR0BV0-MB5010")] string bomNo,
+        PnpInternalApiClient pnp,
+        IHttpContextAccessor httpContextAccessor,
+        CancellationToken cancellationToken)
+    {
+        bomNo = bomNo?.Trim() ?? "";
+        if (!BomNoRegex().IsMatch(bomNo))
+        {
+            throw new McpException("bomNo format is invalid. Use letters, digits, '-' or '_' (max 50 characters).");
+        }
+
+        var userName = httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value;
+        if (string.IsNullOrEmpty(userName))
+        {
+            throw new McpException("Signed-in user could not be determined.");
+        }
+
+        var result = await pnp.GetEcnRcnAsync(bomNo, userName, cancellationToken);
+
+        return result.Status switch
+        {
+            PnpCallStatus.Success => new
+            {
+                bomNo,
+                count = result.Value!.Count,
+                items = result.Value.Select(i => new
+                {
+                    i.ArnNo,
+                    i.SipProblem,
+                    i.ScheduleDate,
+                    i.SopFileName,
+                    i.NoticeViewLink,
+                    // 刻意不回傳 SopPath（帶簽章、免登入即可下載）與 CreatorName（人名）
+                }),
+            },
+            PnpCallStatus.BadRequest => throw new McpException("bomNo was rejected by PNP. Please check the part number."),
+            PnpCallStatus.UpstreamFailed => throw new McpException("UCS is temporarily unavailable. Please try again later."),
+            _ => throw new McpException("PNP service is temporarily unavailable. Please contact the administrator if this persists."),
+        };
+    }
+}
+```
+
+3. 修改 PCBRepairNavi.MCP/Program.cs
+開頭加上：
+``` csharp
+using Microsoft.AspNetCore.Authorization;
+```
+
+把 builder.Services.AddAuthorization(); 換成：
+``` csharp
+builder.Services.AddAuthorization();
+builder.Services.AddSingleton<IAuthorizationHandler, RequireScopeHandler>();
+```
+
+把 AddMcpServer() 那一段換成：
+``` csharp
+builder.Services.AddMcpServer()
+    .WithHttpTransport()          // 2.4.0 預設 HttpServerSessionMode.Stateless
+    .AddAuthorizationFilters()    // 讓 Tool 上的 [RequireScope] 生效的開關：tools/list 隱藏、tools/call 拒絕
+    .WithTools<PingTool>()
+    .WithTools<EcnRcnTool>();
+```
+
+| 程式 | 負責什麼 |
+|---|---|
+| `[RequireScope("...")]` | 在工具上標示需要什麼權限（只是一張貼紙） |
+| `RequireScopeHandler` | 判斷權限是否符合（比對 scope） |
+| `.AddAuthorizationFilters()` | 讓 SDK 在 `tools/list`、`tools/call` 時去讀工具上的貼紙，交給 handler 判斷 |
+
+
+幾個重點說明
+
+1. 兩層授權：
+   - <span style="color: red;">/mcp 端點的 RequireAuthorization() 確認「有沒有登入」（token 有效）。</span>
+   - AuthorizationHandler<RequireScopeAttribute>：ASP.NET Core 會把 attribute 帶來的「要求」交給對應的 handler 判斷。handler 只要註冊一次，所有 [RequireScope(...)] 都共用它。
+   - PingTool 沒有掛 [RequireScope(...)]，所以只要登入就能用。
+2. 工具參數有兩種：
+   - bomNo 是給 Claude 填的，會出現在 inputSchema，Description 告訴 Claude 要填什麼。
+   - PnpInternalApiClient、IHttpContextAccessor、CancellationToken 是 SDK 從 DI 帶入的，Claude 看不到。
+3. userName 一律取自 JWT 的 sub，不讓 Claude 填：如果把 userName 設計成工具參數，LLM（或使用者透過 prompt）就能冒充別人。這和 SECURITY.md §16.3「身分欄位一律取自伺服器端」是同一個原則，也是交接文件第 2.2 節信任邊界的前提：PNP 相信 MCP Server 給的 userName，所以 MCP Server 必須確保它來自驗證過的 token。
+4. MCP 端也驗證 bomNo：PNP 端已經有驗證，這裡再擋一次。明顯錯誤的輸入不用浪費一次 PNP 呼叫，也能給 Claude 比較具體的錯誤訊息。
+5. McpException：SDK 會把它轉成 isError: true 的工具結果，訊息原樣給 Claude，所以 Claude 能告訴使用者「料號格式錯誤」或「UCS 暫時無法使用」。其他類型的例外，SDK 只會回通用訊息，不會洩漏細節。訊息裡不放 PNP 的狀態碼、網址等技術細節（和 SECURITY.md §2.3 同樣精神），401 的詳細原因只寫在 MCP Server 的 log。
+6. 回傳 object：SDK 會序列化成 JSON 放進 result.content。用匿名物件「投影」出要給的欄位，PNP 的 DTO 以後新增欄位，也不會在沒審查的情況下自動傳給 Claude。
+
+測試步驟
+
+前置：Authorization Server、MockPnp、MCP Server（重新啟動）都在執行中，測試機上 /PNP 是第一階段發行的版本。
+
+1. Claude Code（D:\Homer\Test\mcp，先設定 NODE_EXTRA_CA_CERTS）：先 /mcp 確認 pnp-mcp 已連線，工具清單出現新工具，記下它的名稱。這一步驗證工具已註冊、使用者有 scope。
+2. 輸入：請查詢料號 60NR0BV0-MB5010 的 ECN/RCN 資料。這一步驗證完整路徑 Claude Code → MCP Server → PNP → UCS。
+3. 輸入：請查詢料號 60NR0BV0;DROP 的 ECN/RCN 資料。這一步驗證 MCP 端的輸入驗證，以及 Claude 收到錯誤訊息後的反應。
+4. 看 PNP 的 test_log.txt（如果打得開），確認有一筆 User=test\mockuser BomNo=60NR0BV0-MB5010 Result=OK Count=4。這一步驗證 userName 確實取自 JWT。
+
+請執行後確認
+
+- [ ] /mcp 的工具清單有 ping 和新的 ECN/RCN 工具（請告訴我工具名稱）
+- [ ] #2：Claude 呼叫了工具，回答內容有 4 筆 CSC-ECN-...，沒有出現 sopPath 的下載連結或建立者姓名
+- [ ] #3：Claude 回覆料號格式錯誤（MCP Server 主控台沒有呼叫 PNP 的紀錄）
+- [ ] #4：test_log.txt 的 User= 是 test\mockuser
+- [ ] 如果 #2 失敗，請貼上 MCP Server 主控台的訊息：
+  - 看到 PNP ecn-rcn returned 401 的話，最可能是時鐘差（之前量到約 6 秒）。請先校正你電腦的時鐘（Windows 設定 → 時間與語言 → 日期和時間 →「立即同步」），再試一次。
+  - 看到 unexpected status 302 的話，請一併貼上 Location=。

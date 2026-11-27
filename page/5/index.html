@@ -75,6 +75,55 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Docker-with-WSL2-3-DockerCompose" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/" class="article-date">
+  <time class="dt-published" datetime="2025-10-01T08:26:33.000Z" itemprop="datePublished">2025-10-01</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Docker/">Docker</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/">Docker with WSL2(3) - 利用Docker Compose達到熱重載效果</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h5 id="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"><a href="#上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。" class="headerlink" title="上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。"></a>上篇文章我們在WSL裡建立Dockerfile，以及Docker的建置以及啟動執行。</h5><h5 id="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。"><a href="#但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng-build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker-build來更新image檔。" class="headerlink" title="但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。"></a>但如過按照上篇文章這樣的做法，因為我們是在Dockerfile裡面進行ng build的，所以我們每次只要一變動了Angular的程式，除了要再重新把程式rsync到wsl外，還要另外再執行一次docker build來更新image檔。</h5><h5 id="因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"><a href="#因為重新-docker-build-產生的新-image，和-正在跑的-container-是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。" class="headerlink" title="因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。"></a>因為重新 docker build 產生的新 image，和 正在跑的 container 是兩個不同的東西。所以目前使用的container也要停掉再用新的image來啟動一個新的Container。</h5><h5 id="在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神"><a href="#在一般的開發流程中，-熱重載-是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神" class="headerlink" title="在一般的開發流程中，[熱重載]是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!"></a>在一般的開發流程中，<code>[熱重載]</code>是個重要的功能，改好程式後，所見及所得就要能馬上看到結果。如果還要再做完上面這些繁雜的步驟才能看到程式修改後的結果，這樣子一點都不符合熱重載的精神!!</h5><h5 id="這篇文章教大家如何透過Docker-Compose的volumes屬性來達到熱重載的效果"><a href="#這篇文章教大家如何透過Docker-Compose的volumes屬性來達到熱重載的效果" class="headerlink" title="這篇文章教大家如何透過Docker Compose的volumes屬性來達到熱重載的效果!"></a>這篇文章教大家如何透過Docker Compose的volumes屬性來達到熱重載的效果!</h5><h5 id=""><a href="#" class="headerlink" title=""></a></h5>
+        
+          <p class="article-more-link">
+            <a href="/2025/10/01/Docker-with-WSL2-3-DockerCompose/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2025/10/01/Docker-with-WSL2-3-DockerCompose/" data-id="cmvarluxw001ko4n1hk394rjw" data-title="Docker with WSL2(3) - 利用Docker Compose達到熱重載效果" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker-Compose/" rel="tag">Docker Compose</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Ubuntu/" rel="tag">Ubuntu</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/WSL2/" rel="tag">WSL2</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Docker-with-WSL2-2" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2025/09/25/Docker-with-WSL2-2/" class="article-date">
@@ -328,6 +377,10 @@
       <ul>
         
           <li>
+            <a href="/2026/11/27/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-11/">建立OAuth Server with OpenIddict(11)</a>
+          </li>
+        
+          <li>
             <a href="/2026/11/24/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-10/">建立OAuth Server with OpenIddict(10)</a>
           </li>
         
@@ -341,10 +394,6 @@
         
           <li>
             <a href="/2026/11/20/PKCE%E3%80%81HTTPS%E3%80%81HMAC-%E7%9A%84%E7%94%A8%E9%80%94%E8%88%87%E5%B7%AE%E7%95%B0/">PKCE、HTTPS、HMAC 的用途與差異</a>
-          </li>
-        
-          <li>
-            <a href="/2026/11/18/%E5%BB%BA%E7%AB%8BOAuth-Server-with-OpenIddict-8/">建立OAuth Server with OpenIddict(8)</a>
           </li>
         
       </ul>

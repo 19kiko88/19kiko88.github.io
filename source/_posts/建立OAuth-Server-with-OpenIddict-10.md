@@ -9,6 +9,12 @@ tags:
   - OpenIddict
 ---
 ##### 把 PNP 的能力包成需要 OAuth 登入的 MCP Server
+- 建立 PCBRepairNavi.MCP（最小可執行的 MCP Server）
+- JWT 驗證、401 與 Protected Resource Metadata
+- 用 Claude Code 跑通 OAuth 登入，驗證第 4.2 節的相容性風險
+- OAuth repo：讓 Authorization Server 接受 resource 參數
+- MCP Server 用 HMAC 呼叫 PNP 的 client
+- 第一個真正的 MCP Tool：查詢 ECN/RCN
 <!-- more -->
 這一步在做什麼
 
@@ -341,6 +347,11 @@ New-Item -ItemType Directory -Force D:\Homer\Test\certs | Out-Null
 dotnet dev-certs https --export-path D:\Homer\Test\certs\localhost-dev.pem --format Pem --no-password
 Remove-Item D:\Homer\Test\certs\localhost-dev.key   # 私鑰用不到，匯出後立刻刪除
 ```
+- .NET 的開發憑證平常存在 Windows 的憑證存放區裡。dotnet dev-certs https --trust 只是告訴 Windows「信任它」，所以瀏覽器、.NET 程式、curl.exe 都沒問題。
+- Claude Code（Node.js 系列）不看 Windows 的憑證存放區，它有自己的一份信任清單，所以不認得這張憑證，連 https://localhost:7290 時會出現 TLS 錯誤。
+- NODE_EXTRA_CA_CERTS 只接受檔案路徑（PEM 格式），沒辦法指向 Windows 的憑證存放區。
+
+<span style="color: red;">所以要先把這張憑證匯出成 .pem 檔，再用 NODE_EXTRA_CA_CERTS 告訴 Claude Code「也信任這個檔案裡的憑證」。</span>
 
 3. 在 Claude Code 加入 MCP Server
 
@@ -350,6 +361,8 @@ $env:NODE_EXTRA_CA_CERTS = 'D:\Homer\Test\certs\localhost-dev.pem'
 cd D:\Homer\Test\mcp
 claude mcp add --transport http pnp-mcp https://localhost:7290/mcp --client-id pnp-mcp-client --callback-port 5056
 ```
+<span style="color: red;">redirectUris 是這個 client 允許的回呼網址白名單，Authorization Server 只會把 authorization code 送到清單裡的網址。Claude Code 以 --callback-port 5056 在本機開臨時伺服器，並組出 http://localhost:5056/callback 作為 redirect_uri；這個網址必須逐字符合白名單中的某一筆。</span>
+
 {% asset_image add_mcp.jpg add_mcp%}
 
 4. 登入並呼叫
@@ -556,7 +569,9 @@ public static class PnpHmacSigner
 ```
 
 5. 新增 PCBRepairNavi.MCP/Pnp/PnpHmacHandler.cs
+
 <span style= "color: red;">在每個送往 PNP 內部 API 的請求加上 X-Timestamp、X-Signature。</span>
+
 ``` csharp
 using System.Globalization;
 using Microsoft.Extensions.Options;
